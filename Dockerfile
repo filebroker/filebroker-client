@@ -1,4 +1,4 @@
-FROM node:18-alpine3.14
+FROM node:18-alpine3.14 as build
 
 WORKDIR /opt/filebroker-client
 COPY /. ./
@@ -6,4 +6,6 @@ COPY /. ./
 RUN npm install
 RUN npm run build
 
-CMD ["npm", "start"]
+FROM nginx:alpine
+COPY --from=build /opt/filebroker-client/build /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]

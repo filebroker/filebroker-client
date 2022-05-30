@@ -2,6 +2,31 @@
 
 React web-client for the filebroker project.
 
+## Setup
+
+Uses the following environment variables for configuration:
+
+```plaintext
+PUBLIC_URL=/filebroker
+REACT_APP_PATH=/filebroker
+REACT_APP_API_URL=http://localhost:8000/filebroker/api
+```
+
+`REACT_APP_PATH` and `PUBLIC_URL`: Root path of the application and path of public resources, may be different for development
+builds.
+
+`REACT_APP_API_URL`: Path to the API backend.
+
+Changing these paths may require adjustments to the nginx configuration in `default.conf`.
+
+These values may be overwritten in `.env.development.local` for development:
+
+```plaintext
+PUBLIC_URL=/public
+REACT_APP_PATH=/
+REACT_APP_API_URL=http://localhost:8080/
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

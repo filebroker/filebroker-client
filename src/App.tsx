@@ -54,7 +54,7 @@ export class App extends React.Component<{}, {
 
     componentDidMount() {
         if (this.state.initialLoginChecked === false && this.refreshLoginTimeout === null) {
-            http.post<LoginResponse>("/refresh-login")
+            http.post<LoginResponse>("/try-refresh-login")
                 .then(response => {
                     if (this.refreshLoginTimeout !== null) {
                         clearTimeout(this.refreshLoginTimeout);
@@ -66,7 +66,12 @@ export class App extends React.Component<{}, {
                         initialLoginChecked: true
                     });
                 })
-                .catch(() => console.log("INFO: Initial login expired or not present"));
+                .catch(() => {
+                    console.log("INFO: Initial login expired or not present");
+                    this.setState({
+                        initialLoginChecked: true
+                    });
+                });
         }
     }
 
