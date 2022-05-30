@@ -46,6 +46,10 @@ export class App extends React.Component<{
 
         this.handleLogin = this.handleLogin.bind(this);
         this.refreshLogin = this.refreshLogin.bind(this);
+
+        if (props.initialLogin !== null) {
+            setTimeout(this.refreshLogin, Math.max(10, props.initialLogin.expiration_secs) * 1000);
+        }
     }
 
     render(): React.ReactNode {
