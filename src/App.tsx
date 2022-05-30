@@ -111,6 +111,7 @@ export class App extends React.Component<{}, {
                     <Route path="/login" element={<Login app={this}></Login>}></Route>
                     <Route path="/profile" element={profileElement}></Route>
                     <Route path="/register" element={<Register app={this}></Register>}></Route>
+                    <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                 </Routes>
             </BrowserRouter>
         );
@@ -160,6 +161,14 @@ export class LoadingPage extends React.Component {
                     <h1>Loading</h1>
                 </header>
             </div>
+        );
+    }
+}
+
+export class NotFoundPage extends React.Component {
+    render(): React.ReactNode {
+        return (
+            <h1>404 Not Found</h1>
         );
     }
 }
