@@ -27,32 +27,63 @@ export class User {
     }
 }
 
-export class App extends React.Component<{
-    initialLogin: LoginResponse | null;
-}, {
+export class App extends React.Component<{}, {
     jwt: string | null;
     user: User | null;
     showRegisterMask: boolean;
     showLoginMask: boolean;
+    initialLoginChecked: boolean;
 }> {
+    refreshLoginTimeout: NodeJS.Timeout | null;
+
     constructor(props: any) {
         super(props);
         this.state = {
-            jwt: props.initialLogin ? props.initialLogin.token : null,
-            user: props.initialLogin ? props.initialLogin.user : null,
+            jwt: null,
+            user: null,
             showRegisterMask: false,
-            showLoginMask: false
+            showLoginMask: false,
+            initialLoginChecked: false
         };
 
         this.handleLogin = this.handleLogin.bind(this);
         this.refreshLogin = this.refreshLogin.bind(this);
 
-        if (props.initialLogin !== null) {
-            setTimeout(this.refreshLogin, Math.max(10, props.initialLogin.expiration_secs) * 1000);
+        this.refreshLoginTimeout = null;
+    }
+
+    componentDidMount() {
+        if (this.state.initialLoginChecked === false && this.refreshLoginTimeout === null) {
+            http.post<LoginResponse>("/refresh-login")
+                .then(response => {
+                    if (this.refreshLoginTimeout !== null) {
+                        clearTimeout(this.refreshLoginTimeout);
+                    }
+                    this.refreshLoginTimeout = setTimeout(this.refreshLogin, Math.max(10, response.data.expiration_secs) * 1000);
+                    this.setState({
+                        jwt: response.data.token,
+                        user: response.data.user,
+                        initialLoginChecked: true
+                    });
+                })
+                .catch(() => console.log("INFO: Initial login expired or not present"));
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.refreshLoginTimeout !== null) {
+            clearTimeout(this.refreshLoginTimeout);
+            this.refreshLoginTimeout = null;
         }
     }
 
     render(): React.ReactNode {
+        if (this.state.initialLoginChecked === false) {
+            return (
+                <LoadingPage></LoadingPage>
+            );
+        }
+
         let loginAccountLink;
         let profileElement;
         if (this.state.user == null) {

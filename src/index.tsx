@@ -12,25 +12,9 @@ const root = ReactDOM.createRoot(
 
 root.render(
     <React.StrictMode>
-        <LoadingPage/>
+        <App></App>
     </React.StrictMode>
 );
-
-http.post<LoginResponse>("/refresh-login")
-    .then(response => {
-        root.render(
-            <React.StrictMode>
-                <App initialLogin={response.data}/>
-            </React.StrictMode>
-        );
-    })
-    .catch(() => {
-        root.render(
-            <React.StrictMode>
-                <App initialLogin={null}/>
-            </React.StrictMode>
-        );
-    });
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
