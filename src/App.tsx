@@ -54,7 +54,7 @@ export class App extends React.Component<{}, {
 
     componentDidMount() {
         if (this.state.initialLoginChecked === false && this.refreshLoginTimeout === null) {
-            http.post<LoginResponse>("/try-refresh-login")
+            http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true })
                 .then(response => {
                     if (this.refreshLoginTimeout !== null) {
                         clearTimeout(this.refreshLoginTimeout);
@@ -133,7 +133,7 @@ export class App extends React.Component<{}, {
 
     async refreshLogin() {
         try {
-            let response = await http.post<LoginResponse>("/refresh-login");
+            let response = await http.post<LoginResponse>("/refresh-login", null, { withCredentials: true });
             this.setState({
                 jwt: response.data.token
             });

@@ -54,7 +54,7 @@ class Login extends React.Component<{ app: App }, {
     }
 
     async login() {
-        let response = await http.post<LoginResponse>("/login", new LoginRequest(this.state.userName, this.state.password));
+        let response = await http.post<LoginResponse>("/login", new LoginRequest(this.state.userName, this.state.password), { withCredentials: true });
         await this.props.app.handleLogin(response.data);
     }
 
