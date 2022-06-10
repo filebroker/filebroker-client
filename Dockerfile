@@ -7,5 +7,5 @@ RUN npm install
 RUN npm run build
 
 FROM nginx:alpine
-COPY --from=build /opt/filebroker-client/build /usr/share/nginx/html
+COPY --from=build /opt/filebroker-client/build /usr/share/nginx/html/filebroker
 CMD ["nginx", "-g", "daemon off;"]
