@@ -7,6 +7,7 @@ import Home from './Home';
 import Login, {LoginResponse} from './Login';
 import {ProfilePage} from "./ProfilePage";
 import Register from './Register';
+import Post from './Post';
 
 export class User {
     user_name: string;
@@ -32,9 +33,8 @@ export class App extends React.Component<{}, {
     user: User | null;
     showRegisterMask: boolean;
     showLoginMask: boolean;
-    initialLoginChecked: boolean;
+    loginExpiry: number | null;
 }> {
-    refreshLoginTimeout: NodeJS.Timeout | null;
 
     constructor(props: any) {
         super(props);
@@ -43,52 +43,14 @@ export class App extends React.Component<{}, {
             user: null,
             showRegisterMask: false,
             showLoginMask: false,
-            initialLoginChecked: false
+            loginExpiry: null
         };
 
         this.handleLogin = this.handleLogin.bind(this);
         this.refreshLogin = this.refreshLogin.bind(this);
-
-        this.refreshLoginTimeout = null;
-    }
-
-    componentDidMount() {
-        if (this.state.initialLoginChecked === false && this.refreshLoginTimeout === null) {
-            http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true })
-                .then(response => {
-                    if (this.refreshLoginTimeout !== null) {
-                        clearTimeout(this.refreshLoginTimeout);
-                    }
-                    this.refreshLoginTimeout = setTimeout(this.refreshLogin, Math.max(10, response.data.expiration_secs) * 1000);
-                    this.setState({
-                        jwt: response.data.token,
-                        user: response.data.user,
-                        initialLoginChecked: true
-                    });
-                })
-                .catch(() => {
-                    console.log("INFO: Initial login expired or not present");
-                    this.setState({
-                        initialLoginChecked: true
-                    });
-                });
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.refreshLoginTimeout !== null) {
-            clearTimeout(this.refreshLoginTimeout);
-            this.refreshLoginTimeout = null;
-        }
     }
 
     render(): React.ReactNode {
-        if (this.state.initialLoginChecked === false) {
-            return (
-                <LoadingPage></LoadingPage>
-            );
-        }
-
         let loginAccountLink;
         let profileElement;
         if (this.state.user == null) {
@@ -103,32 +65,47 @@ export class App extends React.Component<{}, {
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
                 <div className="App">
                     <div id="nav">
-                        <div id="nav-link">
-                            <NavLink to="/">Home</NavLink>
-                        </div>
-                        <div id="nav-right">
-                            {loginAccountLink}
-                        </div>
+                        <div className="nav-el"><NavLink to="/">Home</NavLink></div>
+                        <div className="nav-el">{loginAccountLink}</div>
                     </div>
                 </div>
                 <Routes>
-                    <Route path="/" element={<Home></Home>}></Route>
+                    <Route path="/" element={<Home app={this}></Home>}></Route>
                     <Route path="/login" element={<Login app={this}></Login>}></Route>
                     <Route path="/profile" element={profileElement}></Route>
                     <Route path="/register" element={<Register app={this}></Register>}></Route>
+                    <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
                     <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                 </Routes>
             </BrowserRouter>
         );
     }
 
-    async handleLogin(loginResponse: LoginResponse) {
+    handleLogin(loginResponse: LoginResponse) {
         this.setState({
             jwt: loginResponse.token,
-            user: loginResponse.user
+            user: loginResponse.user,
+            loginExpiry: Date.now() + (loginResponse.expiration_secs - 10) * 1000
         });
+    }
 
-        setTimeout(this.refreshLogin, Math.max(10, loginResponse.expiration_secs) * 1000);
+    async getAuthorization() {
+        if (this.state.loginExpiry == null || this.state.loginExpiry < Date.now()) {
+            try {
+                let response = await http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+                if (response.data != null) {
+                    this.handleLogin(response.data);
+                }
+            } catch (e) {
+                console.log("Failed to refresh login: " + e);
+            }
+        } else if (this.state.jwt != null) {
+            return {
+                headers: {
+                    authorization: `Bearer ${this.state.jwt}`
+                }
+            }
+        }
     }
 
     async refreshLogin() {
@@ -141,14 +118,6 @@ export class App extends React.Component<{}, {
             setTimeout(this.refreshLogin, Math.max(10, response.data.expiration_secs) * 1000);
         } catch (e) {
             console.log("Failed to refresh login: " + e);
-        }
-    }
-
-    getAuthHeader() {
-        return {
-            headers: {
-                authorization: `Bearer ${this.state.jwt}`
-            }
         }
     }
 }
