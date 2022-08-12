@@ -3,11 +3,12 @@ import {BrowserRouter, Navigate, NavLink, Route, Routes} from "react-router-dom"
 import logo from './logo.svg';
 import './App.css';
 import http from "./http-common";
-import Home from './Home';
+import PostSearch from './PostSearch';
 import Login, {LoginResponse} from './Login';
 import {ProfilePage} from "./ProfilePage";
 import Register from './Register';
 import Post from './Post';
+import Home from './Home';
 
 export class User {
     user_name: string;
@@ -66,11 +67,13 @@ export class App extends React.Component<{}, {
                 <div className="App">
                     <div id="nav">
                         <div className="nav-el"><NavLink to="/">Home</NavLink></div>
+                        <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
                         <div className="nav-el">{loginAccountLink}</div>
                     </div>
                 </div>
                 <Routes>
-                    <Route path="/" element={<Home app={this}></Home>}></Route>
+                    <Route path="/" element={<Home></Home>}></Route>
+                    <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
                     <Route path="/login" element={<Login app={this}></Login>}></Route>
                     <Route path="/profile" element={profileElement}></Route>
                     <Route path="/register" element={<Register app={this}></Register>}></Route>

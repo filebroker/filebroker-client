@@ -1,0 +1,67 @@
+#PostSearch {
+    width: 100%;
+    display: flex;
+    position: absolute;
+}
+
+#image-wall {
+    position: absolute;
+    width: 90%;
+    right: 0;
+}
+
+#image-wall-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+}
+
+#page-button-container {
+    text-align: center;
+}
+
+#page-full-count {
+    text-align: center;
+}
+
+.page-button {
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    width: 50px;
+    background-color: transparent;
+    color: white;
+}
+
+.page-button:hover:enabled {
+    background-color: white;
+    color: black;
+}
+
+.page-button:disabled {
+    display: none;
+}
+
+.page-button-selected {
+    background-color: white;
+    color: black;
+}
+
+.post_wrapper {
+    padding: 10px;
+    width: 320px;
+    height: 180px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: 'public/logo512.png';
+}
+
+.thumb-img {
+    max-width: 320px;
+    max-height: 180px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 5px;
+    border: 2px solid white;
+}

@@ -1,0 +1,32 @@
+#post-container {
+    position: absolute;
+    max-width: 75vw;
+    max-height: 42.18vw;
+    width: 90%;
+    height: 100%;
+    left: 10%;
+    margin-left: 2px;
+}
+
+#post-container img {
+    max-width: 75vw;
+    max-height: 75vh;
+}
+
+.back-overview {
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    color: white;
+}
+
+.back-overview a {
+    color: white;
+    text-decoration: none;
+}
+
+.back-overview a:visited {
+    color: white;
+    text-decoration: none;
+}
