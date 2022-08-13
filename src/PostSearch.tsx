@@ -70,7 +70,8 @@ function PostSearch({app}: PostSearchProps) {
     const [fullCount, setFullCount] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const [posts, setPosts] = useState<PostQueryObject[]>([]);
-    const { search } = useLocation();
+    const location = useLocation();
+    const search = location.search;
     const navigate = useNavigate();
 
     let searchParams = new URLSearchParams(search);
@@ -109,7 +110,7 @@ function PostSearch({app}: PostSearchProps) {
     useEffect(() => {
         setQueryString(queryParam);
         let fetch = async () => {
-            let config = await app.getAuthorization();
+            let config = await app.getAuthorization(location, navigate);
 
             http
                 .get<SearchResult>(`/search${search}`, config)

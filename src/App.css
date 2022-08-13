@@ -91,3 +91,22 @@ body {
     height: 100%;
     text-align: center;
 }
+
+.standard-button {
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+    background-color: transparent;
+    color: white;
+}
+
+.standard-button:hover:enabled {
+    background-color: white;
+    color: black;
+}
+
+.standard-button:disabled {
+    color: darkgray;
+    border: 1px dotted darkgray;
+}

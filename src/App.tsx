@@ -1,5 +1,5 @@
 import React from 'react';
-import {BrowserRouter, Navigate, NavLink, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Location, Navigate, NavigateFunction, NavLink, Route, Routes} from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
 import http from "./http-common";
@@ -92,22 +92,30 @@ export class App extends React.Component<{}, {
         });
     }
 
-    async getAuthorization() {
+    async getAuthorization(location: Location, navigate: NavigateFunction) {
         if (this.state.loginExpiry == null || this.state.loginExpiry < Date.now()) {
             try {
                 let response = await http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
                 if (response.data != null) {
                     this.handleLogin(response.data);
+                    return {
+                        headers: {
+                            authorization: `Bearer ${response.data.token}`
+                        }
+                    };
                 }
-            } catch (e) {
+            } catch (e: any) {
                 console.log("Failed to refresh login: " + e);
+                if (e.response.status == 401) {
+                    navigate("/login", { state: { from: location }, replace: true})
+                }
             }
         } else if (this.state.jwt != null) {
             return {
                 headers: {
                     authorization: `Bearer ${this.state.jwt}`
                 }
-            }
+            };
         }
     }
 

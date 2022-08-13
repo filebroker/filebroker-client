@@ -1,7 +1,9 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import App from "./App";
 import http from "./http-common";
 import {LoginResponse} from "./Login";
+import "./Register.css";
 
 export class UserRegistration {
     user_name: string;
@@ -22,36 +24,58 @@ export class UserRegistration {
     }
 }
 
-class Register extends React.Component<{ app: App }, {
-    password: string;
-    userName: string;
-}> {
-    constructor(props: any) {
-        super(props);
-        this.state = {
-            password: "",
-            userName: ""
+class RegisterProps {
+    app: App;
+
+    constructor(app: App) {
+        this.app = app;
+    }
+}
+
+function Register({app}: RegisterProps) {
+    const [password, setPassword] = useState("");
+    const [userName, setUserName] = useState("");
+    const [loginDisabled, setLoginDisabled] = useState(false);
+    const navigate = useNavigate();
+    const { state }: any = useLocation();
+ 
+    async function register() {
+        try {
+            let response = await http.post<LoginResponse>("/register", new UserRegistration(userName, password, null, null));
+            setLoginDisabled(false);
+            app.handleLogin(response.data);
+            navigate("/profile");
+        } catch (e) {
+            setLoginDisabled(false);
+            console.error("Register failed: " + e);
         }
-
-        this.register = this.register.bind(this);
     }
 
-    render(): React.ReactNode {
-        return (
-            <div className="LoginPage">
-                <input type="text" placeholder="User Name"
-                       onChange={(e) => this.setState({userName: e.currentTarget.value})}></input>
-                <input type="password" placeholder="Password"
-                       onChange={(e) => this.setState({password: e.currentTarget.value})}></input>
-                <button onClick={this.register}>Register</button>
+    useEffect(() => {
+        return () => {
+            setPassword("");
+            setUserName("");
+        };
+    }, []);
+
+    return (
+        <div id="Register">
+            <div id="register-form">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    setLoginDisabled(true);
+                    register();
+                }}>
+                    <h1>Register</h1>
+                    <div className="login-form-field"><input type="text" placeholder="User Name" value={userName}
+                        onChange={(e) => setUserName(e.currentTarget.value)} required></input></div>
+                    <div className="login-form-field"><input type="password" placeholder="Password" value={password}
+                        onChange={(e) => setPassword(e.currentTarget.value)} required></input></div>
+                    <div className="login-form-field"><button type="submit" className="standard-button" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Register</button></div>
+                </form>
             </div>
-        );
-    }
-
-    async register() {
-        let response = await http.post<LoginResponse>("/register", new UserRegistration(this.state.userName, this.state.password, null, null));
-        this.props.app.handleLogin(response.data);
-    }
+        </div>
+    );
 }
 
 export default Register;

@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
 import App from "./App";
 import http, { getApiUrl } from "./http-common";
@@ -83,11 +83,13 @@ class PostProps {
 function Post({app}: PostProps) {
     let { id } = useParams();
     const [post, setPost] = useState<PostDetailed | null>(null);
-    const { search } = useLocation();
+    const location = useLocation();
+    const search = location.search;
+    const navigate = useNavigate();
 
     useEffect(() => {
         let fetch = async () => {
-            let config = await app.getAuthorization();
+            let config = await app.getAuthorization(location, navigate);
 
             http
                 .get<PostDetailed[]>(`/get-post/${id}`, config)
