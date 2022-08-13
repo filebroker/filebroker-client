@@ -32,8 +32,6 @@ export class User {
 export class App extends React.Component<{}, {
     jwt: string | null;
     user: User | null;
-    showRegisterMask: boolean;
-    showLoginMask: boolean;
     loginExpiry: number | null;
 }> {
 
@@ -42,13 +40,10 @@ export class App extends React.Component<{}, {
         this.state = {
             jwt: null,
             user: null,
-            showRegisterMask: false,
-            showLoginMask: false,
             loginExpiry: null
         };
 
         this.handleLogin = this.handleLogin.bind(this);
-        this.refreshLogin = this.refreshLogin.bind(this);
     }
 
     render(): React.ReactNode {
@@ -59,7 +54,7 @@ export class App extends React.Component<{}, {
             profileElement = <Navigate to="/login"></Navigate>;
         } else {
             loginAccountLink = <NavLink to="/profile">{this.state.user.user_name}</NavLink>;
-            profileElement = <ProfilePage user={this.state.user}></ProfilePage>;
+            profileElement = <ProfilePage app={this} user={this.state.user}></ProfilePage>;
         }
 
         return (
@@ -84,11 +79,28 @@ export class App extends React.Component<{}, {
         );
     }
 
-    handleLogin(loginResponse: LoginResponse) {
+    async componentDidMount() {
+        try {
+            let response = await http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+            this.handleLogin(response.data);
+        } catch (e) {
+            console.log("Failed to refresh login: " + e);
+            this.handleLogin(null);
+        }
+    }
+
+    handleLogin(loginResponse: LoginResponse | null) {
+        let loginExpiry;
+        if (loginResponse) {
+            loginExpiry = Date.now() + (loginResponse.expiration_secs - 10) * 1000;
+        } else {
+            loginExpiry = null;
+        }
+
         this.setState({
-            jwt: loginResponse.token,
-            user: loginResponse.user,
-            loginExpiry: Date.now() + (loginResponse.expiration_secs - 10) * 1000
+            jwt: loginResponse?.token ?? null,
+            user: loginResponse?.user ?? null,
+            loginExpiry: loginExpiry
         });
     }
 
@@ -116,19 +128,6 @@ export class App extends React.Component<{}, {
                     authorization: `Bearer ${this.state.jwt}`
                 }
             };
-        }
-    }
-
-    async refreshLogin() {
-        try {
-            let response = await http.post<LoginResponse>("/refresh-login", null, { withCredentials: true });
-            this.setState({
-                jwt: response.data.token
-            });
-
-            setTimeout(this.refreshLogin, Math.max(10, response.data.expiration_secs) * 1000);
-        } catch (e) {
-            console.log("Failed to refresh login: " + e);
         }
     }
 }

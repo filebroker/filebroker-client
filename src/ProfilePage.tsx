@@ -1,20 +1,37 @@
-import { userInfo } from 'os';
-import React from 'react';
-import { User } from "./App";
+import { useNavigate } from "react-router-dom";
+import App, { User } from "./App";
+import http from "./http-common";
 
-export class ProfilePage extends React.Component<{
+class ProfilePageProps {
+    app: App;
     user: User;
-}> {
-    constructor(props: any) {
-        super(props);
+
+    constructor(app: App, user: User) {
+        this.app = app;
+        this.user = user;
+    }
+}
+
+export function ProfilePage({app, user}: ProfilePageProps) {
+    const navigate = useNavigate();
+
+    async function handleLogout() {
+        await http.post("/logout", null, { withCredentials: true });
+        app.setState({
+            jwt: null,
+            user: null,
+            loginExpiry: null
+        });
+        navigate("/");
     }
 
-    render() {
-        return (
-            <div className="ProfilePage">
+    return (
+        <div id="Profile">
+            <div className="standard-form">
+                <button className="standard-button" onClick={handleLogout}>Logout</button>
                 <h1>Profile</h1>
-                <p>{this.props.user.user_name}</p>
+                <p>{user.user_name}</p>
             </div>
-        );
-    }
+        </div>
+    );
 }

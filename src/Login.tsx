@@ -75,7 +75,7 @@ function Login({app}: LoginProps) {
 
     return (
         <div id="Login">
-            <div id="login-form">
+            <div className="standard-form">
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     setLoginDisabled(true);
@@ -84,11 +84,11 @@ function Login({app}: LoginProps) {
                     <h1>Login</h1>
                     <div id="register-link"><p>Or <Link to="/register">register</Link> for a new account</p></div>
                     {loginFailedComponent}
-                    <div className="login-form-field"><input type="text" placeholder="User Name" value={userName}
+                    <div className="standard-form-field"><input type="text" placeholder="User Name" value={userName}
                         onChange={(e) => setUserName(e.currentTarget.value)} required></input></div>
-                    <div className="login-form-field"><input type="password" placeholder="Password" value={password}
+                    <div className="standard-form-field"><input type="password" placeholder="Password" value={password}
                         onChange={(e) => setPassword(e.currentTarget.value)} required></input></div>
-                    <div className="login-form-field"><button type="submit" className="standard-button" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Login</button></div>
+                    <div className="standard-form-field"><button type="submit" className="standard-button" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Login</button></div>
                 </form>
             </div>
         </div>

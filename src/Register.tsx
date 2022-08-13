@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import App from "./App";
 import http from "./http-common";
 import {LoginResponse} from "./Login";
-import "./Register.css";
 
 export class UserRegistration {
     user_name: string;
@@ -60,18 +59,18 @@ function Register({app}: RegisterProps) {
 
     return (
         <div id="Register">
-            <div id="register-form">
+            <div className="standard-form">
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     setLoginDisabled(true);
                     register();
                 }}>
                     <h1>Register</h1>
-                    <div className="login-form-field"><input type="text" placeholder="User Name" value={userName}
+                    <div className="standard-form-field"><input type="text" placeholder="User Name" value={userName}
                         onChange={(e) => setUserName(e.currentTarget.value)} required></input></div>
-                    <div className="login-form-field"><input type="password" placeholder="Password" value={password}
+                    <div className="standard-form-field"><input type="password" placeholder="Password" value={password}
                         onChange={(e) => setPassword(e.currentTarget.value)} required></input></div>
-                    <div className="login-form-field"><button type="submit" className="standard-button" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Register</button></div>
+                    <div className="standard-form-field"><button type="submit" className="standard-button" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Register</button></div>
                 </form>
             </div>
         </div>
