@@ -92,11 +92,9 @@ function Post({app}: PostProps) {
             let config = await app.getAuthorization(location, navigate);
 
             http
-                .get<PostDetailed[]>(`/get-post/${id}`, config)
+                .get<PostDetailed>(`/get-post/${id}`, config)
                 .then(result => {
-                    if (result.data.length > 0) {
-                        setPost(result.data[0]);
-                    }
+                    setPost(result.data);
                 });
         };
 
