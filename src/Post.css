@@ -5,7 +5,7 @@
     width: 90%;
     height: 100%;
     left: 10%;
-    margin-left: 2px;
+    margin-left: 10px;
 }
 
 #post-container img {
@@ -13,20 +13,29 @@
     max-height: 75vh;
 }
 
-.back-overview {
+.back-overview a {
     border: 1px solid white;
     border-radius: 5px;
-    padding: 5px;
-    margin: 5px;
-    color: white;
-}
-
-.back-overview a {
     color: white;
     text-decoration: none;
+    display: block;
+    padding: 5px;
+    margin: 5px;
 }
 
 .back-overview a:visited {
     color: white;
+    text-decoration: none;
+}
+
+.back-overview a:hover {
+    color: black;
+    background-color: white;
+    text-decoration: none;
+}
+
+.back-overview a:hover:visited {
+    color: black;
+    background-color: white;
     text-decoration: none;
 }

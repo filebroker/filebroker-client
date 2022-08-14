@@ -1,5 +1,5 @@
 import React from 'react';
-import {BrowserRouter, Location, Navigate, NavigateFunction, NavLink, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes} from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
 import http from "./http-common";
@@ -9,6 +9,7 @@ import {ProfilePage} from "./ProfilePage";
 import Register from './Register';
 import Post from './Post';
 import Home from './Home';
+import { AxiosResponse } from 'axios';
 
 export class User {
     user_name: string;
@@ -35,6 +36,8 @@ export class App extends React.Component<{}, {
     loginExpiry: number | null;
 }> {
 
+    pendingLogin: Promise<AxiosResponse<LoginResponse, any>> | null;
+
     constructor(props: any) {
         super(props);
         this.state = {
@@ -44,6 +47,8 @@ export class App extends React.Component<{}, {
         };
 
         this.handleLogin = this.handleLogin.bind(this);
+
+        this.pendingLogin = null;
     }
 
     render(): React.ReactNode {
@@ -77,8 +82,20 @@ export class App extends React.Component<{}, {
     }
 
     async componentDidMount() {
+        if (this.state.jwt != null) {
+            return;
+        }
+
+        let promise;
+        if (this.pendingLogin != null) {
+            promise = this.pendingLogin;
+        } else {
+            promise = http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+            this.pendingLogin = promise;
+        }
+
         try {
-            let response = await http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+            let response = await promise;
             this.handleLogin(response.data);
         } catch (e) {
             console.log("Failed to refresh login: " + e);
@@ -98,13 +115,22 @@ export class App extends React.Component<{}, {
             jwt: loginResponse?.token ?? null,
             user: loginResponse?.user ?? null,
             loginExpiry: loginExpiry
+        }, () => {
+            this.pendingLogin = null;
         });
     }
 
     async getAuthorization(location: Location, navigate: NavigateFunction) {
         if (this.state.loginExpiry == null || this.state.loginExpiry < Date.now()) {
+            let promise;
+            if (this.pendingLogin != null) {
+                promise = this.pendingLogin;
+            } else {
+                promise = http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+                this.pendingLogin = promise;
+            }
             try {
-                let response = await http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+                let response = await promise;
                 if (response.data != null) {
                     this.handleLogin(response.data);
                     return {

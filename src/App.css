@@ -1,5 +1,5 @@
 body {
-    background-color: #020026;
+    background-color: #000a14;
     color: white;
     margin-top: 50px;
 }
@@ -51,8 +51,7 @@ body {
     left: 0;
     z-index: 999;
     height: 50px;
-    background-color: rgba(5, 5, 5, 0.8);
-    ;
+    background-color: rgba(0, 10, 20, 0.9);
 }
 
 .nav-el {
@@ -65,18 +64,21 @@ body {
     color: white;
     padding-left: 10px;
     padding-right: 10px;
-    border-right: 1px solid white;
     text-decoration: none;
 }
 
 .nav-el a:hover {
     text-decoration: none;
-    background-color: rgba(0, 0, 0, 1);
-    ;
+    color: #2a52be;
 }
 
 .nav-el a:visited {
     color: white;
+    text-decoration: none;
+}
+
+.nav-el a:visited:hover {
+    color: #2a52be;
     text-decoration: none;
 }
 
@@ -85,7 +87,6 @@ body {
 }
 
 #side-bar {
-    border-right: 2px solid white;
     position: fixed;
     width: 10%;
     height: 100%;
@@ -122,7 +123,7 @@ body {
     position: absolute;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
-    background-color: #424952;
+    background-color: #282C31;
     -moz-box-shadow: 0 0 3px #ccc;
     -webkit-box-shadow: 0 0 3px #ccc;
     box-shadow: 0 0 3px #ccc;

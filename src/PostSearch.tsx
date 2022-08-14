@@ -138,7 +138,6 @@ function PostSearch({app}: PostSearchProps) {
         let searchParams = new URLSearchParams();
         searchParams.set("query", queryString);
         navigate({pathname: "/posts", search: searchParams.toString()});
-        window.location.reload();
     }
 
     function handlePageSwitch(pageNumber: number) {
@@ -146,7 +145,6 @@ function PostSearch({app}: PostSearchProps) {
         searchParams.set("query", queryParam);
         searchParams.set("page", pageNumber.toString());
         navigate({pathname: "/posts", search: searchParams.toString()});
-        window.location.reload();
     }
 
     let pageButtons: ReactNode[] = [];
@@ -169,9 +167,14 @@ function PostSearch({app}: PostSearchProps) {
     return (
         <div id="PostSearch">
             <div id="side-bar">
-                <label>Query</label>
-                {queryInput}
-                <button onClick={handleSearchQuery}>Search</button>
+                <form id="search-from" onSubmit={e => {
+                    e.preventDefault();
+                    handleSearchQuery();
+                }}>
+                    <div><label>Query</label></div>
+                    <div>{queryInput}</div>
+                    <div><button className="standard-button" type="submit">Search</button></div>
+                </form>
             </div>
             <div id="image-wall">
                 <div id="image-wall-container">

@@ -9,14 +9,18 @@ function Home() {
 
     function handleSearchQuery() {
         navigate({pathname: "/posts", search: "?query=" + queryString});
-        window.location.reload();
     }
 
     return (
         <div id="Home">
-            <h1>filebroker</h1>
-            {queryInput}
-            <button onClick={handleSearchQuery}>Search</button>
+            <form id="home-search-form" onSubmit={e => {
+                e.preventDefault();
+                handleSearchQuery();
+            }}>
+                <div><h1>filebroker</h1></div>
+                <div>{queryInput}</div>
+                <div><button className="standard-button" type="submit">Search</button></div>
+            </form>
         </div>
     );
 }
