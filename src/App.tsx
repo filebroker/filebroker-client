@@ -48,13 +48,10 @@ export class App extends React.Component<{}, {
 
     render(): React.ReactNode {
         let loginAccountLink;
-        let profileElement;
         if (this.state.user == null) {
             loginAccountLink = <NavLink to="/login">Log In</NavLink>;
-            profileElement = <Navigate to="/login"></Navigate>;
         } else {
             loginAccountLink = <NavLink to="/profile">{this.state.user.user_name}</NavLink>;
-            profileElement = <ProfilePage app={this} user={this.state.user}></ProfilePage>;
         }
 
         return (
@@ -70,7 +67,7 @@ export class App extends React.Component<{}, {
                     <Route path="/" element={<Home></Home>}></Route>
                     <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
                     <Route path="/login" element={<Login app={this}></Login>}></Route>
-                    <Route path="/profile" element={profileElement}></Route>
+                    <Route path="/profile" element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}></Route>
                     <Route path="/register" element={<Register app={this}></Register>}></Route>
                     <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
                     <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
