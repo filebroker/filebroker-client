@@ -91,6 +91,24 @@ body {
     width: 10%;
     height: 100%;
     text-align: center;
+    z-index: 999;
+    background-color: #000a14;
+}
+
+.side-bar-item {
+    width: 90%;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.side-bar-item input {
+    width: 100%;
+}
+
+.side-bar-item textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
 }
 
 .standard-button {

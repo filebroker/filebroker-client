@@ -171,9 +171,9 @@ function PostSearch({app}: PostSearchProps) {
                     e.preventDefault();
                     handleSearchQuery();
                 }}>
-                    <div><label>Query</label></div>
-                    <div>{queryInput}</div>
-                    <div><button className="standard-button" type="submit">Search</button></div>
+                    <div className="side-bar-item"><label>Query</label></div>
+                    <div className="side-bar-item">{queryInput}</div>
+                    <div className="side-bar-item"><button className="standard-button" type="submit">Search</button></div>
                 </form>
             </div>
             <div id="image-wall">
