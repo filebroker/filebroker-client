@@ -52,6 +52,7 @@ body {
     z-index: 999;
     height: 50px;
     background-color: rgba(0, 10, 20, 0.9);
+    backdrop-filter: blur(6px);
 }
 
 .nav-el {
