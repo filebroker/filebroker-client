@@ -12,7 +12,30 @@
 
 #image-wall-container {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+}
+
+@media (min-width: 775px) {
+    #image-wall-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1150px) {
+    #image-wall-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1530px) {
+    #image-wall-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1910px) {
+    #image-wall-container {
+        grid-template-columns: repeat(5, 1fr);
+    }
 }
 
 #page-button-container {
@@ -48,20 +71,29 @@
 }
 
 .post_wrapper {
-    padding: 10px;
-    width: 320px;
-    height: 180px;
+    margin: 10px;
     background-repeat: no-repeat;
     background-size: contain;
     background-image: 'public/logo512.png';
+    overflow: hidden;
+    border-radius: 5px;
+    border: 2px solid white;
+    width: max-content;
+    height: max-content;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.post_wrapper img {
+    transition: all .2s ease-in-out;
+}
+
+.post_wrapper:hover img {
+    transform: scale(1.5);
 }
 
 .thumb-img {
     max-width: 320px;
     max-height: 180px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 5px;
-    border: 2px solid white;
 }
