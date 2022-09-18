@@ -10,6 +10,9 @@ import Register from './Register';
 import Post from './Post';
 import Home from './Home';
 import { AxiosResponse } from 'axios';
+import Modal from 'react-modal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { solid } from '@fortawesome/fontawesome-svg-core/import.macro'
 
 export class User {
     user_name: string;
@@ -30,10 +33,21 @@ export class User {
     }
 }
 
+export class ModalContent {
+    title: string;
+    content: JSX.Element;
+
+    constructor(title: string, content: JSX.Element) {
+        this.title = title;
+        this.content = content;
+    }
+}
+
 export class App extends React.Component<{}, {
     jwt: string | null;
     user: User | null;
     loginExpiry: number | null;
+    modalStack: ModalContent[];
 }> {
 
     pendingLogin: Promise<AxiosResponse<LoginResponse, any>> | null;
@@ -43,7 +57,8 @@ export class App extends React.Component<{}, {
         this.state = {
             jwt: null,
             user: null,
-            loginExpiry: null
+            loginExpiry: null,
+            modalStack: []
         };
 
         this.handleLogin = this.handleLogin.bind(this);
@@ -59,6 +74,24 @@ export class App extends React.Component<{}, {
             loginAccountLink = <NavLink to="/profile">{this.state.user.user_name}</NavLink>;
         }
 
+        const modalStyles = {
+            content: {
+                top: '50%',
+                left: '50%',
+                right: 'auto',
+                bottom: 'auto',
+                marginRight: '-50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: "#161b22",
+                color: "white",
+                padding: "5px"
+            },
+            overlay: {
+                backgroundColor: "rgba(0, 0, 0, 0.75)",
+                zIndex: 1000
+            }
+          };
+
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
                 <div className="App">
@@ -67,6 +100,23 @@ export class App extends React.Component<{}, {
                         <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
                         <div className="nav-el">{loginAccountLink}</div>
                     </div>
+                    <Modal isOpen={this.state.modalStack.length > 0} style={modalStyles} contentLabel={this.state.modalStack.at(-1)?.title}>
+                        <div id="modal-title-row">
+                            <button id="modal-close-btn" onClick={() => this.setState(state => {
+                                const newModalStack = state.modalStack.slice(0, state.modalStack.length - 1);
+                                return {
+                                    modalStack: newModalStack
+                                };
+                            })}>
+                                <FontAwesomeIcon icon={solid("xmark")} size="2x" />
+                            </button>
+                            <span id="modal-title">{this.state.modalStack.at(-1)?.title}</span>
+                        </div>
+                        <br></br>
+                        <div id="modal-content">
+                            {this.state.modalStack.at(-1)?.content}
+                        </div>
+                    </Modal>
                 </div>
                 <Routes>
                     <Route path="/" element={<Home></Home>}></Route>
@@ -152,6 +202,15 @@ export class App extends React.Component<{}, {
                 }
             };
         }
+    }
+
+    openModal(title: string, modalElement: JSX.Element) {
+        this.setState(state => {
+            const newModalStack = state.modalStack.concat(new ModalContent(title, modalElement));
+            return {
+                modalStack: newModalStack
+            }
+        });
     }
 }
 

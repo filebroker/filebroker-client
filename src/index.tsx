@@ -1,14 +1,14 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import {App, LoadingPage} from './App';
+import App from './App';
 import reportWebVitals from './reportWebVitals';
-import http from "./http-common";
-import {LoginResponse} from './Login';
+import Modal from 'react-modal';
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
+
+Modal.setAppElement("#root");
 
 root.render(
     <App></App>

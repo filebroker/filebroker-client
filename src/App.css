@@ -147,3 +147,18 @@ body {
     -webkit-box-shadow: 0 0 3px #ccc;
     box-shadow: 0 0 3px #ccc;
 }
+
+#modal-close-btn {
+    background-color: transparent;
+    color: white;
+    border: none;
+}
+
+#modal-close-btn:hover {
+    color: black;
+}
+
+#modal-title-row {
+    font-weight: bold;
+    font-size: 25px;
+}
