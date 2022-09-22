@@ -53,12 +53,17 @@ body {
     height: 50px;
     background-color: rgba(0, 10, 20, 0.9);
     backdrop-filter: blur(6px);
+    font-weight: 500;
 }
 
 .nav-el {
     float: left;
     font-size: 25pt;
     color: white;
+}
+
+.nav-el-right {
+    float: right;
 }
 
 .nav-el a {

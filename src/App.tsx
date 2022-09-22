@@ -98,7 +98,7 @@ export class App extends React.Component<{}, {
                     <div id="nav">
                         <div className="nav-el"><NavLink to="/">Home</NavLink></div>
                         <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
-                        <div className="nav-el">{loginAccountLink}</div>
+                        <div className="nav-el nav-el-right">{loginAccountLink}</div>
                     </div>
                     <Modal isOpen={this.state.modalStack.length > 0} style={modalStyles} contentLabel={this.state.modalStack.at(-1)?.title}>
                         <div id="modal-title-row">
