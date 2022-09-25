@@ -63,7 +63,7 @@ export function ProfilePage({app, initialUser}: ProfilePageProps) {
     return (
         <div id="Profile">
             <div className="standard-form">
-                <button className="standard-button" onClick={handleLogout}>Logout</button>
+                <button className="standard-button-large" onClick={handleLogout}>Logout</button>
                 {profileContent}
             </div>
         </div>

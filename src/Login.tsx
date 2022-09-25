@@ -88,7 +88,7 @@ function Login({app}: LoginProps) {
                         onChange={(e) => setUserName(e.currentTarget.value)} required></input></div>
                     <div className="standard-form-field"><input type="password" placeholder="Password" value={password}
                         onChange={(e) => setPassword(e.currentTarget.value)} required></input></div>
-                    <div className="standard-form-field"><button type="submit" className="standard-button" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Login</button></div>
+                    <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Login</button></div>
                 </form>
             </div>
         </div>

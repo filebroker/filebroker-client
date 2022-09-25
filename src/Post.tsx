@@ -6,6 +6,8 @@ import App from "./App";
 import http, { getApiUrl } from "./http-common";
 import VideoJS from "./VideoJS";
 import "./Post.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 class PostDetailed {
     pk: number;
@@ -117,9 +119,11 @@ function Post({app}: PostProps) {
 
     function getComponentForData(post: PostDetailed) {
         if (post.s3_object != null) {
+            let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
-                return <img className="image-post" src={getApiUrl() + "get-object/" + post.s3_object.object_key}></img>
+                return <img className="image-post" src={dataUrl}></img>
             } else if (post.s3_object.mime_type.startsWith("video")) {
+                let videoType = post.s3_object.mime_type;
                 const videoJsOptions = {
                     autoplay: true,
                     controls: true,
@@ -127,11 +131,12 @@ function Post({app}: PostProps) {
                     fill: true,
                     preload: "auto",
                     sources: [{
-                      src: getApiUrl() + "get-object/" + post.s3_object.object_key,
-                      type: post.s3_object.mime_type
+                        src: dataUrl,
+                        // attempt to play mvk as webm
+                        type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type
                     }]
                 };
-    
+
                 return <VideoJS options={videoJsOptions} onReady={handlePlayerReady}></VideoJS>;
             }
         }
@@ -139,16 +144,15 @@ function Post({app}: PostProps) {
 
     let component;
     let postInformation;
+    let downloadLink;
     if (post) {
+        let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
+        downloadLink = dataUrl && <a className="download-link" target={"_blank"} href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a>;
         component = getComponentForData(post);
         postInformation = <div id="post-information">
             <label>Creation timestamp:</label>
             <p>{new Date(post.creation_timestamp).toLocaleString()}</p>
         </div>;
-    }
-
-    if (!component) {
-        component = <h2>No player found</h2>;
     }
 
     return (
@@ -163,7 +167,8 @@ function Post({app}: PostProps) {
                 {postInformation}
             </div>
             <div id="post-container">
-                {component}
+                {component}<br></br>
+                {downloadLink}
             </div>
         </div>
     );

@@ -213,7 +213,7 @@ function PostSearch({app}: PostSearchProps) {
                 }}>
                     <div className="side-bar-item"><label>Query</label></div>
                     <div className="side-bar-item">{queryInput}</div>
-                    <div className="side-bar-item"><button className="standard-button" type="submit">Search</button></div>
+                    <div className="side-bar-item"><button className="standard-button-large" type="submit">Search</button></div>
                 </form>
             </div>
             <div id="image-wall">

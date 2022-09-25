@@ -60,6 +60,12 @@ body {
     float: left;
     font-size: 25pt;
     color: white;
+    background-color: transparent;
+    border: none;
+}
+
+.nav-el:hover {
+    color: #2a52be;
 }
 
 .nav-el-right {
@@ -120,10 +126,17 @@ body {
 .standard-button {
     border: 1px solid white;
     border-radius: 5px;
-    padding: 5px;
-    margin: 5px;
     background-color: transparent;
     color: white;
+}
+
+.standard-button-large {
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: transparent;
+    color: white;
+    padding: 5px;
+    margin: 5px;
 }
 
 .standard-button:hover:enabled {
@@ -132,6 +145,16 @@ body {
 }
 
 .standard-button:disabled {
+    color: darkgray;
+    border: 1px dotted darkgray;
+}
+
+.standard-button-large:hover:enabled {
+    background-color: white;
+    color: black;
+}
+
+.standard-button-large:disabled {
     color: darkgray;
     border: 1px dotted darkgray;
 }
@@ -153,6 +176,22 @@ body {
     box-shadow: 0 0 3px #ccc;
 }
 
+#modal-content fieldset {
+    border: 1px solid white;
+    border-radius: 5px;
+}
+
+#modal-content select {
+    background-color: transparent;
+    color: white;
+    border-radius: 5px;
+}
+
+#modal-content select option {
+    background-color: black;
+    color: white;
+}
+
 #modal-close-btn {
     background-color: transparent;
     color: white;
@@ -166,4 +205,117 @@ body {
 #modal-title-row {
     font-weight: bold;
     font-size: 25px;
+}
+
+.modal-form {
+    min-width: 500px;
+}
+
+.fieldset-container {
+    width: 100%;
+}
+
+.form-field {
+    float: right;
+}
+
+.standard-link {
+    color: white;
+}
+
+.standard-link:visited {
+    color: white;
+}
+
+.modal-form-submit-btn {
+    text-align: center;
+}
+
+.tab-list {
+    list-style-type: none;
+}
+
+.tab-list-tab {
+    float: left;
+}
+
+.tab-panel {
+    border: 1px solid white;
+}
+
+.react-tabs {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.react-tabs__tab-list {
+    border-bottom: 1px solid #aaa;
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+.react-tabs__tab {
+    display: inline-block;
+    border: 1px solid transparent;
+    border-bottom: none;
+    bottom: -1px;
+    position: relative;
+    list-style: none;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.react-tabs__tab--selected:after {
+    content: '';
+    position: absolute;
+    height: 5px;
+    left: -4px;
+    right: -4px;
+    bottom: -5px;
+    background: #fff;
+}
+
+.react-tabs__tab--disabled {
+    color: GrayText;
+    cursor: default;
+}
+
+.react-tabs__tab:focus {
+    outline: none;
+}
+
+.react-tabs__tab:focus:after {
+    content: '';
+    position: absolute;
+    height: 5px;
+    left: -4px;
+    right: -4px;
+    bottom: -5px;
+    background: #fff;
+}
+
+.react-tabs__tab-panel {
+    display: none;
+}
+
+.react-tabs__tab-panel--selected {
+    display: block;
+}
+
+.progress {
+    border-radius: 2px;
+    background-color: black;
+}
+
+.progress-bar {
+    height: 5px;
+    background-color: white;
+    border-radius: 2px;
+}
+
+.file-name {
+    font-size: 8pt;
+}
+
+.download-link {
+    color: white;
 }

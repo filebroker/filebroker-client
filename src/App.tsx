@@ -12,7 +12,8 @@ import Home from './Home';
 import { AxiosResponse } from 'axios';
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { solid } from '@fortawesome/fontawesome-svg-core/import.macro'
+import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
+import UploadDialogue from './UploadDialogue';
 
 export class User {
     user_name: string;
@@ -36,10 +37,12 @@ export class User {
 export class ModalContent {
     title: string;
     content: JSX.Element;
+    closeCallback: ((result: any) => void) | undefined;
 
-    constructor(title: string, content: JSX.Element) {
+    constructor(title: string, content: JSX.Element, closeCallback: ((result: any) => void) | undefined) {
         this.title = title;
         this.content = content;
+        this.closeCallback = closeCallback;
     }
 }
 
@@ -84,7 +87,7 @@ export class App extends React.Component<{}, {
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: "#161b22",
                 color: "white",
-                padding: "5px"
+                padding: "10px"
             },
             overlay: {
                 backgroundColor: "rgba(0, 0, 0, 0.75)",
@@ -99,24 +102,27 @@ export class App extends React.Component<{}, {
                         <div className="nav-el"><NavLink to="/">Home</NavLink></div>
                         <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
                         <div className="nav-el nav-el-right">{loginAccountLink}</div>
+                        <button className="nav-el nav-el-right" onClick={() => {
+                            if (this.state.user == null) {
+                                this.openModal("Error", <p>Must be logged in</p>);
+                            } else {
+                                this.openModal("Upload", <UploadDialogue app={this}></UploadDialogue>);
+                            }
+                        }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
                     </div>
-                    <Modal isOpen={this.state.modalStack.length > 0} style={modalStyles} contentLabel={this.state.modalStack.at(-1)?.title}>
-                        <div id="modal-title-row">
-                            <button id="modal-close-btn" onClick={() => this.setState(state => {
-                                const newModalStack = state.modalStack.slice(0, state.modalStack.length - 1);
-                                return {
-                                    modalStack: newModalStack
-                                };
-                            })}>
-                                <FontAwesomeIcon icon={solid("xmark")} size="2x" />
-                            </button>
-                            <span id="modal-title">{this.state.modalStack.at(-1)?.title}</span>
-                        </div>
-                        <br></br>
-                        <div id="modal-content">
-                            {this.state.modalStack.at(-1)?.content}
-                        </div>
-                    </Modal>
+                    {this.state.modalStack.map(modal => {
+                        return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={modal.title}>
+                            <div id="modal-title-row">
+                                <button id="modal-close-btn" onClick={() => this.closeModal()}>
+                                    <FontAwesomeIcon icon={solid("xmark")} size="2x" />
+                                </button>
+                                <span id="modal-title">{modal.title}</span>
+                            </div>
+                            <div id="modal-content">
+                                {modal.content}
+                            </div>
+                        </Modal>
+                    })}
                 </div>
                 <Routes>
                     <Route path="/" element={<Home></Home>}></Route>
@@ -170,8 +176,8 @@ export class App extends React.Component<{}, {
         });
     }
 
-    async getAuthorization(location: Location, navigate: NavigateFunction) {
-        if (this.state.loginExpiry == null || this.state.loginExpiry < Date.now()) {
+    async getAuthorization(location: Location, navigate: NavigateFunction): Promise<{headers: {authorization: string}}> {
+        if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
             if (this.pendingLogin != null) {
                 promise = this.pendingLogin;
@@ -181,21 +187,20 @@ export class App extends React.Component<{}, {
             }
             try {
                 let response = await promise;
-                if (response.data != null) {
-                    this.handleLogin(response.data);
-                    return {
-                        headers: {
-                            authorization: `Bearer ${response.data.token}`
-                        }
-                    };
-                }
+                this.handleLogin(response.data);
+                return {
+                    headers: {
+                        authorization: `Bearer ${response.data.token}`
+                    }
+                };
             } catch (e: any) {
                 console.log("Failed to refresh login: " + e);
                 if (e.response.status == 401) {
                     navigate("/login", { state: { from: location }, replace: true})
                 }
+                throw e;
             }
-        } else if (this.state.jwt != null) {
+        } else {
             return {
                 headers: {
                     authorization: `Bearer ${this.state.jwt}`
@@ -204,12 +209,25 @@ export class App extends React.Component<{}, {
         }
     }
 
-    openModal(title: string, modalElement: JSX.Element) {
+    openModal(title: string, modalElement: JSX.Element, closeCallback: ((result: any) => void) | undefined = undefined) {
         this.setState(state => {
-            const newModalStack = state.modalStack.concat(new ModalContent(title, modalElement));
+            const newModalStack = state.modalStack.concat(new ModalContent(title, modalElement, closeCallback));
             return {
                 modalStack: newModalStack
             }
+        });
+    }
+
+    closeModal(result: any = undefined) {
+        let callback = this.state.modalStack[this.state.modalStack.length - 1].closeCallback;
+        if (callback) {
+            callback(result);
+        }
+        this.setState(state => {
+            const newModalStack = state.modalStack.slice(0, state.modalStack.length - 1);
+            return {
+                modalStack: newModalStack
+            };
         });
     }
 }

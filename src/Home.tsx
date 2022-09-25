@@ -19,7 +19,7 @@ function Home() {
             }}>
                 <div><h1>filebroker</h1></div>
                 <div>{queryInput}</div>
-                <div><button className="standard-button" type="submit">Search</button></div>
+                <div><button className="standard-button-large" type="submit">Search</button></div>
             </form>
         </div>
     );
