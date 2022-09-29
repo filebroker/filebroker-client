@@ -182,12 +182,16 @@ export class App extends React.Component<{}, {
             if (this.pendingLogin != null) {
                 promise = this.pendingLogin;
             } else {
-                promise = http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
+                promise = http.post<LoginResponse>("/refresh-login", null, { withCredentials: true });
                 this.pendingLogin = promise;
             }
             try {
                 let response = await promise;
                 this.handleLogin(response.data);
+                if (!response.data) {
+                    navigate("/login", { state: { from: location }, replace: true});
+                    throw new Error("Failed to try refresh login with empty response");
+                }
                 return {
                     headers: {
                         authorization: `Bearer ${response.data.token}`
@@ -195,8 +199,8 @@ export class App extends React.Component<{}, {
                 };
             } catch (e: any) {
                 console.log("Failed to refresh login: " + e);
-                if (e.response.status == 401) {
-                    navigate("/login", { state: { from: location }, replace: true})
+                if (e.response?.status === 401) {
+                    navigate("/login", { state: { from: location }, replace: true});
                 }
                 throw e;
             }
