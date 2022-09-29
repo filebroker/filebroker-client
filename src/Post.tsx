@@ -8,71 +8,7 @@ import VideoJS from "./VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-
-class PostDetailed {
-    pk: number;
-    data_url: string | null;
-    source_url: string | null;
-    title: string | null;
-    creation_timestamp: string;
-    fk_create_user: number;
-    score: number;
-    s3_object: S3Object | null;
-    thumbnail_url: string | null;
-
-    constructor(
-        pk: number,
-        data_url: string | null,
-        source_url: string | null,
-        title: string | null,
-        creation_timestamp: string,
-        fk_create_user: number,
-        score: number,
-        s3_object: S3Object | null,
-        thumbnail_url: string | null
-    ) {
-        this.pk = pk;
-        this.data_url = data_url;
-        this.source_url = source_url;
-        this.title = title;
-        this.creation_timestamp = creation_timestamp;
-        this.fk_create_user = fk_create_user;
-        this.score = score;
-        this.s3_object = s3_object;
-        this.thumbnail_url = thumbnail_url;
-    }
-}
-
-class S3Object {
-    object_key: string;
-    sha256_hash: string | null;
-    size_bytes: number;
-    mime_type: string;
-    fk_broker: number;
-    fk_uploader: number;
-    thumbnail_object_key: string | null;
-    creation_timestamp: string;
-
-    constructor(
-        object_key: string,
-        sha256_hash: string | null,
-        size_bytes: number,
-        mime_type: string,
-        fk_broker: number,
-        fk_uploader: number,
-        thumbnail_object_key: string | null,
-        creation_timestamp: string,
-    ) {
-        this.object_key = object_key;
-        this.sha256_hash = sha256_hash;
-        this.size_bytes = size_bytes;
-        this.mime_type = mime_type;
-        this.fk_broker = fk_broker;
-        this.fk_uploader = fk_uploader;
-        this.thumbnail_object_key = thumbnail_object_key;
-        this.creation_timestamp = creation_timestamp;
-    }
-}
+import { PostDetailed } from "./Model";
 
 class PostProps {
     app: App;
