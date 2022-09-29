@@ -38,11 +38,13 @@ export class ModalContent {
     title: string;
     content: JSX.Element;
     closeCallback: ((result: any) => void) | undefined;
+    showCloseButton: boolean;
 
-    constructor(title: string, content: JSX.Element, closeCallback: ((result: any) => void) | undefined) {
+    constructor(title: string, content: JSX.Element, closeCallback: ((result: any) => void) | undefined, showCloseButton: boolean) {
         this.title = title;
         this.content = content;
         this.closeCallback = closeCallback;
+        this.showCloseButton = showCloseButton;
     }
 }
 
@@ -113,7 +115,7 @@ export class App extends React.Component<{}, {
                     {this.state.modalStack.map(modal => {
                         return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={modal.title}>
                             <div id="modal-title-row">
-                                <button id="modal-close-btn" onClick={() => this.closeModal()}>
+                                <button hidden={!modal.showCloseButton} disabled={!modal.showCloseButton} id="modal-close-btn" onClick={() => this.closeModal()}>
                                     <FontAwesomeIcon icon={solid("xmark")} size="2x" />
                                 </button>
                                 <span id="modal-title">{modal.title}</span>
@@ -213,9 +215,9 @@ export class App extends React.Component<{}, {
         }
     }
 
-    openModal(title: string, modalElement: JSX.Element, closeCallback: ((result: any) => void) | undefined = undefined) {
+    openModal(title: string, modalElement: JSX.Element, closeCallback: ((result: any) => void) | undefined = undefined, showCloseButton: boolean = true) {
         this.setState(state => {
-            const newModalStack = state.modalStack.concat(new ModalContent(title, modalElement, closeCallback));
+            const newModalStack = state.modalStack.concat(new ModalContent(title, modalElement, closeCallback, showCloseButton));
             return {
                 modalStack: newModalStack
             }
@@ -223,12 +225,21 @@ export class App extends React.Component<{}, {
     }
 
     closeModal(result: any = undefined) {
-        let callback = this.state.modalStack[this.state.modalStack.length - 1].closeCallback;
-        if (callback) {
-            callback(result);
+        if (this.state.modalStack.length === 0) {
+            console.log("Called closeModal with no open modal");
+            return;
         }
         this.setState(state => {
-            const newModalStack = state.modalStack.slice(0, state.modalStack.length - 1);
+            let currLen = state.modalStack.length;
+            let callback = this.state.modalStack[currLen - 1].closeCallback;
+            if (callback) {
+                try {
+                    callback(result);
+                } catch(e: any) {
+                    console.error("Error in modal close callback: " + e);
+                }
+            }
+            const newModalStack = state.modalStack.slice(0, currLen - 1);
             return {
                 modalStack: newModalStack
             };

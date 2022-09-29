@@ -9,6 +9,7 @@ import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { Broker, PostDetailed, S3Object } from "./Model";
+import "./UploadDialogue.css";
 
 class UploadDialogueProps {
     app: App;
@@ -43,6 +44,47 @@ class CreatePostRequest {
     }
 }
 
+type ProgressObserver = (progress: number) => void;
+
+class ProgressSubject {
+    private observers: ProgressObserver[] = [];
+
+    public attach(observer: ProgressObserver) {
+        this.observers.push(observer);
+    }
+
+    public detach(observerToRemove: ProgressObserver) {
+        this.observers = this.observers.filter(observer => observer !== observerToRemove);
+    }
+
+    public setProgress(progress: number) {
+        this.observers.forEach(observer => observer(progress));
+    }
+}
+
+function UploadProgress({progressSubject}: {progressSubject: ProgressSubject}) {
+    const [progress, setProgress] = useState(0);
+
+    const onProgressUpdate: ProgressObserver = (progress) => {
+        setProgress(progress);
+    };
+
+    useEffect(() => {
+        progressSubject.attach(onProgressUpdate);
+
+        return () => {
+            progressSubject.detach(onProgressUpdate);
+        }
+    }, [])
+
+    return (
+        <div id="upload-progress">
+            <p>Uploading File</p>
+            <ProgressBar now={progress}/>
+        </div>
+    );
+}
+
 function UploadDialogue({app}: UploadDialogueProps) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -52,7 +94,6 @@ function UploadDialogue({app}: UploadDialogueProps) {
     const [file, setFile] = useState<File | null>(null);
     const [fileLabel, setFileLabel] = useState("No file chosen");
     const hiddenFileInput = React.useRef<HTMLInputElement | null>(null);
-    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         let fetch = async () => {
@@ -86,6 +127,15 @@ function UploadDialogue({app}: UploadDialogueProps) {
                 return;
             }
 
+            let progressSubject = new ProgressSubject();
+            let upgloadProgress = <UploadProgress progressSubject={progressSubject}></UploadProgress>;
+            app.openModal(
+                "Uploading",
+                upgloadProgress,
+                undefined,
+                false
+            );
+
             try {
                 let s3_object: S3Object | null;
                 if (file != null && selectedBroker) {
@@ -98,7 +148,7 @@ function UploadDialogue({app}: UploadDialogueProps) {
                           authorization: config.headers.authorization
                         },
                         onUploadProgress: e => {
-                            setProgress(Math.round((100 * e.loaded) / e.total));
+                            progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
                         },
                     });
 
@@ -118,9 +168,12 @@ function UploadDialogue({app}: UploadDialogueProps) {
                 ), config);
 
                 app.closeModal();
-                app.openModal("Success", <p><Link to={`post/${postResponse.data.pk + location.search}`} onClick={() => app.closeModal()}>Post</Link> created successfully</p>);
+                app.closeModal();
+                app.openModal("Success", <p><Link className="standard-link" to={`post/${postResponse.data.pk + location.search}`} onClick={() => app.closeModal()}>Post</Link> created successfully</p>);
             } catch(e) {
+                app.closeModal();
                 console.error("Error occurred while uploading post", e);
+                app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
             }
         }}>
             <p>Create a post for a new file upload</p>
@@ -172,7 +225,6 @@ function UploadDialogue({app}: UploadDialogueProps) {
                         </tr>
                     </tbody>
                 </table>
-                <ProgressBar now={progress}/>
             </fieldset>
             <div className="modal-form-submit-btn">
                 <button type="submit" className="standard-button-large">Create Post</button>
