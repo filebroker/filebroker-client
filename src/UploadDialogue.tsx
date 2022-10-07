@@ -145,7 +145,7 @@ function UploadDialogue({app}: UploadDialogueProps) {
                     let uploadResponse = await http.post<S3Object>(`/upload/${selectedBroker}`, formData, {
                         headers: {
                           "Content-Type": "multipart/form-data",
-                          authorization: config.headers.authorization
+                          authorization: config!.headers.authorization
                         },
                         onUploadProgress: e => {
                             progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));

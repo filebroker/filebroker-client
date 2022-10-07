@@ -320,3 +320,29 @@ body {
 .download-link {
     color: white;
 }
+
+.standard-link-button-large {
+    border: 1px solid white;
+    border-radius: 5px;
+    color: white;
+    text-decoration: none;
+    padding: 5px;
+    margin: 5px;
+}
+
+.standard-link-button-large:visited {
+    color: white;
+    text-decoration: none;
+}
+
+.standard-link-button-large:hover {
+    color: black;
+    background-color: white;
+    text-decoration: none;
+}
+
+.standard-link-button-large:hover:visited {
+    color: black;
+    background-color: white;
+    text-decoration: none;
+}

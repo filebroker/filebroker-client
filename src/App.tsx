@@ -178,7 +178,7 @@ export class App extends React.Component<{}, {
         });
     }
 
-    async getAuthorization(location: Location, navigate: NavigateFunction): Promise<{headers: {authorization: string}}> {
+    async getAuthorization(location: Location, navigate: NavigateFunction, require: boolean = true): Promise<{headers: {authorization: string}} | undefined> {
         if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
             if (this.pendingLogin != null) {
@@ -191,8 +191,12 @@ export class App extends React.Component<{}, {
                 let response = await promise;
                 this.handleLogin(response.data);
                 if (!response.data) {
-                    navigate("/login", { state: { from: location }, replace: true});
-                    throw new Error("Failed to try refresh login with empty response");
+                    if (require) {
+                        navigate("/login", { state: { from: location }, replace: true});
+                        throw new Error("Failed to try refresh login with empty response");
+                    } else {
+                        return undefined;
+                    }
                 }
                 return {
                     headers: {
@@ -201,6 +205,9 @@ export class App extends React.Component<{}, {
                 };
             } catch (e: any) {
                 console.log("Failed to refresh login: " + e);
+                if (!require) {
+                    return undefined;
+                }
                 if (e.response?.status === 401) {
                     navigate("/login", { state: { from: location }, replace: true});
                 }

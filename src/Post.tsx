@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
 import App from "./App";
 import http, { getApiUrl } from "./http-common";
@@ -26,18 +26,23 @@ function Post({app}: PostProps) {
     const navigate = useNavigate();
 
     useEffect(() => {
+        setPost(null);
         let fetch = async () => {
-            let config = await app.getAuthorization(location, navigate);
+            let config = await app.getAuthorization(location, navigate, false);
 
-            http
-                .get<PostDetailed>(`/get-post/${id}`, config)
+            await http
+                .get<PostDetailed>(`/get-post/${id}${search}`, config)
                 .then(result => {
                     setPost(result.data);
                 });
         };
 
-        fetch().catch(console.error)
-    }, []);
+        app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        fetch().then(() => app.closeModal()).catch(e => {
+            console.error(e);
+            app.closeModal();
+        });
+    }, [id]);
 
     const playerRef = React.useRef(null);
     const handlePlayerReady = (player: any) => {
@@ -57,7 +62,7 @@ function Post({app}: PostProps) {
         if (post.s3_object != null) {
             let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
-                return <img className="image-post" src={dataUrl}></img>
+                return <img className="image-post" src={dataUrl}></img>;
             } else if (post.s3_object.mime_type.startsWith("video")) {
                 let videoType = post.s3_object.mime_type;
                 const videoJsOptions = {
@@ -73,7 +78,7 @@ function Post({app}: PostProps) {
                     }]
                 };
 
-                return <VideoJS options={videoJsOptions} onReady={handlePlayerReady}></VideoJS>;
+                return <div className="video-container"><VideoJS options={videoJsOptions} onReady={handlePlayerReady}></VideoJS></div>;
             }
         }
     }
@@ -81,30 +86,43 @@ function Post({app}: PostProps) {
     let component;
     let postInformation;
     let downloadLink;
+    let prevLink;
+    let nextLink;
     if (post) {
         let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
-        downloadLink = dataUrl && <a className="download-link" target={"_blank"} href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a>;
+        downloadLink = dataUrl && <p><a className="standard-link-button-large" target={"_blank"} href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a></p>;
         component = getComponentForData(post);
         postInformation = <div id="post-information">
-            <label>Creation timestamp:</label>
-            <p>{new Date(post.creation_timestamp).toLocaleString()}</p>
+            <FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}
         </div>;
+
+        if (post.prev_post_pk) {
+            let location: Partial<Location> = { pathname: "/post/" + post.prev_post_pk, search: search, key: post.prev_post_pk.toString() };
+            prevLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon></Link>;
+        }
+        if (post.next_post_pk) {
+            let location: Partial<Location> = { pathname: "/post/" + post.next_post_pk, search: search, key: post.next_post_pk.toString() };
+            nextLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-right")}></FontAwesomeIcon></Link>;
+        }
+    } else {
+        component = <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>;
     }
 
     return (
         <div id="Post">
-            <div id="side-bar">
-                <div className="back-overview">
-                    <Link to={{
+            <div id="post-container">
+                <div id="post-container-top-row">
+                    <Link className="standard-link-button-large" to={{
                         pathname: "/posts",
                         search: search
-                    }}>Back to overview</Link>
+                    }}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon> Back</Link>
+                    <div id="navigate-buttons">{prevLink}{nextLink}</div>
                 </div>
+                {component}
                 {postInformation}
-            </div>
-            <div id="post-container">
-                {component}<br></br>
-                {downloadLink}
+                <div id="post-container-bottom-row">
+                    {downloadLink}
+                </div>
             </div>
         </div>
     );

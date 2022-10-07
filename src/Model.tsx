@@ -8,6 +8,8 @@ export class PostDetailed {
     score: number;
     s3_object: S3Object | null;
     thumbnail_url: string | null;
+    prev_post_pk: number | null;
+    next_post_pk: number | null;
 
     constructor(
         pk: number,
@@ -18,7 +20,9 @@ export class PostDetailed {
         fk_create_user: number,
         score: number,
         s3_object: S3Object | null,
-        thumbnail_url: string | null
+        thumbnail_url: string | null,
+        prev_post_pk: number | null,
+        next_post_pk: number | null
     ) {
         this.pk = pk;
         this.data_url = data_url;
@@ -29,6 +33,8 @@ export class PostDetailed {
         this.score = score;
         this.s3_object = s3_object;
         this.thumbnail_url = thumbnail_url;
+        this.prev_post_pk = prev_post_pk;
+        this.next_post_pk = next_post_pk;
     }
 }
 

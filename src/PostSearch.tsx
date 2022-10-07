@@ -1,13 +1,15 @@
+import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ReactNode, useEffect, useState } from 'react';
 import ProgressiveImage from 'react-progressive-graceful-image';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import App from './App';    
+import App from './App';
 import http, { getApiUrl } from "./http-common";
 import "./PostSearch.css";
 
 class SearchResult {
-    full_count: number;
-    pages: number;
+    full_count: number | null;
+    pages: number | null;
     posts: PostQueryObject[];
 
     constructor(
@@ -66,9 +68,9 @@ class PostSearchProps {
     }
 }
 
-function PostSearch({app}: PostSearchProps) {
-    const [fullCount, setFullCount] = useState(0);
-    const [pageCount, setPageCount] = useState(0);
+function PostSearch({ app }: PostSearchProps) {
+    const [fullCount, setFullCount] = useState<number | null>(0);
+    const [pageCount, setPageCount] = useState<number | null>(0);
     const [posts, setPosts] = useState<PostQueryObject[]>([]);
     const location = useLocation();
     const search = location.search;
@@ -110,59 +112,69 @@ function PostSearch({app}: PostSearchProps) {
     useEffect(() => {
         setQueryString(queryParam);
         let fetch = async () => {
-            let config = await app.getAuthorization(location, navigate);
+            let config;
+            try {
+                config = await app.getAuthorization(location, navigate, false);
+            } catch(e: any) {
+                app.closeModal();
+                throw e;
+            }
 
-            http
-                .get<SearchResult>(`/search${search}`, config)
-                .then(result => {
-                    let searchResult = result.data;
-                    setFullCount(searchResult.full_count);
-                    setPageCount(searchResult.pages);
-                    setPosts(searchResult.posts);
-                })
-                .catch(e => {
-                    let responseData = e.response?.data;
-                    if (responseData) {
-                        let compilationErrors: JSX.Element[] = [];
-                        let i = 0;
+            try {
+                let result = await http.get<SearchResult>(`/search${search}`, config);
+                let searchResult = result.data;
+                setFullCount(searchResult.full_count);
+                setPageCount(searchResult.pages);
+                setPosts(searchResult.posts);
+            } catch (e: any) {
+                let responseData = e.response?.data;
+                if (responseData) {
+                    let compilationErrors: JSX.Element[] = [];
+                    let i = 0;
 
-                        if (responseData.compilation_errors) {
-                            responseData.compilation_errors.forEach((compilationError: { location: any; msg: string; }) => {
-                                let location = compilationError.location;
-                                let start: number = location.start;
-                                let end: number = location.end;
-                                let startIdx = Math.max(0, start - 25);
-                                let endIdx = Math.min(queryString.length, end + 25);
-                                let queryPart = queryString.substring(startIdx, endIdx);
-                                let key = i++;
-                                let marker;
-                                if (end > start) {
-                                    marker = " ".repeat(start - startIdx) + "^" + "-".repeat(Math.max(0, end - start - 1)) + "^";
-                                } else {
-                                    marker = " ".repeat(start - startIdx) + "^";
-                                }
-                                compilationErrors.push(
-                                    <div key={key}>
-                                        Error {key}:
-                                        <pre><code>
-                                            {queryPart}<br></br>
-                                            {marker}<br></br>
-                                            <br></br>
-                                            {compilationError.msg}
-                                        </code></pre>
-                                    </div>
-                                );
-                            });
-                        }
-
-                        app.openModal("Error", <div>{responseData.message}<br></br>{compilationErrors}</div>);
-                    } else {
-                        app.openModal("Error", <div>An unexpected Error occurred</div>);
+                    if (responseData.compilation_errors) {
+                        responseData.compilation_errors.forEach((compilationError: { location: any; msg: string; }) => {
+                            let location = compilationError.location;
+                            let start: number = location.start;
+                            let end: number = location.end;
+                            let startIdx = Math.max(0, start - 25);
+                            let endIdx = Math.min(queryString.length, end + 25);
+                            let queryPart = queryString.substring(startIdx, endIdx);
+                            let key = i++;
+                            let marker;
+                            if (end > start) {
+                                marker = " ".repeat(start - startIdx) + "^" + "-".repeat(Math.max(0, end - start - 1)) + "^";
+                            } else {
+                                marker = " ".repeat(start - startIdx) + "^";
+                            }
+                            compilationErrors.push(
+                                <div key={key}>
+                                    Error {key}:
+                                    <pre><code>
+                                        {queryPart}<br></br>
+                                        {marker}<br></br>
+                                        <br></br>
+                                        {compilationError.msg}
+                                    </code></pre>
+                                </div>
+                            );
+                        });
                     }
-                });
+
+                    app.closeModal();
+                    app.openModal("Error", <div>{responseData.message}<br></br>{compilationErrors}</div>);
+                } else {
+                    app.closeModal();
+                    app.openModal("Error", <div>An unexpected Error occurred</div>);
+                }
+
+                throw e;
+            }
         };
 
-        fetch().catch(console.error);
+        app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+
+        fetch().then(() => app.closeModal()).catch(console.error);
 
         return () => {
             setFullCount(0);
@@ -177,14 +189,14 @@ function PostSearch({app}: PostSearchProps) {
     function handleSearchQuery() {
         let searchParams = new URLSearchParams();
         searchParams.set("query", queryString);
-        navigate({pathname: "/posts", search: searchParams.toString()});
+        navigate({ pathname: "/posts", search: searchParams.toString() });
     }
 
     function handlePageSwitch(pageNumber: number) {
         let searchParams = new URLSearchParams();
         searchParams.set("query", queryParam);
         searchParams.set("page", pageNumber.toString());
-        navigate({pathname: "/posts", search: searchParams.toString()});
+        navigate({ pathname: "/posts", search: searchParams.toString() });
     }
 
     let pageButtons: ReactNode[] = [];
@@ -192,7 +204,7 @@ function PostSearch({app}: PostSearchProps) {
     pageButtons.push(<button key="first" className="page-button" onClick={() => handlePageSwitch(0)} disabled={firstPage}>{"<<"}</button>);
     pageButtons.push(<button key="prev" className="page-button" onClick={() => handlePageSwitch(pageParam - 1)} disabled={firstPage}>{"<"}</button>);
     // show 10 page buttons maximum
-    let lastPageToShow = Math.min(pageCount - 1, pageParam + 9);
+    let lastPageToShow = pageCount ? Math.min(pageCount - 1, pageParam + 9) : pageParam;
     for (let i = Math.max(0, lastPageToShow - 9); i <= lastPageToShow; i++) {
         let className = "page-button";
         if (i == pageParam) {
@@ -200,9 +212,13 @@ function PostSearch({app}: PostSearchProps) {
         }
         pageButtons.push(<button key={i} className={className} onClick={() => handlePageSwitch(i)}>{i + 1}</button>);
     }
-    let lastPage = pageParam >= pageCount - 1;
-    pageButtons.push(<button key="next" className="page-button" onClick={() => handlePageSwitch(pageParam + 1)} disabled={lastPage}>{">"}</button>);
-    pageButtons.push(<button key="last" className="page-button" onClick={() => handlePageSwitch(pageCount - 1)} disabled={lastPage}>{">>"}</button>);
+    if (pageCount) {
+        let lastPage = pageParam >= pageCount - 1;
+        pageButtons.push(<button key="next" className="page-button" onClick={() => handlePageSwitch(pageParam + 1)} disabled={lastPage}>{">"}</button>);
+        pageButtons.push(<button key="last" className="page-button" onClick={() => handlePageSwitch(pageCount - 1)} disabled={lastPage}>{">>"}</button>);
+    } else {
+        pageButtons.push(<button key="next" className="page-button" onClick={() => handlePageSwitch(pageParam + 1)}>{">"}</button>);
+    }
 
     return (
         <div id="PostSearch">
