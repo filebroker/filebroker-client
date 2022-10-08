@@ -1,0 +1,13 @@
+#Home {
+    margin: 0 auto;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    text-align: center;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+#Home input {
+    width: 500px;
+}

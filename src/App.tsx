@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
 import http from "./http-common";
@@ -55,6 +55,37 @@ export class ModalContent {
     }
 }
 
+export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
+    const location = useLocation();
+    const search = location.search;
+    const navigate = useNavigate();
+    const pathName = location.pathname;
+
+    let searchParams = new URLSearchParams(search);
+    let queryParam: string = searchParams.get("query") ?? "";
+    const [queryString, setQueryString] = useState(queryParam);
+
+    useEffect(() => {
+        setQueryString(queryParam);
+    }, [location]);
+
+    if (hideOnHome && pathName === "/") {
+        return null;
+    }
+
+    return (
+        <form onSubmit={e => {
+            e.preventDefault();
+            let searchParams = new URLSearchParams();
+            searchParams.set("query", queryString);
+            navigate({ pathname: "/posts", search: searchParams.toString() });
+        }}>
+            <input className="search-input" type="text" placeholder="Search" value={queryString} onChange={e => setQueryString(e.currentTarget.value)}></input>
+            <button className="search-button" type="submit"><FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon></button>
+        </form>
+    );
+}
+
 export class App extends React.Component<{}, {
     jwt: string | null;
     user: User | null;
@@ -108,16 +139,25 @@ export class App extends React.Component<{}, {
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
                 <div className="App">
                     <div id="nav">
-                        <div className="nav-el"><NavLink to="/">Home</NavLink></div>
-                        <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
-                        <div className="nav-el nav-el-right">{loginAccountLink}</div>
-                        <button className="nav-el nav-el-right" onClick={() => {
-                            if (this.state.user == null) {
-                                this.openModal("Error", <p>Must be logged in</p>);
-                            } else {
-                                this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
-                            }
-                        }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
+                        <div id="nav-box-left">
+                            <div className="nav-el"><NavLink to="/">Home</NavLink></div>
+                            <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
+                        </div>
+
+                        <div id="search-bar">
+                            <PostQueryInput hideOnHome></PostQueryInput>
+                        </div>
+
+                        <div id="nav-box-right">
+                            <button className="nav-el nav-el-right" onClick={() => {
+                                if (this.state.user == null) {
+                                    this.openModal("Error", <p>Must be logged in</p>);
+                                } else {
+                                    this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
+                                }
+                            }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
+                            <div className="nav-el nav-el-right">{loginAccountLink}</div>
+                        </div>
                     </div>
                     {this.state.modalStack.map(modal => {
                         return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={modal.title}>

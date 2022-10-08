@@ -188,14 +188,6 @@ function PostSearch({ app }: PostSearchProps) {
         };
     }, [search]);
 
-    let queryInput = <input id="query-input" type="text" value={queryString} onChange={e => setQueryString(e.currentTarget.value)}></input>;
-
-    function handleSearchQuery() {
-        let searchParams = new URLSearchParams();
-        searchParams.set("query", queryString);
-        navigate({ pathname: "/posts", search: searchParams.toString() });
-    }
-
     function handlePageSwitch(pageNumber: number) {
         let searchParams = new URLSearchParams();
         searchParams.set("query", queryParam);
@@ -226,16 +218,6 @@ function PostSearch({ app }: PostSearchProps) {
 
     return (
         <div id="PostSearch">
-            <div id="side-bar">
-                <form id="search-from" onSubmit={e => {
-                    e.preventDefault();
-                    handleSearchQuery();
-                }}>
-                    <div className="side-bar-item"><label>Query</label></div>
-                    <div className="side-bar-item">{queryInput}</div>
-                    <div className="side-bar-item"><button className="standard-button-large" type="submit">Search</button></div>
-                </form>
-            </div>
             <div id="image-wall">
                 <div id="image-wall-container">
                     {postDivs}
@@ -243,7 +225,7 @@ function PostSearch({ app }: PostSearchProps) {
                 <div id="page-button-container">
                     {pageButtons}
                 </div>
-                <div id="page-full-count"><h3>{fullCount} results</h3></div>
+                <div id="page-full-count"><h3>{fullCount ?? ">100000"} results</h3></div>
             </div>
         </div>
     );
