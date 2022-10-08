@@ -111,12 +111,15 @@ function PostSearch({ app }: PostSearchProps) {
 
     useEffect(() => {
         setQueryString(queryParam);
+
+        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+
         let fetch = async () => {
             let config;
             try {
                 config = await app.getAuthorization(location, navigate, false);
             } catch(e: any) {
-                app.closeModal();
+                modal.close();
                 throw e;
             }
 
@@ -161,10 +164,10 @@ function PostSearch({ app }: PostSearchProps) {
                         });
                     }
 
-                    app.closeModal();
+                    modal.close();
                     app.openModal("Error", <div>{responseData.message}<br></br>{compilationErrors}</div>);
                 } else {
-                    app.closeModal();
+                    modal.close();
                     app.openModal("Error", <div>An unexpected Error occurred</div>);
                 }
 
@@ -172,9 +175,10 @@ function PostSearch({ app }: PostSearchProps) {
             }
         };
 
-        app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
-
-        fetch().then(() => app.closeModal()).catch(console.error);
+        fetch().then(() => modal.close()).catch(e => {
+            modal.close();
+            console.error(e);
+        });
 
         return () => {
             setFullCount(0);

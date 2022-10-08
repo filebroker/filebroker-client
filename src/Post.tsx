@@ -37,10 +37,10 @@ function Post({app}: PostProps) {
                 });
         };
 
-        app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
-        fetch().then(() => app.closeModal()).catch(e => {
+        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        fetch().then(() => modal.close()).catch(e => {
             console.error(e);
-            app.closeModal();
+            modal.close();
         });
     }, [id]);
 

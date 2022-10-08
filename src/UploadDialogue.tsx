@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
-import App from "./App";
+import App, { ModalContent } from "./App";
 import http from "./http-common";
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
@@ -13,9 +13,11 @@ import "./UploadDialogue.css";
 
 class UploadDialogueProps {
     app: App;
+    modal: ModalContent;
 
-    constructor(app: App) {
+    constructor(app: App, modal: ModalContent) {
         this.app = app;
+        this.modal = modal;
     }
 }
 
@@ -85,7 +87,7 @@ function UploadProgress({progressSubject}: {progressSubject: ProgressSubject}) {
     );
 }
 
-function UploadDialogue({app}: UploadDialogueProps) {
+function UploadDialogue({app, modal}: UploadDialogueProps) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -129,7 +131,7 @@ function UploadDialogue({app}: UploadDialogueProps) {
 
             let progressSubject = new ProgressSubject();
             let upgloadProgress = <UploadProgress progressSubject={progressSubject}></UploadProgress>;
-            app.openModal(
+            const uploadProgressModal = app.openModal(
                 "Uploading",
                 upgloadProgress,
                 undefined,
@@ -167,11 +169,11 @@ function UploadDialogue({app}: UploadDialogueProps) {
                     null
                 ), config);
 
-                app.closeModal();
-                app.closeModal();
-                app.openModal("Success", <p><Link className="standard-link" to={`post/${postResponse.data.pk + location.search}`} onClick={() => app.closeModal()}>Post</Link> created successfully</p>);
+                uploadProgressModal.close();
+                modal.close();
+                app.openModal("Success", successModal => <p><Link className="standard-link" to={`post/${postResponse.data.pk + location.search}`} onClick={() => successModal.close()}>Post</Link> created successfully</p>);
             } catch(e) {
-                app.closeModal();
+                uploadProgressModal.close();
                 console.error("Error occurred while uploading post", e);
                 app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
             }
@@ -196,7 +198,7 @@ function UploadDialogue({app}: UploadDialogueProps) {
                                 </select>&nbsp;
                                 <button className="standard-button" onClick={e => {
                                     e.preventDefault();
-                                    app.openModal("Create Broker", <CreateBrokerDialogue app={app}></CreateBrokerDialogue>, async () => {
+                                    app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
                                         let config = await app.getAuthorization(location, navigate);
 
                                         http

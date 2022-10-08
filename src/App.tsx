@@ -1,11 +1,11 @@
 import React from 'react';
-import {BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes} from "react-router-dom";
+import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes } from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
 import http from "./http-common";
 import PostSearch from './PostSearch';
-import Login, {LoginResponse} from './Login';
-import {ProfilePage} from "./ProfilePage";
+import Login, { LoginResponse } from './Login';
+import { ProfilePage } from "./ProfilePage";
 import Register from './Register';
 import Post from './Post';
 import Home from './Home';
@@ -36,15 +36,22 @@ export class User {
 
 export class ModalContent {
     title: string;
-    content: JSX.Element;
+    content: JSX.Element | ((modal: ModalContent) => JSX.Element);
     closeCallback: ((result: any) => void) | undefined;
     showCloseButton: boolean;
+    app: App;
+    closed: boolean = false;
 
-    constructor(title: string, content: JSX.Element, closeCallback: ((result: any) => void) | undefined, showCloseButton: boolean) {
+    constructor(title: string, content: JSX.Element | ((modal: ModalContent) => JSX.Element), app: App, closeCallback: ((result: any) => void) | undefined, showCloseButton: boolean) {
         this.title = title;
         this.content = content;
         this.closeCallback = closeCallback;
         this.showCloseButton = showCloseButton;
+        this.app = app;
+    }
+
+    close(result: any = undefined) {
+        this.app.closeModal(this, result);
     }
 }
 
@@ -95,7 +102,7 @@ export class App extends React.Component<{}, {
                 backgroundColor: "rgba(0, 0, 0, 0.75)",
                 zIndex: 1000
             }
-          };
+        };
 
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
@@ -108,20 +115,20 @@ export class App extends React.Component<{}, {
                             if (this.state.user == null) {
                                 this.openModal("Error", <p>Must be logged in</p>);
                             } else {
-                                this.openModal("Upload", <UploadDialogue app={this}></UploadDialogue>);
+                                this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
                             }
                         }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
                     </div>
                     {this.state.modalStack.map(modal => {
                         return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={modal.title}>
                             <div id="modal-title-row">
-                                <button hidden={!modal.showCloseButton} disabled={!modal.showCloseButton} id="modal-close-btn" onClick={() => this.closeModal()}>
+                                <button hidden={!modal.showCloseButton} disabled={!modal.showCloseButton} id="modal-close-btn" onClick={() => this.closeModal(modal)}>
                                     <FontAwesomeIcon icon={solid("xmark")} size="2x" />
                                 </button>
                                 <span id="modal-title">{modal.title}</span>
                             </div>
                             <div id="modal-content">
-                                {modal.content}
+                                {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
                             </div>
                         </Modal>
                     })}
@@ -178,7 +185,7 @@ export class App extends React.Component<{}, {
         });
     }
 
-    async getAuthorization(location: Location, navigate: NavigateFunction, require: boolean = true): Promise<{headers: {authorization: string}} | undefined> {
+    async getAuthorization(location: Location, navigate: NavigateFunction, require: boolean = true): Promise<{ headers: { authorization: string } } | undefined> {
         if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
             if (this.pendingLogin != null) {
@@ -192,7 +199,7 @@ export class App extends React.Component<{}, {
                 this.handleLogin(response.data);
                 if (!response.data) {
                     if (require) {
-                        navigate("/login", { state: { from: location }, replace: true});
+                        navigate("/login", { state: { from: location }, replace: true });
                         throw new Error("Failed to try refresh login with empty response");
                     } else {
                         return undefined;
@@ -209,7 +216,7 @@ export class App extends React.Component<{}, {
                     return undefined;
                 }
                 if (e.response?.status === 401) {
-                    navigate("/login", { state: { from: location }, replace: true});
+                    navigate("/login", { state: { from: location }, replace: true });
                 }
                 throw e;
             }
@@ -222,31 +229,52 @@ export class App extends React.Component<{}, {
         }
     }
 
-    openModal(title: string, modalElement: JSX.Element, closeCallback: ((result: any) => void) | undefined = undefined, showCloseButton: boolean = true) {
+    openModal(title: string, modalElement: JSX.Element | ((modal: ModalContent) => JSX.Element), closeCallback: ((result: any) => void) | undefined = undefined, showCloseButton: boolean = true): ModalContent {
+        const modal = new ModalContent(title, modalElement, this, closeCallback, showCloseButton);
         this.setState(state => {
-            const newModalStack = state.modalStack.concat(new ModalContent(title, modalElement, closeCallback, showCloseButton));
+            const newModalStack = state.modalStack.concat(modal);
             return {
                 modalStack: newModalStack
             }
         });
+        return modal;
     }
 
-    closeModal(result: any = undefined) {
+    closeModal(modal: ModalContent, result: any = undefined) {
         if (this.state.modalStack.length === 0) {
             console.log("Called closeModal with no open modal");
             return;
         }
-        this.setState(state => {
-            let currLen = state.modalStack.length;
-            let callback = this.state.modalStack[currLen - 1].closeCallback;
-            if (callback) {
-                try {
-                    callback(result);
-                } catch(e: any) {
-                    console.error("Error in modal close callback: " + e);
-                }
+
+        const closeCallback = modal.closeCallback;
+        if (closeCallback) {
+            try {
+                closeCallback(result);
+            } catch (e: any) {
+                console.error("Error in modal close callback: " + e);
             }
-            const newModalStack = state.modalStack.slice(0, currLen - 1);
+        }
+
+        modal.closed = true;
+        this.setState(state => {
+            const currLen = state.modalStack.length;
+            const removeIndex = state.modalStack.indexOf(modal);
+            if (removeIndex < 0) {
+                return {
+                    modalStack: state.modalStack
+                };
+            }
+
+            let newModalStack;
+            if (removeIndex === currLen - 1) {
+                newModalStack = state.modalStack.slice(0, currLen - 1);
+            } else if (removeIndex === 0) {
+                newModalStack = state.modalStack.slice(1);
+            } else {
+                newModalStack = state.modalStack.slice(0, removeIndex)
+                    .concat(state.modalStack.slice(removeIndex + 1));
+            }
+
             return {
                 modalStack: newModalStack
             };
@@ -263,7 +291,7 @@ export class LoadingPage extends React.Component {
         return (
             <div className="App">
                 <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo"/>
+                    <img src={logo} className="App-logo" alt="logo" />
                     <h1>Loading</h1>
                 </header>
             </div>

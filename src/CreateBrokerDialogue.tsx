@@ -4,14 +4,16 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import ReactTooltip from "react-tooltip";
-import App from "./App";
+import App, { ModalContent } from "./App";
 import http from "./http-common";
 
 class CreateBrokerDialogueProps {
     app: App;
+    modal: ModalContent;
 
-    constructor(app: App) {
+    constructor(app: App, modal: ModalContent) {
         this.app = app;
+        this.modal = modal;
     }
 }
 
@@ -43,7 +45,7 @@ class CreateBrokerRequest {
     }
 }
 
-function CreateBrokerDialogue({app}: CreateBrokerDialogueProps) {
+function CreateBrokerDialogue({app, modal}: CreateBrokerDialogueProps) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -64,7 +66,7 @@ function CreateBrokerDialogue({app}: CreateBrokerDialogueProps) {
             try {
                 let config = await app.getAuthorization(location, navigate);
                 let response = await http.post("/create-broker", new CreateBrokerRequest(name, bucket, endpoint, accessKey, secretKey, isAwsRegion, removeDuplicateFiles), config);
-                app.closeModal(response.data);
+                modal.close(response.data);
             } catch(e: any) {
                 if (e.response && e.response.status === 400) {
                     app.openModal("Error", <p>The provided S3 config is invalid, make sure the endpoint is reachable, the bucket and region are valid and the provided credentials have access to the bucket.</p>);
