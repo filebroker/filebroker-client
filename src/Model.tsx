@@ -105,3 +105,19 @@ export class Broker {
         this.creation_timestamp = creation_timestamp;
     }
 }
+
+export class Tag {
+    pk: number;
+    tag_name: string;
+    creation_timestamp: string;
+
+    constructor(
+        pk: number,
+        tag_name: string,
+        creation_timestamp: string
+    ) {
+        this.pk = pk;
+        this.tag_name = tag_name;
+        this.creation_timestamp = creation_timestamp;
+    }
+}

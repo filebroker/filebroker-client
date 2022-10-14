@@ -411,3 +411,16 @@ body {
     background-color: white;
     cursor: pointer;
 }
+
+.tag-selector-div {
+    width: 250px;
+}
+
+.material-input {
+    width: 250px;
+    height: 25px;
+}
+
+.padded-row>td {
+    padding-bottom: 10px;
+}
