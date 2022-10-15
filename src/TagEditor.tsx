@@ -86,25 +86,20 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { 
                     }
                 }}
                 onChange={(_e, newVal) => {
-                    let existingTags: number[] = [];
-                    let newTags: string[] = [];
+                    let selectedTags: number[] = [];
+                    let enteredTags: string[] = [];
 
                     newVal.forEach(v => {
                         if (typeof v === "string") {
-                            // handle case where the input matches the first suggestion but user hits enter instead of selection suggestion
-                            if (suggestedTags.length > 0 && suggestedTags[0].label.toLowerCase() === v.toLowerCase()) {
-                                existingTags.push(suggestedTags[0].pk);
-                            } else {
-                                newTags.push(v);
-                            }
+                            enteredTags.push(v);
                         } else {
-                            existingTags.push(v.pk);
+                            selectedTags.push(v.pk);
                         }
                     });
 
-                    setSelectedTags(existingTags);
+                    setSelectedTags(selectedTags);
                     if (setEnteredTags) {
-                        setEnteredTags(newTags);
+                        setEnteredTags(enteredTags);
                     }
                     if (newVal.length >= limit) {
                         setInputDisabled(true);
