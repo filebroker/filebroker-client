@@ -8,9 +8,12 @@ import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import { Broker, PostDetailed, S3Object, Tag } from "./Model";
+import { Broker, PostDetailed, S3Object, UserGroup } from "./Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
+import { Checkbox } from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import { GroupSelector } from "./GroupEditor";
 
 class UploadDialogueProps {
     app: App;
@@ -22,6 +25,16 @@ class UploadDialogueProps {
     }
 }
 
+class GrantedPostGroupAccess {
+    group_pk: number;
+    write: boolean;
+
+    constructor(group_pk: number, write: boolean) {
+        this.group_pk = group_pk;
+        this.write = write;
+    }
+}
+
 class CreatePostRequest {
     data_url: string | null;
     source_url: string | null;
@@ -30,6 +43,9 @@ class CreatePostRequest {
     selected_tags: number[] | null;
     s3_object: string | null;
     thumbnail_url: string | null;
+    is_public: boolean;
+    public_edit: boolean;
+    group_access: GrantedPostGroupAccess[] | null;
 
     constructor(
         data_url: string | null,
@@ -39,6 +55,9 @@ class CreatePostRequest {
         selected_tags: number[] | null,
         s3_object: string | null,
         thumbnail_url: string | null,
+        is_public: boolean,
+        public_edit: boolean,
+        group_access: GrantedPostGroupAccess[] | null
     ) {
         this.data_url = data_url;
         this.source_url = source_url;
@@ -47,6 +66,9 @@ class CreatePostRequest {
         this.selected_tags = selected_tags;
         this.s3_object = s3_object;
         this.thumbnail_url = thumbnail_url;
+        this.is_public = is_public;
+        this.public_edit = public_edit;
+        this.group_access = group_access;
     }
 }
 
@@ -104,6 +126,12 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
     const [enteredTags, setEnteredTags] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
 
+    const [publicPost, setPublicPost] = useState(false);
+    const [publicEdit, setPublicEdit] = useState(false);
+    const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
+
     useEffect(() => {
         let fetch = async () => {
             let config = await app.getAuthorization(location, navigate);
@@ -111,6 +139,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
             http
                 .get<Broker[]>("/get-brokers", config)
                 .then(result => setBrokers(result.data));
+
+            http
+                .get<UserGroup[]>("/get-current-user-groups", config)
+                .then(result => setCurrentUserGroups(result.data))
         };
 
         fetch().catch(console.error);
@@ -186,6 +218,33 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                     app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
                 }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
             </div>
+            <fieldset>
+                <legend>Share</legend>
+                <table className="fieldset-container">
+                    <tbody>
+                        <tr className="form-row">
+                            <td className="form-label"><label>Public</label></td>
+                            <td className="form-field"><Checkbox checked={publicPost} onChange={e => setPublicPost(e.target.checked)}></Checkbox></td>
+                        </tr>
+                        {publicPost && <tr className="form-row">
+                            <td className="form-label"><label>Public Can Edit</label></td>
+                            <td className="form-field"><Checkbox checked={publicEdit} onChange={e => setPublicEdit(e.target.checked)}></Checkbox></td>
+                        </tr>}
+                        <tr className="form-row">
+                            <td className="form-row-full-td" colSpan={2}>
+                                <GroupSelector
+                                    currentUserGroups={currentUserGroups}
+                                    selectedUserGroups={selectedUserGroups}
+                                    setSelectedUserGroups={setSelectedUserGroups}
+                                    selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
+                                    setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
+                                />
+                                <span className="footnote">Groups with the <EditIcon fontSize="small"></EditIcon> icon can edit the post, click the selected group to toggle edit permissions.</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </fieldset>
             <div className="modal-form-submit-btn">
                 <button className="standard-button-large" onClick={async e => {
                     e.preventDefault();
@@ -226,6 +285,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                         }
 
                         let config = await app.getAuthorization(location, navigate);
+
+                        let groupAccess: GrantedPostGroupAccess[] = [];
+                        selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
+
                         let postResponse = await http.post<PostDetailed>("create-post", new CreatePostRequest(
                             null,
                             null,
@@ -233,7 +296,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                             enteredTags,
                             selectedTags,
                             s3_object?.object_key ?? null,
-                            null
+                            null,
+                            publicPost,
+                            publicEdit && publicPost,
+                            groupAccess
                         ), config);
 
                         uploadProgressModal.close();

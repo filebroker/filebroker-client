@@ -41,6 +41,13 @@ const MUI_THEME = createTheme({
                 }
             }
         },
+        MuiInputBase: {
+            styleOverrides: {
+                root: {
+                    color: "white"
+                }
+            }
+        },
         MuiOutlinedInput: {
             styleOverrides: {
                 root: {
@@ -58,6 +65,13 @@ const MUI_THEME = createTheme({
         MuiSvgIcon: {
             styleOverrides: {
                 root: {
+                    color: "white"
+                }
+            }
+        },
+        MuiSelect: {
+            styleOverrides: {
+                icon: {
                     color: "white"
                 }
             }

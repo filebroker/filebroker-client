@@ -121,3 +121,28 @@ export class Tag {
         this.creation_timestamp = creation_timestamp;
     }
 }
+
+export class UserGroup {
+    pk: number;
+    name: string;
+    is_public: boolean;
+    hidden: boolean;
+    fk_owner: number;
+    creation_timestamp: string;
+
+    constructor(
+        pk: number,
+        name: string,
+        is_public: boolean,
+        hidden: boolean,
+        fk_owner: number,
+        creation_timestamp: string
+    ) {
+        this.pk = pk;
+        this.name = name;
+        this.is_public = is_public;
+        this.hidden = hidden;
+        this.fk_owner = fk_owner;
+        this.creation_timestamp = creation_timestamp;
+    }
+}

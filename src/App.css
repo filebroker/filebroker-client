@@ -424,3 +424,7 @@ body {
 .padded-row>td {
     padding-bottom: 10px;
 }
+
+.footnote {
+    font-size: 7pt;
+}
