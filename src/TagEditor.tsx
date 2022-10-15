@@ -62,7 +62,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { 
                 renderInput={params => {
                     const { InputProps, ...restParams } = params;
                     const { startAdornment, ...restInputProps } = InputProps;
-                    return <TextField {...restParams} InputProps={{ ...restInputProps, startAdornment: (<div style={{ maxHeight: "300px", overflowY: "auto" }}>{startAdornment}</div>) }} label="Tags"></TextField>;
+                    return <TextField {...restParams} InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "200px", overflowY: "auto" }}>{startAdornment}</div>) }} label="Tags"></TextField>;
                 }}
                 filterOptions={x => x}
                 renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
