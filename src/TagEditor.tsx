@@ -59,7 +59,11 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { 
                 freeSolo={setEnteredTags !== undefined}
                 disabled={inputDisabled}
                 options={suggestedTags}
-                renderInput={params => <TextField {...params} label="Tags"></TextField>}
+                renderInput={params => {
+                    const { InputProps, ...restParams } = params;
+                    const { startAdornment, ...restInputProps } = InputProps;
+                    return <TextField {...restParams} InputProps={{ ...restInputProps, startAdornment: (<div style={{ maxHeight: "300px", overflowY: "auto" }}>{startAdornment}</div>) }} label="Tags"></TextField>;
+                }}
                 filterOptions={x => x}
                 renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
                     <Chip {...getTagProps({ index })} color="secondary" variant="outlined" label={typeof option === "string" ? option : option.label} disabled={false}></Chip>
@@ -67,6 +71,9 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { 
                 onInputChange={(_e, newVal) => {
                     if (scheduledRequest) {
                         clearTimeout(scheduledRequest);
+                    }
+                    if (!newVal) {
+                        setSuggestedTags([]);
                     }
                     if (newVal && newVal.length === 0) {
                         setSuggestedTags([]);
