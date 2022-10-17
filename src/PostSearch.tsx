@@ -79,7 +79,6 @@ function PostSearch({ app }: PostSearchProps) {
     let searchParams = new URLSearchParams(search);
     let queryParam: string = searchParams.get("query") ?? "";
     let pageParam: number = +(searchParams.get("page") ?? 0);
-    const [queryString, setQueryString] = useState(queryParam);
 
     let postDivs: ReactNode[] = [];
     posts.forEach(post => {
@@ -110,8 +109,6 @@ function PostSearch({ app }: PostSearchProps) {
     });
 
     useEffect(() => {
-        setQueryString(queryParam);
-
         const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
 
         let fetch = async () => {
@@ -141,8 +138,8 @@ function PostSearch({ app }: PostSearchProps) {
                             let start: number = location.start;
                             let end: number = location.end;
                             let startIdx = Math.max(0, start - 25);
-                            let endIdx = Math.min(queryString.length, end + 25);
-                            let queryPart = queryString.substring(startIdx, endIdx);
+                            let endIdx = Math.min(queryParam.length, end + 25);
+                            let queryPart = queryParam.substring(startIdx, endIdx);
                             let key = i++;
                             let marker;
                             if (end > start) {
@@ -184,7 +181,6 @@ function PostSearch({ app }: PostSearchProps) {
             setFullCount(0);
             setPageCount(0);
             setPosts([]);
-            setQueryString("");
         };
     }, [search]);
 
