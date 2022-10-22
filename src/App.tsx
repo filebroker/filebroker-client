@@ -281,8 +281,8 @@ export class App extends React.Component<{}, {
     }
 
     closeModal(modal: ModalContent, result: any = undefined) {
-        if (this.state.modalStack.length === 0) {
-            console.log("Called closeModal with no open modal");
+        if (modal.closed) {
+            console.warn("Tried to close an already closed modal");
             return;
         }
 

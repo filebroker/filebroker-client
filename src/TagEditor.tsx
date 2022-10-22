@@ -1,5 +1,5 @@
 import { Autocomplete, Chip, TextField } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tag } from "./Model";
 import http from "./http-common";
 import App, { ModalContent } from "./App";
@@ -46,11 +46,59 @@ class UpsertTagResponse {
     }
 }
 
-export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { setSelectedTags: (v: number[]) => void, setEnteredTags?: (v: string[]) => void, limit?: number }) {
+export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false }: {
+    setSelectedTags: (v: number[]) => void,
+    setEnteredTags?: (v: string[]) => void,
+    limit?: number,
+    values?: (string | { label: string, pk: number })[],
+    readOnly?: boolean
+}) {
     const [suggestedTags, setSuggestedTags] = useState<{ label: string, pk: number }[]>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
+    const [value, setValue] = useState(values);
 
     let scheduledRequest: NodeJS.Timeout | null = null;
+
+    function tagArrayEquals(a1: (string | { label: string, pk: number })[], a2: (string | { label: string, pk: number })[]) {
+        if (a1.length !== a2.length) return false;
+        for (let i = 0; i < a1.length; i++) {
+            let v1 = a1[i];
+            let v2 = a2[i];
+            if (typeof v1 === "string") {
+                if (typeof v2 === "string") {
+                    if (v1 !== v2) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                if (typeof v2 === "string") {
+                    return false;
+                } else {
+                    if (v1.pk !== v2.pk) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    type MaybeCleanUpFn = void | (() => void);
+    function useTagArrayEffect(cb: () => MaybeCleanUpFn, deps: (string | { label: string, pk: number })[]) {
+        const ref = useRef<(string | { label: string, pk: number })[]>(deps);
+
+        if (!tagArrayEquals(deps, ref.current)) {
+            ref.current = deps;
+        }
+
+        useEffect(cb, [ref.current]);
+    }
+
+    useTagArrayEffect(() => {
+        setValue(values);
+    }, values);
 
     return (
         <>
@@ -59,6 +107,8 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { 
                 freeSolo={setEnteredTags !== undefined}
                 disabled={inputDisabled}
                 options={suggestedTags}
+                value={value}
+                readOnly={readOnly}
                 renderInput={params => {
                     const { InputProps, ...restParams } = params;
                     const { startAdornment, ...restInputProps } = InputProps;
@@ -93,6 +143,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100 }: { 
                     }
                 }}
                 onChange={(_e, newVal) => {
+                    setValue(newVal);
                     let selectedTags: number[] = [];
                     let enteredTags: string[] = [];
 

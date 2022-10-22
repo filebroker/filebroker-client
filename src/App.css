@@ -428,3 +428,7 @@ body {
 .footnote {
     font-size: 7pt;
 }
+
+.material-row {
+    margin-top: 10px;
+}

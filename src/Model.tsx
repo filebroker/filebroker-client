@@ -10,6 +10,12 @@ export class PostDetailed {
     thumbnail_url: string | null;
     prev_post_pk: number | null;
     next_post_pk: number | null;
+    is_public: boolean;
+    public_edit: boolean;
+    description: string | null;
+    is_editable: boolean;
+    tags: Tag[];
+    group_access: PostGroupAccessDetailed[];
 
     constructor(
         pk: number,
@@ -22,7 +28,13 @@ export class PostDetailed {
         s3_object: S3Object | null,
         thumbnail_url: string | null,
         prev_post_pk: number | null,
-        next_post_pk: number | null
+        next_post_pk: number | null,
+        is_public: boolean,
+        public_edit: boolean,
+        description: string | null,
+        is_editable: boolean,
+        tags: Tag[],
+        group_access: PostGroupAccessDetailed[]
     ) {
         this.pk = pk;
         this.data_url = data_url;
@@ -35,6 +47,12 @@ export class PostDetailed {
         this.thumbnail_url = thumbnail_url;
         this.prev_post_pk = prev_post_pk;
         this.next_post_pk = next_post_pk;
+        this.is_public = is_public;
+        this.public_edit = public_edit;
+        this.description = description;
+        this.is_editable = is_editable;
+        this.tags = tags;
+        this.group_access = group_access;
     }
 }
 
@@ -144,5 +162,37 @@ export class UserGroup {
         this.hidden = hidden;
         this.fk_owner = fk_owner;
         this.creation_timestamp = creation_timestamp;
+    }
+}
+
+export class GrantedPostGroupAccess {
+    group_pk: number;
+    write: boolean;
+
+    constructor(group_pk: number, write: boolean) {
+        this.group_pk = group_pk;
+        this.write = write;
+    }
+}
+
+export class PostGroupAccessDetailed {
+    fk_post: number;
+    write: boolean;
+    fk_granted_by: number;
+    creation_timestamp: string;
+    granted_group: UserGroup;
+
+    constructor(
+        fk_post: number,
+        write: boolean,
+        fk_granted_by: number,
+        creation_timestamp: string,
+        granted_group: UserGroup
+    ) {
+        this.fk_post = fk_post;
+        this.write = write;
+        this.fk_granted_by = fk_granted_by;
+        this.creation_timestamp = creation_timestamp;
+        this.granted_group = granted_group;
     }
 }

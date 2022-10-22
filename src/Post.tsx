@@ -8,7 +8,10 @@ import VideoJS from "./VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { PostDetailed } from "./Model";
+import { GrantedPostGroupAccess, PostDetailed, Tag, UserGroup } from "./Model";
+import { TextField } from "@mui/material";
+import { TagSelector } from "./TagEditor";
+import { GroupSelector } from "./GroupEditor";
 
 class PostProps {
     app: App;
@@ -18,23 +21,49 @@ class PostProps {
     }
 }
 
-function Post({app}: PostProps) {
+function Post({ app }: PostProps) {
     let { id } = useParams();
     const [post, setPost] = useState<PostDetailed | null>(null);
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
 
+    const [isEditMode, setEditMode] = useState(false);
+    const [tags, setTags] = useState<(string | { label: string, pk: number })[]>([]);
+    const [enteredTags, setEnteredTags] = useState<string[]>([]);
+    const [selectedTags, setSelectedTags] = useState<number[]>([]);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
+
+    function updatePost(postDetailed: PostDetailed) {
+        setPost(postDetailed);
+        setTags(postDetailed.tags.map(tag => {
+            return { label: tag.tag_name, pk: tag.pk };
+        }));
+        setSelectedTags(postDetailed.tags.map(tag => tag.pk));
+        setTitle(postDetailed.title || "");
+        setDescription(postDetailed.description || "");
+        setSelectedUserGroups(postDetailed.group_access.map(groupAccess => groupAccess.granted_group));
+        setSelectedUserGroupsReadOnly(postDetailed.group_access.filter(groupAccess => !groupAccess.write).map(groupAccess => groupAccess.granted_group.pk));
+    }
+
     useEffect(() => {
         setPost(null);
         let fetch = async () => {
             let config = await app.getAuthorization(location, navigate, false);
 
-            await http
+            http
                 .get<PostDetailed>(`/get-post/${id}${search}`, config)
                 .then(result => {
-                    setPost(result.data);
+                    updatePost(result.data);
                 });
+
+            http
+                .get<UserGroup[]>("/get-current-user-groups", config)
+                .then(result => setCurrentUserGroups(result.data));
         };
 
         const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
@@ -47,12 +76,12 @@ function Post({app}: PostProps) {
     const playerRef = React.useRef(null);
     const handlePlayerReady = (player: any) => {
         playerRef.current = player;
-    
+
         // You can handle player events here, for example:
         player.on('waiting', () => {
             videojs.log('player is waiting');
         });
-    
+
         player.on('dispose', () => {
             videojs.log('player will dispose');
         });
@@ -124,8 +153,114 @@ function Post({app}: PostProps) {
                     {downloadLink}
                 </div>
             </div>
+            <div id="post-information-container">
+                {isEditMode
+                    ? <button className="standard-button" onClick={() => setEditMode(false)}><FontAwesomeIcon icon={solid("xmark")}></FontAwesomeIcon> Cancel</button>
+                    : <button hidden={!post?.is_editable} className="standard-button" onClick={() => setEditMode(true)}><FontAwesomeIcon icon={solid("pen-to-square")}></FontAwesomeIcon> Edit</button>}
+                {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)}></TextField></div> : <h2>{post && post.title}</h2>}
+                {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)}></TextField></div> : <p>{post && post.description}</p>}
+                <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode}></TagSelector></div>
+                <div className="material-row">
+                    <GroupSelector
+                        currentUserGroups={currentUserGroups}
+                        selectedUserGroups={selectedUserGroups}
+                        setSelectedUserGroups={setSelectedUserGroups}
+                        selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
+                        setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
+                        readOnly={!isEditMode}
+                    />
+                </div>
+                <div className="material-row">
+                    <button hidden={!isEditMode} className="standard-button" onClick={async () => {
+                        let groupAccess: GrantedPostGroupAccess[] = [];
+                        selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
+
+                        const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                        try {
+                            let config = await app.getAuthorization(location, navigate);
+                            let result = await http.post<PostDetailed>(`/edit-post/${id}`, new EditPostRequest(
+                                enteredTags,
+                                selectedTags,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                title,
+                                null,
+                                null,
+                                description,
+                                groupAccess,
+                                null,
+                                null
+                            ), config);
+
+                            if (post) {
+                                result.data.prev_post_pk = post.prev_post_pk;
+                                result.data.next_post_pk = post.next_post_pk;
+                            }
+                            updatePost(result.data);
+                        } catch (e) {
+                            console.error("Error occured editing post " + e);
+                            app.openModal("Error", <p>An error occurred editing your post, please try again.</p>);
+                        }
+
+                        loadingModal.close();
+                        setEditMode(false);
+                    }}>Save</button>
+                </div>
+            </div>
         </div>
     );
 }
 
 export default Post;
+
+class EditPostRequest {
+    tags_overwrite: string[] | null;
+    tag_pks_overwrite: number[] | null;
+    removed_tag_pks: number[] | null;
+    added_tag_pks: number[] | null;
+    added_tags: string[] | null;
+    data_url: string | null;
+    source_url: string | null;
+    title: string | null;
+    is_public: boolean | null;
+    public_edit: boolean | null;
+    description: string | null;
+    group_access_overwrite: GrantedPostGroupAccess[] | null;
+    added_group_access: GrantedPostGroupAccess[] | null;
+    removed_group_access: number[] | null;
+
+    constructor(
+        tags_overwrite: string[] | null,
+        tag_pks_overwrite: number[] | null,
+        removed_tag_pks: number[] | null,
+        added_tag_pks: number[] | null,
+        added_tags: string[] | null,
+        data_url: string | null,
+        source_url: string | null,
+        title: string | null,
+        is_public: boolean | null,
+        public_edit: boolean | null,
+        description: string | null,
+        group_access_overwrite: GrantedPostGroupAccess[] | null,
+        added_group_access: GrantedPostGroupAccess[] | null,
+        removed_group_access: number[] | null
+    ) {
+        this.tags_overwrite = tags_overwrite;
+        this.tag_pks_overwrite = tag_pks_overwrite;
+        this.removed_tag_pks = removed_tag_pks;
+        this.added_tag_pks = added_tag_pks;
+        this.added_tags = added_tags;
+        this.data_url = data_url;
+        this.source_url = source_url;
+        this.title = title;
+        this.is_public = is_public;
+        this.public_edit = public_edit;
+        this.description = description;
+        this.group_access_overwrite = group_access_overwrite;
+        this.added_group_access = added_group_access;
+        this.removed_group_access = removed_group_access;
+    }
+}
