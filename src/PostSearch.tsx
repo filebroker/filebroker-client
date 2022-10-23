@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import ProgressiveImage from 'react-progressive-graceful-image';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import App from './App';
-import http, { getApiUrl } from "./http-common";
+import http, { getApiUrl, getPublicUrl } from "./http-common";
 import "./PostSearch.css";
 
 class SearchResult {
@@ -89,12 +89,12 @@ function PostSearch({ app }: PostSearchProps) {
         } else if (post.thumbnail_object_key != null) {
             thumbnailUrl = getApiUrl() + "get-object/" + post.thumbnail_object_key;
         } else {
-            thumbnailUrl = "/public/logo512.png";
+            thumbnailUrl = getPublicUrl() + "/logo512.png";
         }
 
         // react-progressive-graceful-image is currently broken as it does not specify child property: https://github.com/sanishkr/react-progressive-graceful-image/issues/6
         // @ts-ignore
-        let img = <ProgressiveImage src={thumbnailUrl} placeholder="/public/logo192.png">{(src: string) => (<img src={src} className="thumb-img" alt="an image" />)}</ProgressiveImage>;
+        let img = <ProgressiveImage src={thumbnailUrl} placeholder={getPublicUrl() + "/logo192.png"}>{(src: string) => (<img src={src} className="thumb-img" alt="an image" />)}</ProgressiveImage>;
 
         postDivs.push(
             <div key={post.pk} className="post_wrapper">

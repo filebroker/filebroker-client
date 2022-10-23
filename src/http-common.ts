@@ -17,3 +17,14 @@ export function getApiUrl(): string {
         return url;
     }
 }
+
+export function getPublicUrl(): string {
+    let url = process.env.PUBLIC_URL;
+    if (url == undefined) {
+        return "/";
+    } else if (!url.endsWith("/")) {
+        return url + "/";
+    } else {
+        return url;
+    }
+}
