@@ -11,9 +11,11 @@ import ProgressBar from 'react-bootstrap/ProgressBar';
 import { Broker, PostDetailed, S3Object, UserGroup } from "./Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
-import { Checkbox } from "@mui/material";
+import { Checkbox, TextField } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { GroupSelector } from "./GroupEditor";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { EditPostRequest } from "./Post";
 
 class UploadDialogueProps {
     app: App;
@@ -46,6 +48,7 @@ class CreatePostRequest {
     is_public: boolean;
     public_edit: boolean;
     group_access: GrantedPostGroupAccess[] | null;
+    description: string | null;
 
     constructor(
         data_url: string | null,
@@ -57,7 +60,8 @@ class CreatePostRequest {
         thumbnail_url: string | null,
         is_public: boolean,
         public_edit: boolean,
-        group_access: GrantedPostGroupAccess[] | null
+        group_access: GrantedPostGroupAccess[] | null,
+        description: string | null
     ) {
         this.data_url = data_url;
         this.source_url = source_url;
@@ -69,10 +73,24 @@ class CreatePostRequest {
         this.is_public = is_public;
         this.public_edit = public_edit;
         this.group_access = group_access;
+        this.description = description;
     }
 }
 
-type ProgressObserver = (progress: number) => void;
+class UploadResponse {
+    s3_object: S3Object;
+    posts: PostDetailed[];
+
+    constructor(s3_object: S3Object, posts: PostDetailed[]) {
+        this.s3_object = s3_object;
+        this.posts = posts;
+    }
+}
+
+interface ProgressObserver {
+    setProgress: (progress: number) => void;
+    setStep: (step: number) => void;
+}
 
 class ProgressSubject {
     private observers: ProgressObserver[] = [];
@@ -86,15 +104,21 @@ class ProgressSubject {
     }
 
     public setProgress(progress: number) {
-        this.observers.forEach(observer => observer(progress));
+        this.observers.forEach(observer => observer.setProgress(progress));
+    }
+
+    public setStep(step: number) {
+        this.observers.forEach(observer => observer.setStep(step));
     }
 }
 
-function UploadProgress({ progressSubject }: { progressSubject: ProgressSubject }) {
+function UploadProgress({ progressSubject, steps }: { progressSubject: ProgressSubject, steps: number }) {
     const [progress, setProgress] = useState(0);
+    const [step, setStep] = useState(0);
 
-    const onProgressUpdate: ProgressObserver = (progress) => {
-        setProgress(progress);
+    const onProgressUpdate: ProgressObserver = {
+        setProgress: setProgress,
+        setStep: setStep
     };
 
     useEffect(() => {
@@ -109,6 +133,7 @@ function UploadProgress({ progressSubject }: { progressSubject: ProgressSubject 
         <div id="upload-progress">
             <p>Uploading File</p>
             <ProgressBar now={progress} />
+            <p>{step} / {steps}</p>
         </div>
     );
 }
@@ -117,11 +142,13 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [isUploadingFolder, setUploadingFolder] = useState(false);
     const [brokers, setBrokers] = useState<Broker[]>([]);
     const [selectedBroker, setSelectedBroker] = useState<string | undefined>(undefined);
     const [file, setFile] = useState<File | null>(null);
     const [fileLabel, setFileLabel] = useState("No file chosen");
     const hiddenFileInput = React.useRef<HTMLInputElement | null>(null);
+    const [fileList, setFileList] = useState<FileList | null>(null);
 
     const [enteredTags, setEnteredTags] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
@@ -131,6 +158,9 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
+
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
 
     useEffect(() => {
         let fetch = async () => {
@@ -161,55 +191,116 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
     return (
         <div className="modal-form">
-            <p>Create a post for a new file upload</p>
+            <p>{isUploadingFolder ? "Create posts for each file in the uploaded folder" : "Create a post for a new file upload"}</p>
             <fieldset>
-                <legend>Upload File</legend>
-                <table className="fieldset-container">
-                    <tbody>
-                        <tr className="form-row">
-                            <td className="form-label">
-                                <FontAwesomeIcon icon={solid("circle-info")} data-tip="Select or create a new file server to upload files to."></FontAwesomeIcon>
-                                <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
-                            </td>
-                        </tr>
-                        <tr className="form-row">
-                            <td className="form-label"><label>Select broker</label></td>
-                            <td className="form-field">
-                                <select value={selectedBroker} onChange={e => setSelectedBroker(e.target.value)} disabled={brokerOptions.length === 0}>
-                                    <option value={""} hidden>{brokerOptions.length === 0 ? "None Available" : ""}</option>
-                                    {brokerOptions}
-                                </select>&nbsp;
-                                <button className="standard-button" onClick={e => {
-                                    e.preventDefault();
-                                    app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
-                                        let config = await app.getAuthorization(location, navigate);
+                <legend>Upload</legend>
+                <Tabs onSelect={index => {
+                    setUploadingFolder(index === 1);
+                    setFile(null);
+                    setFileLabel("No file chosen");
+                }}>
+                    <TabList>
+                        <Tab>File</Tab>
+                        <Tab>Folder</Tab>
+                    </TabList>
+                    <TabPanel>
+                        <table className="fieldset-container">
+                            <tbody>
+                                <tr className="form-row">
+                                    <td className="form-label">
+                                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="Select or create a new file server to upload files to."></FontAwesomeIcon>
+                                        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
+                                    </td>
+                                </tr>
+                                <tr className="form-row">
+                                    <td className="form-label"><label>Select broker</label></td>
+                                    <td className="form-field">
+                                        <select value={selectedBroker} onChange={e => setSelectedBroker(e.target.value)} disabled={brokerOptions.length === 0}>
+                                            <option value={""} hidden>{brokerOptions.length === 0 ? "None Available" : ""}</option>
+                                            {brokerOptions}
+                                        </select>&nbsp;
+                                        <button className="standard-button" onClick={e => {
+                                            e.preventDefault();
+                                            app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
+                                                let config = await app.getAuthorization(location, navigate);
 
-                                        http
-                                            .get<Broker[]>("/get-brokers", config)
-                                            .then(result => setBrokers(result.data));
-                                    });
-                                }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
-                            </td>
-                        </tr>
-                        <tr className="form-row">
-                            <td className="form-label"><label>Pick File</label></td>
-                            <td className="form-field">
-                                <label className="file-name">{fileLabel}</label>&nbsp;
-                                <button className="standard-button" onClick={e => { e.preventDefault(); hiddenFileInput.current?.click(); }}>Choose File</button>
-                                <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} onChange={e => {
-                                    let fileList = e.target.files;
-                                    if (fileList && fileList.length > 0) {
-                                        setFile(fileList[0]);
-                                        setFileLabelTrimmed(fileList[0].name);
-                                    } else {
-                                        setFile(null);
-                                        setFileLabel("No file chosen");
-                                    }
-                                }}></input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                                http
+                                                    .get<Broker[]>("/get-brokers", config)
+                                                    .then(result => setBrokers(result.data));
+                                            });
+                                        }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
+                                    </td>
+                                </tr>
+                                <tr className="form-row">
+                                    <td className="form-label"><label>Pick File</label></td>
+                                    <td className="form-field">
+                                        <label className="file-name">{fileLabel}</label>&nbsp;
+                                        <button className="standard-button" onClick={e => { e.preventDefault(); hiddenFileInput.current?.click(); }}>Choose File</button>
+                                        <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} onChange={e => {
+                                            let fileList = e.target.files;
+                                            if (fileList && fileList.length > 0) {
+                                                setFile(fileList[0]);
+                                                setFileLabelTrimmed(fileList[0].name);
+                                            } else {
+                                                setFile(null);
+                                                setFileLabel("No file chosen");
+                                            }
+                                        }}></input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </TabPanel>
+                    <TabPanel>
+                        <table className="fieldset-container">
+                            <tbody>
+                                <tr className="form-row">
+                                    <td className="form-label">
+                                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="Select or create a new file server to upload files to."></FontAwesomeIcon>
+                                        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
+                                    </td>
+                                </tr>
+                                <tr className="form-row">
+                                    <td className="form-label"><label>Select broker</label></td>
+                                    <td className="form-field">
+                                        <select value={selectedBroker} onChange={e => setSelectedBroker(e.target.value)} disabled={brokerOptions.length === 0}>
+                                            <option value={""} hidden>{brokerOptions.length === 0 ? "None Available" : ""}</option>
+                                            {brokerOptions}
+                                        </select>&nbsp;
+                                        <button className="standard-button" onClick={e => {
+                                            e.preventDefault();
+                                            app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
+                                                let config = await app.getAuthorization(location, navigate);
+
+                                                http
+                                                    .get<Broker[]>("/get-brokers", config)
+                                                    .then(result => setBrokers(result.data));
+                                            });
+                                        }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
+                                    </td>
+                                </tr>
+                                <tr className="form-row">
+                                    <td className="form-label"><label>Pick Folder</label></td>
+                                    <td className="form-field">
+                                        <label className="file-name">{fileLabel}</label>&nbsp;
+                                        <button className="standard-button" onClick={e => { e.preventDefault(); hiddenFileInput.current?.click(); }}>Choose Folder</button>
+                                        {/*@ts-ignore*/}
+                                        <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} directory="" webkitdirectory="" multiple onChange={e => {
+                                            let fileList = e.target.files;
+                                            if (fileList) {
+                                                setFileList(fileList);
+                                                setFileLabelTrimmed(`Selected ${fileList.length} files`);
+                                            } else {
+                                                setFile(null);
+                                                setFileLabel("No file chosen");
+                                            }
+                                        }}></input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </TabPanel>
+                </Tabs>
             </fieldset>
             <div id="tag-editor-div">
                 <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
@@ -245,72 +336,173 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                     </tbody>
                 </table>
             </fieldset>
+            <fieldset hidden={isUploadingFolder}>
+                <legend>Post</legend>
+                <table className="fieldset-container">
+                    <tbody>
+                        <tr className="form-row">
+                            <td className="form-row-full-td"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></td>
+                        </tr>
+                        <tr className="form-row">
+                            <td className="form-row-full-td"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} maxRows={5} inputProps={{ maxLength: 30000 }}></TextField></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </fieldset>
             <div className="modal-form-submit-btn">
                 <button className="standard-button-large" onClick={async e => {
                     e.preventDefault();
 
-                    if (file != null && !selectedBroker) {
+                    if ((file != null || fileList != null) && !selectedBroker) {
                         app.openModal("Error", <p>You must select a broker when uploading a file</p>);
                         return;
                     }
 
-                    let progressSubject = new ProgressSubject();
-                    let upgloadProgress = <UploadProgress progressSubject={progressSubject}></UploadProgress>;
-                    const uploadProgressModal = app.openModal(
-                        "Uploading",
-                        upgloadProgress,
-                        undefined,
-                        false
-                    );
+                    if (isUploadingFolder && (fileList === null || fileList.length === 0)) {
+                        app.openModal("Error", <p>No folder selected</p>);
+                        return;
+                    }
+                    if (!isUploadingFolder && file === null) {
+                        app.openModal("Error", <p>No file selected</p>);
+                        return;
+                    }
 
-                    try {
-                        let s3_object: S3Object | null;
-                        if (file != null && selectedBroker) {
-                            let config = await app.getAuthorization(location, navigate);
-                            let formData = new FormData();
-                            formData.append("file", file);
-                            let uploadResponse = await http.post<S3Object>(`/upload/${selectedBroker}`, formData, {
-                                headers: {
-                                    "Content-Type": "multipart/form-data",
-                                    authorization: config!.headers.authorization
-                                },
-                                onUploadProgress: e => {
-                                    progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
-                                },
-                            });
-
-                            s3_object = uploadResponse.data;
-                        } else {
-                            s3_object = null;
-                        }
-
-                        let config = await app.getAuthorization(location, navigate);
+                    if (isUploadingFolder && fileList) {
+                        let progressSubject = new ProgressSubject();
+                        let upgloadProgress = <UploadProgress progressSubject={progressSubject} steps={fileList.length}></UploadProgress>;
+                        const uploadProgressModal = app.openModal(
+                            "Uploading",
+                            upgloadProgress,
+                            undefined,
+                            false
+                        );
 
                         let groupAccess: GrantedPostGroupAccess[] = [];
                         selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
+                        try {
+                            for (let i = 0; i < fileList.length; i++) {
+                                let file = fileList[i];
+                                let config = await app.getAuthorization(location, navigate);
+                                let formData = new FormData();
+                                formData.append("file", file);
+                                let uploadResponse = await http.post<UploadResponse>(`/upload/${selectedBroker}`, formData, {
+                                    headers: {
+                                        "Content-Type": "multipart/form-data",
+                                        authorization: config!.headers.authorization
+                                    },
+                                    onUploadProgress: e => {
+                                        progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
+                                    },
+                                });
 
-                        let postResponse = await http.post<PostDetailed>("create-post", new CreatePostRequest(
-                            null,
-                            null,
-                            null,
-                            enteredTags,
-                            selectedTags,
-                            s3_object?.object_key ?? null,
-                            null,
-                            publicPost,
-                            publicEdit && publicPost,
-                            groupAccess
-                        ), config);
+                                if (uploadResponse.data.posts.length === 0) {
+                                    let config = await app.getAuthorization(location, navigate);
+                                    await http.post("create-post", new CreatePostRequest(
+                                        null,
+                                        null,
+                                        null,
+                                        enteredTags,
+                                        selectedTags,
+                                        uploadResponse.data.s3_object?.object_key ?? null,
+                                        null,
+                                        publicPost,
+                                        publicEdit && publicPost,
+                                        groupAccess,
+                                        null
+                                    ), config);
+                                } else {
+                                    let config = await app.getAuthorization(location, navigate);
+                                    uploadResponse.data.posts.filter(post => post.is_editable).forEach(async post => {
+                                        await http.post(`/edit-post/${post.pk}`, new EditPostRequest(
+                                            null,
+                                            null,
+                                            null,
+                                            selectedTags,
+                                            enteredTags,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            groupAccess,
+                                            null
+                                        ), config);
+                                    });
+                                }
+                                progressSubject.setStep(i + 1);
+                            }
 
-                        uploadProgressModal.close();
-                        modal.close();
-                        app.openModal("Success", successModal => <p><Link className="standard-link" to={`post/${postResponse.data.pk + location.search}`} onClick={() => successModal.close()}>Post</Link> created successfully</p>);
-                    } catch (e) {
-                        uploadProgressModal.close();
-                        console.error("Error occurred while uploading post", e);
-                        app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                            uploadProgressModal.close();
+                            modal.close();
+                            app.openModal("Success", <p>Posts created successfully</p>);
+                        } catch (e) {
+                            uploadProgressModal.close();
+                            console.log("Error occurred creating post for file " + e);
+                            app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                        }
+                    } else {
+                        let progressSubject = new ProgressSubject();
+                        let upgloadProgress = <UploadProgress progressSubject={progressSubject} steps={1}></UploadProgress>;
+                        const uploadProgressModal = app.openModal(
+                            "Uploading",
+                            upgloadProgress,
+                            undefined,
+                            false
+                        );
+
+                        try {
+                            let s3_object: S3Object | null;
+                            if (file != null && selectedBroker) {
+                                let config = await app.getAuthorization(location, navigate);
+                                let formData = new FormData();
+                                formData.append("file", file);
+                                let uploadResponse = await http.post<UploadResponse>(`/upload/${selectedBroker}`, formData, {
+                                    headers: {
+                                        "Content-Type": "multipart/form-data",
+                                        authorization: config!.headers.authorization
+                                    },
+                                    onUploadProgress: e => {
+                                        progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
+                                    },
+                                });
+
+                                progressSubject.setStep(1);
+                                s3_object = uploadResponse.data.s3_object;
+                            } else {
+                                s3_object = null;
+                            }
+
+                            let config = await app.getAuthorization(location, navigate);
+
+                            let groupAccess: GrantedPostGroupAccess[] = [];
+                            selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
+
+                            let postResponse = await http.post<PostDetailed>("create-post", new CreatePostRequest(
+                                null,
+                                null,
+                                title,
+                                enteredTags,
+                                selectedTags,
+                                s3_object?.object_key ?? null,
+                                null,
+                                publicPost,
+                                publicEdit && publicPost,
+                                groupAccess,
+                                description
+                            ), config);
+
+                            uploadProgressModal.close();
+                            modal.close();
+                            app.openModal("Success", successModal => <p><Link className="standard-link" to={`post/${postResponse.data.pk + location.search}`} onClick={() => successModal.close()}>Post</Link> created successfully</p>);
+                        } catch (e) {
+                            uploadProgressModal.close();
+                            console.error("Error occurred while uploading post", e);
+                            app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                        }
                     }
-                }}>Create Post</button>
+                }}>{isUploadingFolder ? "Create Posts" : "Create Post"}</button>
             </div>
         </div>
     );

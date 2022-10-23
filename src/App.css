@@ -432,3 +432,19 @@ body {
 .material-row {
     margin-top: 10px;
 }
+
+.multiline-text {
+    white-space: pre-wrap;
+}
+
+.form-row-full-td {
+    padding-top: 5px;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+p {
+    word-wrap: break-word;
+}

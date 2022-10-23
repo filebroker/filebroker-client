@@ -157,8 +157,8 @@ function Post({ app }: PostProps) {
                 {isEditMode
                     ? <button className="standard-button" onClick={() => setEditMode(false)}><FontAwesomeIcon icon={solid("xmark")}></FontAwesomeIcon> Cancel</button>
                     : <button hidden={!post?.is_editable} className="standard-button" onClick={() => setEditMode(true)}><FontAwesomeIcon icon={solid("pen-to-square")}></FontAwesomeIcon> Edit</button>}
-                {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)}></TextField></div> : <h2>{post && post.title}</h2>}
-                {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)}></TextField></div> : <p>{post && post.description}</p>}
+                {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{post && post.title}</h2>}
+                {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{post && post.description}</p>}
                 <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode}></TagSelector></div>
                 <div className="material-row">
                     <GroupSelector
@@ -216,7 +216,7 @@ function Post({ app }: PostProps) {
 
 export default Post;
 
-class EditPostRequest {
+export class EditPostRequest {
     tags_overwrite: string[] | null;
     tag_pks_overwrite: number[] | null;
     removed_tag_pks: number[] | null;
