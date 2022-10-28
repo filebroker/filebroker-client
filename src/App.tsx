@@ -211,7 +211,9 @@ export class App extends React.Component<{}, {
     handleLogin(loginResponse: LoginResponse | null) {
         let loginExpiry;
         if (loginResponse) {
-            loginExpiry = Date.now() + (loginResponse.expiration_secs - 10) * 1000;
+            let now = Date.now();
+            let expirationTime = loginResponse.expiration_secs / 3 * 2;
+            loginExpiry = now + expirationTime * 1000;
         } else {
             loginExpiry = null;
         }
