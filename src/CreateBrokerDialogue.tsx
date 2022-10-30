@@ -118,7 +118,7 @@ function CreateBrokerDialogue({app, modal}: CreateBrokerDialogueProps) {
                             </tr>
                             <tr className="form-row">
                                 <td className="form-label"><label>Merge Duplicate Files</label></td>
-                                <td className="form-field"><input type={"checkbox"} checked={removeDuplicateFiles} onChange={e => setRemoveDuplicateFiles(e.currentTarget.checked)} required></input></td>
+                                <td className="form-field"><input type={"checkbox"} checked={removeDuplicateFiles} onChange={e => setRemoveDuplicateFiles(e.currentTarget.checked)}></input></td>
                             </tr>
                         </tbody>
                     </table>
