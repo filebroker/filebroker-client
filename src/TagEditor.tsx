@@ -139,7 +139,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                             findTagResponse.suggestions.forEach(suggestion => newSuggestions.push({ label: suggestion.tag_name, pk: suggestion.pk }));
 
                             setSuggestedTags(newSuggestions);
-                        }, 100);
+                        }, 250);
                     }
                 }}
                 onChange={(_e, newVal) => {
