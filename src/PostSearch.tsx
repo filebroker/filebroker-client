@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ReactNode, useEffect, useState } from 'react';
 import ProgressiveImage from 'react-progressive-graceful-image';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import urlJoin from 'url-join';
 import App from './App';
 import http, { getApiUrl, getPublicUrl } from "./http-common";
 import "./PostSearch.css";
@@ -87,14 +88,14 @@ function PostSearch({ app }: PostSearchProps) {
         if (post.thumbnail_url != null) {
             thumbnailUrl = post.thumbnail_url;
         } else if (post.thumbnail_object_key != null) {
-            thumbnailUrl = getApiUrl() + "get-object/" + post.thumbnail_object_key;
+            thumbnailUrl = urlJoin(getApiUrl(), "get-object", post.thumbnail_object_key);
         } else {
-            thumbnailUrl = getPublicUrl() + "/logo512.png";
+            thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
         }
 
         // react-progressive-graceful-image is currently broken as it does not specify child property: https://github.com/sanishkr/react-progressive-graceful-image/issues/6
         // @ts-ignore
-        let img = <ProgressiveImage src={thumbnailUrl} placeholder={getPublicUrl() + "/logo192.png"}>{(src: string) => (<img src={src} className="thumb-img" alt="an image" />)}</ProgressiveImage>;
+        let img = <ProgressiveImage src={thumbnailUrl} placeholder={urlJoin(getPublicUrl(), "logo192.png")}>{(src: string) => (<img src={src} className="thumb-img" alt="an image" />)}</ProgressiveImage>;
 
         postDivs.push(
             <div key={post.pk} className="post_wrapper">
