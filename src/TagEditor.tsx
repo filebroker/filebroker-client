@@ -129,7 +129,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                         setSuggestedTags([]);
                     } else if (newVal) {
                         scheduledRequest = setTimeout(async () => {
-                            const response = await http.get<FindTagResponse>(`/find-tag/${newVal}`);
+                            const response = await http.get<FindTagResponse>(`/find-tag/${encodeURIComponent(newVal)}`);
                             const findTagResponse = response.data;
                             let newSuggestions = [];
                             if (findTagResponse.exact_match) {
