@@ -380,8 +380,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                         let groupAccess: GrantedPostGroupAccess[] = [];
                         selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
                         try {
-                            for (let i = 0; i < fileList.length; i++) {
-                                let file = fileList[i];
+                            const files = Array.from(fileList);
+                            files.sort((a, b) => a.name.localeCompare(b.name, navigator.languages[0] || navigator.language, {numeric: true}));
+                            for (let i = 0; i < files.length; i++) {
+                                let file = files[i];
                                 let config = await app.getAuthorization(location, navigate);
                                 let formData = new FormData();
                                 formData.append("file", file);
