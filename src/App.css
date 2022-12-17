@@ -382,6 +382,12 @@ body {
     text-decoration: none;
 }
 
+.search-form {
+    display: grid;
+    grid-template-rows: 2em;
+    grid-template-columns: 1fr auto;
+}
+
 .search-input {
     background-color: transparent;
     color: white;
@@ -389,11 +395,13 @@ body {
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
     border: 1px solid white;
+    border-right: none;
 }
 
 .search-input:focus {
     border: 2px solid white;
     outline: 0;
+    border-right: none;
 }
 
 .search-button {
@@ -403,6 +411,11 @@ body {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     border: 1px solid white;
+    border-left: none;
+}
+
+.search-input:focus + .search-button {
+    border: 2px solid white;
     border-left: none;
 }
 

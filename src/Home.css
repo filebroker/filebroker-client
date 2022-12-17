@@ -11,3 +11,8 @@
 #Home input {
     width: 500px;
 }
+
+#home-search {
+    width: auto;
+    display: inline-block;
+}

@@ -73,7 +73,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     }
 
     return (
-        <form onSubmit={e => {
+        <form className="search-form" onSubmit={e => {
             e.preventDefault();
             let searchParams = new URLSearchParams();
             searchParams.set("query", queryString);

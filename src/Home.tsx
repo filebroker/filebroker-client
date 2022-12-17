@@ -5,7 +5,9 @@ function Home() {
     return (
         <div id="Home">
             <div><h1>filebroker</h1></div>
-            <PostQueryInput></PostQueryInput>
+            <div id="home-search">
+                <PostQueryInput></PostQueryInput>
+            </div>
         </div>
     );
 }
