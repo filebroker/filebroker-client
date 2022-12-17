@@ -93,8 +93,6 @@ function PostSearch({ app }: PostSearchProps) {
             thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
         }
 
-        // react-progressive-graceful-image is currently broken as it does not specify child property: https://github.com/sanishkr/react-progressive-graceful-image/issues/6
-        // @ts-ignore
         let img = <ProgressiveImage src={thumbnailUrl} placeholder={urlJoin(getPublicUrl(), "logo192.png")}>{(src: string) => (<img src={src} className="thumb-img" alt="an image" />)}</ProgressiveImage>;
 
         postDivs.push(
