@@ -9,7 +9,7 @@ export default axios.create({
 
 export function getApiUrl(): string {
     let url = process.env.REACT_APP_API_URL;
-    if (url == undefined) {
+    if (url === undefined) {
         return "/";
     } else if (!url.endsWith("/")) {
         return url + "/";
@@ -20,7 +20,7 @@ export function getApiUrl(): string {
 
 export function getPublicUrl(): string {
     let url = process.env.PUBLIC_URL;
-    if (url == undefined) {
+    if (url === undefined) {
         return "/";
     } else if (!url.endsWith("/")) {
         return url + "/";

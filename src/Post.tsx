@@ -8,7 +8,7 @@ import VideoJS from "./VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { GrantedPostGroupAccess, PostDetailed, Tag, UserGroup } from "./Model";
+import { GrantedPostGroupAccess, PostDetailed, UserGroup } from "./Model";
 import { TextField } from "@mui/material";
 import { TagSelector } from "./TagEditor";
 import { GroupSelector } from "./GroupEditor";
@@ -91,7 +91,7 @@ function Post({ app }: PostProps) {
         if (post.s3_object != null) {
             let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
-                return <img className="image-post" src={dataUrl}></img>;
+                return <img className="image-post" src={dataUrl} alt={`Image of post ${post.pk}`}></img>;
             } else if (post.s3_object.mime_type.startsWith("video")) {
                 let videoType = post.s3_object.mime_type;
                 const videoJsOptions = {
@@ -119,7 +119,7 @@ function Post({ app }: PostProps) {
     let nextLink;
     if (post) {
         let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
-        downloadLink = dataUrl && <p><a className="standard-link-button-large" target={"_blank"} href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a></p>;
+        downloadLink = dataUrl && <p><a className="standard-link-button-large" target={"_blank"} rel="noreferrer" href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a></p>;
         component = getComponentForData(post);
         postInformation = <div id="post-information">
             <FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}

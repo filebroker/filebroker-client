@@ -37,7 +37,7 @@ export function ProfilePage({app, initialUser}: ProfilePageProps) {
                 setUser(response.data.user);
             } catch (e: any) {
                 console.log("Failed to refresh login: " + e);
-                if (e.response.status == 401) {
+                if (e.response.status === 401) {
                     navigate("/login", { state: { from: location }, replace: true})
                 }
             }

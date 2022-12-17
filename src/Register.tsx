@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import App from "./App";
 import http from "./http-common";
 import {LoginResponse} from "./Login";
@@ -36,7 +36,6 @@ function Register({app}: RegisterProps) {
     const [userName, setUserName] = useState("");
     const [loginDisabled, setLoginDisabled] = useState(false);
     const navigate = useNavigate();
-    const { state }: any = useLocation();
  
     async function register() {
         try {
@@ -70,7 +69,7 @@ function Register({app}: RegisterProps) {
                         onChange={(e) => setUserName(e.currentTarget.value)} required></input></div>
                     <div className="standard-form-field"><input type="password" placeholder="Password" value={password}
                         onChange={(e) => setPassword(e.currentTarget.value)} required></input></div>
-                    <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length == 0 || password.length == 0}>Register</button></div>
+                    <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length === 0 || password.length === 0}>Register</button></div>
                 </form>
             </div>
         </div>

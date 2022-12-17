@@ -93,7 +93,7 @@ function PostSearch({ app }: PostSearchProps) {
             thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
         }
 
-        let img = <ProgressiveImage src={thumbnailUrl} placeholder={urlJoin(getPublicUrl(), "logo192.png")}>{(src: string) => (<img src={src} className="thumb-img" alt="an image" />)}</ProgressiveImage>;
+        let img = <ProgressiveImage src={thumbnailUrl} placeholder={urlJoin(getPublicUrl(), "logo192.png")}>{(src: string) => (<img src={src} className="thumb-img" alt={`Thumnail for post ${post.pk}`} />)}</ProgressiveImage>;
 
         postDivs.push(
             <div key={post.pk} className="post_wrapper">
@@ -198,7 +198,7 @@ function PostSearch({ app }: PostSearchProps) {
     let lastPageToShow = pageCount ? Math.min(pageCount - 1, pageParam + 9) : pageParam;
     for (let i = Math.max(0, lastPageToShow - 9); i <= lastPageToShow; i++) {
         let className = "page-button";
-        if (i == pageParam) {
+        if (i === pageParam) {
             className += " page-button-selected";
         }
         pageButtons.push(<button key={i} className={className} onClick={() => handlePageSwitch(i)}>{i + 1}</button>);

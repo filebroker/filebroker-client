@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import logo from './logo.svg';
 import './App.css';
 import http from "./http-common";
 import PostSearch from './PostSearch';
@@ -321,23 +320,6 @@ export class App extends React.Component<{}, {
                 modalStack: newModalStack
             };
         });
-    }
-}
-
-export class LoadingPage extends React.Component {
-    constructor(props: any) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div className="App">
-                <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo" />
-                    <h1>Loading</h1>
-                </header>
-            </div>
-        );
     }
 }
 
