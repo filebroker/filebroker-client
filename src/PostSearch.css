@@ -64,6 +64,7 @@
 .page-button:hover:enabled {
     background-color: white;
     color: black;
+    cursor: pointer;
 }
 
 .page-button:disabled {

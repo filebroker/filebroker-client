@@ -2,7 +2,7 @@ import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ReactNode, useEffect, useState } from 'react';
 import ProgressiveImage from 'react-progressive-graceful-image';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
 import App from './App';
 import http, { getApiUrl, getPublicUrl } from "./http-common";
@@ -183,17 +183,18 @@ function PostSearch({ app }: PostSearchProps) {
         };
     }, [search]);
 
-    function handlePageSwitch(pageNumber: number) {
+    function createPageLink(pageNumber: number, key: React.Key, label: any, disabled: boolean, className: string = "page-button"): ReactNode {
         let searchParams = new URLSearchParams();
         searchParams.set("query", queryParam);
         searchParams.set("page", pageNumber.toString());
-        navigate({ pathname: "/posts", search: searchParams.toString() });
+        let location = { pathname: "/posts", search: searchParams.toString() };
+        return <NavLink to={location} key={key}><button className={className} disabled={disabled}>{label}</button></NavLink>;
     }
 
     let pageButtons: ReactNode[] = [];
     let firstPage = pageParam < 1;
-    pageButtons.push(<button key="first" className="page-button" onClick={() => handlePageSwitch(0)} disabled={firstPage}>{"<<"}</button>);
-    pageButtons.push(<button key="prev" className="page-button" onClick={() => handlePageSwitch(pageParam - 1)} disabled={firstPage}>{"<"}</button>);
+    pageButtons.push(createPageLink(0, "first", "<<", firstPage));
+    pageButtons.push(createPageLink(pageParam - 1, "prev", "<", firstPage));
     // show 10 page buttons maximum
     let lastPageToShow = pageCount ? Math.min(pageCount - 1, pageParam + 9) : pageParam;
     for (let i = Math.max(0, lastPageToShow - 9); i <= lastPageToShow; i++) {
@@ -201,14 +202,14 @@ function PostSearch({ app }: PostSearchProps) {
         if (i === pageParam) {
             className += " page-button-selected";
         }
-        pageButtons.push(<button key={i} className={className} onClick={() => handlePageSwitch(i)}>{i + 1}</button>);
+        pageButtons.push(createPageLink(i, i, i + 1, false, className));
     }
     if (pageCount) {
         let lastPage = pageParam >= pageCount - 1;
-        pageButtons.push(<button key="next" className="page-button" onClick={() => handlePageSwitch(pageParam + 1)} disabled={lastPage}>{">"}</button>);
-        pageButtons.push(<button key="last" className="page-button" onClick={() => handlePageSwitch(pageCount - 1)} disabled={lastPage}>{">>"}</button>);
+        pageButtons.push(createPageLink(pageParam + 1, "next", ">", lastPage));
+        pageButtons.push(createPageLink(pageCount - 1, "last", ">>", lastPage));
     } else {
-        pageButtons.push(<button key="next" className="page-button" onClick={() => handlePageSwitch(pageParam + 1)}>{">"}</button>);
+        pageButtons.push(createPageLink(pageParam + 1, "next", ">", false));
     }
 
     return (
