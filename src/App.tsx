@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import "@filebroker/react-widgets/lib/styles.css";
 import './App.css';
 import http from "./http-common";
 import PostSearch from './PostSearch';
@@ -13,6 +14,9 @@ import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import UploadDialogue from './UploadDialogue';
+import { AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion } from './Model';
+import { replaceStringRange } from './Util';
+import { Combobox } from '@filebroker/react-widgets/lib/cjs';
 
 export class User {
     user_name: string;
@@ -63,6 +67,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     let searchParams = new URLSearchParams(search);
     let queryParam: string = searchParams.get("query") ?? "";
     const [queryString, setQueryString] = useState(queryParam);
+    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
 
     useEffect(() => {
         setQueryString(queryParam);
@@ -72,14 +77,46 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
         return null;
     }
 
+    let scheduledRequest: NodeJS.Timeout | null = null;
+
+    function handleQueryChange(cursorPos: number, query: string) {
+        if (scheduledRequest) {
+            clearTimeout(scheduledRequest);
+        }
+        scheduledRequest = setTimeout(async () => {
+            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query));
+            setQueryAutocompleteSuggestions(response.data.suggestions);
+        }, 250);
+    }
+
     return (
         <form className="search-form" onSubmit={e => {
             e.preventDefault();
             let searchParams = new URLSearchParams();
             searchParams.set("query", queryString);
             navigate({ pathname: "/posts", search: searchParams.toString() });
+            setQueryAutocompleteSuggestions([]);
+            document.getElementById("App")?.focus();
+
+            // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
+            // retrieve it via id and blur
+            if (hideOnHome) {
+                document.getElementById("rw_1_input")?.blur();
+            }
         }}>
-            <input className="search-input" type="text" placeholder="Search" value={queryString} onChange={e => setQueryString(e.currentTarget.value)}></input>
+            <Combobox hideCaret hideEmptyPopup data={queryAutocompleteSuggestions} textField="display" value={queryString} onChange={(value, event) => {
+                if (typeof value === "string") {
+                    setQueryString(value);
+                    let inputElement = event.originalEvent!!.currentTarget as HTMLInputElement;
+                    handleQueryChange(inputElement.selectionStart || value.length, value);
+                } else {
+                    let prevVal = event.lastValue as string;
+                    let targetLocation = value.target_location;
+                    let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, value.text);
+                    setQueryString(newVal);
+                    setQueryAutocompleteSuggestions([]);
+                }
+            }} placeholder="Search" filter={() => true} autoFocus={!hideOnHome} inputProps={{ autoFocus: !hideOnHome }}></Combobox>
             <button className="search-button" type="submit"><FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon></button>
         </form>
     );
@@ -136,7 +173,7 @@ export class App extends React.Component<{}, {
 
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
-                <div className="App">
+                <div id="App">
                     <div id="nav">
                         <div id="nav-box-left">
                             <div className="nav-el"><NavLink to="/">Home</NavLink></div>

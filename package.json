@@ -1,6 +1,6 @@
 {
   "name": "filebroker-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "homepage": "./",
   "dependencies": {
@@ -31,6 +31,7 @@
     "react-scripts": "^5.0.1",
     "react-tabs": "^5.1.0",
     "react-tooltip": "^4.2.21",
+    "@filebroker/react-widgets": "^5.8.6",
     "typescript": "^4.7.2",
     "url-join": "^5.0.0",
     "video.js": "^7.20.1",

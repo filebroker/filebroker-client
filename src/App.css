@@ -106,7 +106,7 @@ body {
 }
 
 #search-bar input {
-    width: 300px;
+    width: 500px;
 }
 
 #nav-box-left {
@@ -398,6 +398,82 @@ body {
     border-right: none;
 }
 
+.rw-input {
+    background-color: transparent;
+    color: white;
+    padding: 5px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    font-size: 13.3333px;
+}
+
+.rw-widget-picker {
+    min-height: auto;
+    background-color: transparent;
+    border: none;
+    border-radius: 0%;
+}
+
+.rw-widget-input {
+    color: white;
+    background-color: transparent;
+    box-shadow: none;
+    background-clip: padding-box;
+    width: inherit;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border: 1px solid white;
+    border-right: none;
+    height: 30px;
+}
+
+.rw-state-focus .rw-widget-picker {
+    border-color: white;
+    box-shadow: none;
+    transition: box-shadow 0.15s ease-in-out;
+    border: 2px solid white;
+    border-right: none;
+    outline: 0;
+}
+
+.rw-state-focus .rw-widget-picker.rw-widget-input {
+    box-shadow: none;
+    border: 2px solid white;
+    border-right: none;
+    outline: 0;
+}
+
+.rw-popup {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 2px;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border: none;
+    background-clip: padding-box;
+    background: #202020;
+    color: white;
+}
+
+.rw-list-option,
+.rw-list-option-create {
+    -webkit-user-select: none;
+    user-select: none;
+    color: white;
+    cursor: pointer;
+    border: none;
+    background-clip: padding-box;
+}
+
+.rw-list-option:hover,
+.rw-list-option-create:hover,
+[data-intent=keyboard] .rw-list-option.rw-state-focus:not(.rw-state-selected),
+[data-intent=keyboard] .rw-state-focus.rw-list-option-create:not(.rw-state-selected) {
+    background-color: #303030;
+    border-color: #303030;
+}
+
 .search-input:focus {
     border: 2px solid white;
     outline: 0;
@@ -412,9 +488,15 @@ body {
     border-bottom-right-radius: 5px;
     border: 1px solid white;
     border-left: none;
+    height: 30px;
 }
 
-.search-input:focus + .search-button {
+.rw-state-focus+.search-button {
+    border: 2px solid white;
+    border-left: none;
+}
+
+.search-input:focus+.search-button {
     border: 2px solid white;
     border-left: none;
 }

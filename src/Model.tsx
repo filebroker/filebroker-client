@@ -196,3 +196,77 @@ export class PostGroupAccessDetailed {
         this.granted_group = granted_group;
     }
 }
+
+export class AnalyzeQueryRequest {
+    cursor_pos: number | null | undefined;
+    query: string;
+
+    constructor(cursor_pos: number | null | undefined, query: string) {
+        this.cursor_pos = cursor_pos;
+        this.query = query;
+    }
+}
+
+export class Location {
+    start: number;
+    end: number;
+
+    constructor(start: number, end: number) {
+        this.start = start;
+        this.end = end;
+    }
+}
+
+export class CompilerError {
+    location: Location;
+    msg: string;
+
+    constructor(location: Location, msg: string) {
+        this.location = location;
+        this.msg = msg;
+    }
+}
+
+export class QueryCompilationError {
+    phase: string;
+    errors: CompilerError[]
+
+    constructor(phase: string, errors: CompilerError[]) {
+        this.phase = phase;
+        this.errors = errors;
+    }
+}
+
+export class QueryAutocompleteSuggestionType {
+    name: string;
+    prefix: string;
+
+    constructor(name: string, prefix: string) {
+        this.name = name;
+        this.prefix = prefix;
+    }
+}
+
+export class QueryAutocompleteSuggestion {
+    text: string;
+    display: string;
+    target_location: Location;
+    suggestion_type: QueryAutocompleteSuggestionType;
+
+    constructor(text: string, display: string, target_location: Location, suggestion_type: QueryAutocompleteSuggestionType) {
+        this.text = text;
+        this.display = display;
+        this.target_location = target_location;
+        this.suggestion_type = suggestion_type;
+    }
+}
+
+export class AnalyzeQueryResponse {
+    error: QueryCompilationError | null | undefined;
+    suggestions: QueryAutocompleteSuggestion[];
+
+    constructor(error: QueryCompilationError | null | undefined, suggestions: QueryAutocompleteSuggestion[]) {
+        this.error = error;
+        this.suggestions = suggestions;
+    }
+}
