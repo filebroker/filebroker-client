@@ -101,7 +101,11 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
             // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
             // retrieve it via id and blur
             if (hideOnHome) {
-                document.getElementById("rw_1_input")?.blur();
+                document.querySelectorAll("[id^=rw_][id$=_input]").forEach(el => {
+                    if (el instanceof HTMLElement) {
+                        el.blur();
+                    }
+                });
             }
         }}>
             <Combobox hideCaret hideEmptyPopup data={queryAutocompleteSuggestions} textField="display" value={queryString} onChange={(value, event) => {
