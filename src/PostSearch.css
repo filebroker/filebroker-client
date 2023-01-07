@@ -76,21 +76,30 @@
     color: black;
 }
 
-.post_wrapper {
+.post_wrapper_flexbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 320px;
+    height: 180px;
     margin: 10px;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-image: 'public/logo512.png';
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.post_wrapper {
     overflow: hidden;
     border-radius: 5px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     width: max-content;
     height: max-content;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
     max-width: 320px;
     max-height: 180px;
+    display: inline-flex;
+}
+
+.post_wrapper a {
+    display: inline-flex;
 }
 
 .post_wrapper img {

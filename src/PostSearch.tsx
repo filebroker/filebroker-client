@@ -96,13 +96,15 @@ function PostSearch({ app }: PostSearchProps) {
         let img = <ProgressiveImage src={thumbnailUrl} placeholder={urlJoin(getPublicUrl(), "logo192.png")}>{(src: string) => (<img src={src} className="thumb-img" alt={`Thumnail for post ${post.pk}`} />)}</ProgressiveImage>;
 
         postDivs.push(
-            <div key={post.pk} className="post_wrapper">
-                <Link to={{
-                    pathname: "/post/" + post.pk,
-                    search: search
-                }}>
-                    {img}
-                </Link>
+            <div key={"flex_" + post.pk} className="post_wrapper_flexbox">
+                <div key={post.pk} className="post_wrapper">
+                    <Link to={{
+                        pathname: "/post/" + post.pk,
+                        search: search
+                    }}>
+                        {img}
+                    </Link>
+                </div>
             </div>
         );
     });
@@ -114,7 +116,7 @@ function PostSearch({ app }: PostSearchProps) {
             let config;
             try {
                 config = await app.getAuthorization(location, navigate, false);
-            } catch(e: any) {
+            } catch (e: any) {
                 modal.close();
                 throw e;
             }
