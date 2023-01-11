@@ -1,12 +1,13 @@
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ReactNode, useEffect, useState } from 'react';
-import ProgressiveImage from 'react-progressive-graceful-image';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
 import App from './App';
 import http, { getApiUrl, getPublicUrl } from "./http-common";
 import "./PostSearch.css";
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 class SearchResult {
     full_count: number | null;
@@ -93,7 +94,12 @@ function PostSearch({ app }: PostSearchProps) {
             thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
         }
 
-        let img = <ProgressiveImage src={thumbnailUrl} placeholder={urlJoin(getPublicUrl(), "logo192.png")}>{(src: string) => (<img src={src} className="thumb-img" alt={`Thumnail for post ${post.pk}`} />)}</ProgressiveImage>;
+        let img = <LazyLoadImage
+            alt={`Thumnail for post ${post.pk}`}
+            src={thumbnailUrl}
+            effect="blur"
+            placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
+            className="thumb-img" />
 
         postDivs.push(
             <div key={"flex_" + post.pk} className="post_wrapper_flexbox">
