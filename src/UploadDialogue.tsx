@@ -15,7 +15,7 @@ import { Checkbox, TextField } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { GroupSelector } from "./GroupEditor";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
-import { EditPostRequest } from "./Post";
+import { EditPostRequest } from "./routes/Post";
 
 class UploadDialogueProps {
     app: App;

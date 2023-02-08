@@ -3,12 +3,12 @@ import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes, useL
 import "@filebroker/react-widgets/lib/styles.css";
 import './App.css';
 import http from "./http-common";
-import PostSearch from './PostSearch';
-import Login, { LoginResponse } from './Login';
-import { ProfilePage } from "./ProfilePage";
-import Register from './Register';
-import Post from './Post';
-import Home from './Home';
+import PostSearch from './routes/PostSearch';
+import Login, { LoginResponse } from './routes/Login';
+import { ProfilePage } from "./routes/ProfilePage";
+import Register from './routes/Register';
+import Post from './routes/Post';
+import Home from './routes/Home';
 import { AxiosResponse } from 'axios';
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
