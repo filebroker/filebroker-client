@@ -4,8 +4,8 @@ import { ReactNode, useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
-import App from './App';
-import http, { getApiUrl, getPublicUrl } from "./http-common";
+import App from '../App';
+import http, { getApiUrl, getPublicUrl } from "../http-common";
 import "./PostSearch.css";
 import 'react-lazy-load-image-component/src/effects/blur.css';
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import App from "./App";
-import http from "./http-common";
+import App from "../App";
+import http from "../http-common";
 import {LoginResponse} from "./Login";
 
 export class UserRegistration {

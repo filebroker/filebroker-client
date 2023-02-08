@@ -2,16 +2,16 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
-import App from "./App";
-import http, { getApiUrl } from "./http-common";
-import VideoJS from "./VideoJS";
+import App from "../App";
+import http, { getApiUrl } from "../http-common";
+import VideoJS from "../VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { GrantedPostGroupAccess, PostDetailed, UserGroup } from "./Model";
+import { GrantedPostGroupAccess, PostDetailed, UserGroup } from "../Model";
 import { TextField } from "@mui/material";
-import { TagSelector } from "./TagEditor";
-import { GroupSelector } from "./GroupEditor";
+import { TagSelector } from "../TagEditor";
+import { GroupSelector } from "../GroupEditor";
 
 class PostProps {
     app: App;
