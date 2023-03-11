@@ -9,10 +9,9 @@ import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { GrantedPostGroupAccess, PostDetailed, UserGroup } from "./Model";
-import { FormControlLabel, Switch, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import { TagSelector } from "./TagEditor";
 import { GroupSelector } from "./GroupEditor";
-import urlJoin from "url-join";
 
 class PostProps {
     app: App;
@@ -38,7 +37,6 @@ function Post({ app }: PostProps) {
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
-    const [hlsEnabled, setHlsEnabled] = useState(true);
 
     function updatePost(postDetailed: PostDetailed) {
         setPost(postDetailed);
@@ -96,33 +94,17 @@ function Post({ app }: PostProps) {
                 return <img className="image-post" src={dataUrl} alt={`Image of post ${post.pk}`}></img>;
             } else if (post.s3_object.mime_type.startsWith("video")) {
                 let videoType = post.s3_object.mime_type;
-                let sources = [{
-                    src: dataUrl,
-                    // attempt to play mvk as webm
-                    type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type
-                }];
-
-                if (hlsEnabled && post.s3_object.hls_master_playlist) {
-                    sources.splice(0, 0, {
-                        src: urlJoin(getApiUrl(), "get-object", post.s3_object.hls_master_playlist),
-                        type: "application/vnd.apple.mpegurl"
-                    });
-                }
-
                 const videoJsOptions = {
                     autoplay: true,
                     controls: true,
                     responsive: true,
                     fill: true,
                     preload: "auto",
-                    sources: sources,
-                    html5: {
-                        vhs: {
-                            overrideNative: !videojs.browser.IS_SAFARI
-                        },
-                        nativeAudioTracks: false,
-                        nativeVideoTracks: false
-                    }
+                    sources: [{
+                        src: dataUrl,
+                        // attempt to play mvk as webm
+                        type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type
+                    }]
                 };
 
                 return <div className="video-container"><VideoJS options={videoJsOptions} onReady={handlePlayerReady}></VideoJS></div>;
@@ -163,12 +145,6 @@ function Post({ app }: PostProps) {
                         pathname: "/posts",
                         search: search
                     }}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon> Back</Link>
-                    {post?.s3_object?.hls_master_playlist
-                        ? <FormControlLabel className="inline-form-control-label" control={<Switch checked={hlsEnabled} onChange={(_e, checked) => {
-                            setHlsEnabled(checked);
-                        }} />} label="HLS" />
-                        : <></>
-                    }
                     <div id="navigate-buttons">{prevLink}{nextLink}</div>
                 </div>
                 {component}

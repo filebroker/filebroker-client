@@ -65,8 +65,6 @@ export class S3Object {
     fk_uploader: number;
     thumbnail_object_key: string | null;
     creation_timestamp: string;
-    hls_master_playlist: string | null;
-    hls_disabled: boolean;
 
     constructor(
         object_key: string,
@@ -77,8 +75,6 @@ export class S3Object {
         fk_uploader: number,
         thumbnail_object_key: string | null,
         creation_timestamp: string,
-        hls_master_playlist: string | null,
-        hls_disabled: boolean,
     ) {
         this.object_key = object_key;
         this.sha256_hash = sha256_hash;
@@ -88,8 +84,6 @@ export class S3Object {
         this.fk_uploader = fk_uploader;
         this.thumbnail_object_key = thumbnail_object_key;
         this.creation_timestamp = creation_timestamp;
-        this.hls_master_playlist = hls_master_playlist;
-        this.hls_disabled = hls_disabled;
     }
 }
 
@@ -104,7 +98,6 @@ export class Broker {
     remove_duplicate_files: boolean;
     fk_owner: number;
     creation_timestamp: string;
-    hls_enabled: boolean;
 
     constructor(
         pk: number,
@@ -117,7 +110,6 @@ export class Broker {
         remove_duplicate_files: boolean,
         fk_owner: number,
         creation_timestamp: string,
-        hls_enabled: boolean,
     ) {
         this.pk = pk;
         this.name = name;
@@ -129,7 +121,6 @@ export class Broker {
         this.remove_duplicate_files = remove_duplicate_files;
         this.fk_owner = fk_owner;
         this.creation_timestamp = creation_timestamp;
-        this.hls_enabled = hls_enabled;
     }
 }
 
