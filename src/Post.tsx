@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactElement } from "react";
 import { useEffect, useState } from "react";
 import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
@@ -39,6 +39,7 @@ function Post({ app }: PostProps) {
     const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
     const [hlsEnabled, setHlsEnabled] = useState(true);
+    const [mediaComponent, setMediaComponent] = useState<ReactElement | undefined | null>(null);
 
     function updatePost(postDetailed: PostDetailed) {
         setPost(postDetailed);
@@ -75,6 +76,14 @@ function Post({ app }: PostProps) {
         });
     }, [id]);
 
+    useEffect(() => {
+        if (post) {
+            setMediaComponent(getComponentForData(post));
+        } else {
+            setMediaComponent(null);
+        }
+    }, [post, hlsEnabled])
+
     const playerRef = React.useRef(null);
     const handlePlayerReady = (player: any) => {
         playerRef.current = player;
@@ -89,7 +98,7 @@ function Post({ app }: PostProps) {
         });
     };
 
-    function getComponentForData(post: PostDetailed) {
+    function getComponentForData(post: PostDetailed): ReactElement | undefined {
         if (post.s3_object != null) {
             let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
@@ -138,7 +147,7 @@ function Post({ app }: PostProps) {
     if (post) {
         let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
         downloadLink = dataUrl && <p><a className="standard-link-button-large" target={"_blank"} rel="noreferrer" href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a></p>;
-        component = getComponentForData(post);
+        component = mediaComponent;
         postInformation = <div id="post-information">
             <FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}
         </div>;
