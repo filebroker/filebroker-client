@@ -1,8 +1,8 @@
 import { Autocomplete, Chip, TextField } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { Tag } from "./Model";
-import http from "./http-common";
-import App, { ModalContent } from "./App";
+import { Tag } from "../Model";
+import http from "../http-common";
+import App, { ModalContent } from "../App";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { useLocation, useNavigate } from "react-router-dom";

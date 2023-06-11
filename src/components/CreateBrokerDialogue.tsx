@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import ReactTooltip from "react-tooltip";
-import App, { ModalContent } from "./App";
-import http from "./http-common";
+import App, { ModalContent } from "../App";
+import http from "../http-common";
 
 class CreateBrokerDialogueProps {
     app: App;

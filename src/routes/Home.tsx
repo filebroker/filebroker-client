@@ -1,4 +1,4 @@
-import { PostQueryInput } from "./App";
+import { PostQueryInput } from "../App";
 import "./Home.css";
 
 function Home() {

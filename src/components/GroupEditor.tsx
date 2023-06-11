@@ -1,5 +1,5 @@
 import { Autocomplete, Chip, TextField } from "@mui/material";
-import { UserGroup } from "./Model";
+import { UserGroup } from "../Model";
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from "react";
 

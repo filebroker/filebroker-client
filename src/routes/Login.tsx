@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {Link, useLocation, useNavigate} from "react-router-dom";
-import http from "./http-common";
-import App, {User} from "./App";
+import http from "../http-common";
+import App, {User} from "../App";
 import "./Login.css";
 
 class LoginRequest {

@@ -2,20 +2,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
-import App, { ModalContent } from "./App";
-import http from "./http-common";
+import App, { ModalContent } from "../App";
+import http from "../http-common";
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
 import ProgressBar from 'react-bootstrap/ProgressBar';
-import { Broker, PostDetailed, S3Object, UserGroup } from "./Model";
+import { Broker, PostDetailed, S3Object, UserGroup } from "../Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
 import { Checkbox, TextField } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { GroupSelector } from "./GroupEditor";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
-import { EditPostRequest } from "./Post";
+import { EditPostRequest } from "../routes/Post";
 
 class UploadDialogueProps {
     app: App;
