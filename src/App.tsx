@@ -80,6 +80,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     let scheduledRequest: NodeJS.Timeout | null = null;
 
     function handleQueryChange(cursorPos: number, query: string) {
+        setQueryAutocompleteSuggestions([]);
         if (scheduledRequest) {
             clearTimeout(scheduledRequest);
         }
