@@ -30,6 +30,11 @@ export class UserRegistration {
     }
 }
 
+interface CheckUsernameResponse {
+    valid: boolean;
+    available: boolean;
+}
+
 class RegisterProps {
     app: App;
 
@@ -45,6 +50,9 @@ function Register({ app }: RegisterProps) {
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [passwordScore, setPasswordScore] = useState(0);
     const [passwordConfirm, setPasswordConfirm] = useState("");
+    const [userNameInvalid, setUserNameInvalid] = useState(false);
+    const [userNameTaken, setUserNameTaken] = useState(false);
+    const [checkedUserName, setCheckedUserName] = useState<string | null>(null);
     const navigate = useNavigate();
 
     async function register() {
@@ -56,6 +64,16 @@ function Register({ app }: RegisterProps) {
         } catch (e) {
             setLoginDisabled(false);
             console.error("Register failed: " + e);
+        }
+    }
+
+    async function checkUserName() {
+        if (userName && userName !== checkedUserName) {
+            let userNameToCheck = userName;
+            let response = await http.get<CheckUsernameResponse>(`/check-username/${encodeURIComponent(userNameToCheck)}`);
+            setUserNameInvalid(!response.data.valid);
+            setUserNameTaken(!response.data.available);
+            setCheckedUserName(userNameToCheck);
         }
     }
 
@@ -86,10 +104,43 @@ function Register({ app }: RegisterProps) {
                     <table className="fieldset-container">
                         <tbody>
                             <tr className="form-row">
-                                <td className="form-row-full-td"><TextField label="User Name" variant="outlined" value={userName} fullWidth onChange={e => setUserName(e.currentTarget.value)} inputProps={{ maxLength: 50 }} required></TextField></td>
+                                <td className="form-row-full-td">
+                                    <TextField
+                                        label="User Name"
+                                        variant="outlined"
+                                        value={userName}
+                                        fullWidth
+                                        onChange={e => { setUserNameInvalid(false); setUserNameTaken(false); setUserName(e.currentTarget.value) }}
+                                        inputProps={{ maxLength: 50 }}
+                                        required
+                                        onBlur={checkUserName}
+                                    />
+                                </td>
                             </tr>
+                            {userName && userNameInvalid &&
+                                <tr className="form-row">
+                                    <p className="error-txt">User name is invalid: Cannot contain whitespace</p>
+                                </tr>
+                            }
+                            {userName && userNameTaken && !userNameInvalid &&
+                                <tr className="form-row">
+                                    <p className="error-txt">User name is taken</p>
+                                </tr>
+                            }
                             <tr className="form-row">
-                                <td className="form-row-full-td"><TextField label="Password" name="passwordNoFill" type="password" variant="outlined" value={password} fullWidth onChange={e => setPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }} required autoComplete="new-password"></TextField></td>
+                                <td className="form-row-full-td">
+                                    <TextField
+                                        label="Password"
+                                        name="passwordNoFill"
+                                        type="password"
+                                        variant="outlined"
+                                        value={password}
+                                        fullWidth
+                                        onChange={e => setPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                                        required
+                                        autoComplete="new-password"
+                                    />
+                                </td>
                             </tr>
                             {password &&
                                 <tr className="form-row">
@@ -98,7 +149,19 @@ function Register({ app }: RegisterProps) {
                                 </tr>
                             }
                             <tr className="form-row">
-                                <td className="form-row-full-td"><TextField label="Confirm Password" name="passwordNoFill2" type="password" variant="outlined" value={passwordConfirm} fullWidth onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }} required autoComplete="new-password"></TextField></td>
+                                <td className="form-row-full-td">
+                                    <TextField
+                                        label="Confirm Password"
+                                        name="passwordNoFill2"
+                                        type="password"
+                                        variant="outlined"
+                                        value={passwordConfirm}
+                                        fullWidth
+                                        onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                                        required
+                                        autoComplete="new-password"
+                                    />
+                                </td>
                             </tr>
                             {passwordConfirm && password && password !== passwordConfirm &&
                                 <tr className="form-row">
@@ -107,7 +170,7 @@ function Register({ app }: RegisterProps) {
                             }
                         </tbody>
                     </table>
-                    <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)}/>
+                    <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
                     <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length === 0 || password.length === 0 || !captchaToken || passwordScore < 3 || !passwordConfirm || password !== passwordConfirm}>Register</button></div>
                 </form>
             </div>
