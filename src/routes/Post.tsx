@@ -62,8 +62,10 @@ function Post({ app }: PostProps) {
                 let post = await http.get<PostDetailed>(`/get-post/${id}${search}`, config);
                 updatePost(post.data);
 
-                let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
-                setCurrentUserGroups(currentUserGroups.data);
+                if (config) {
+                    let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
+                    setCurrentUserGroups(currentUserGroups.data);
+                }
             } catch (e: any) {
                 if (e.response?.status === 403) {
                     app.openModal("Error", <p>This post is unavailable.</p>);
