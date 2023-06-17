@@ -7,8 +7,11 @@ import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { TextField } from "@mui/material";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 export class UserRegistration {
+    display_name: string;
     user_name: string;
     password: string;
     email: string | null;
@@ -16,12 +19,14 @@ export class UserRegistration {
     captcha_token: string | null;
 
     constructor(
+        display_name: string,
         userName: string,
         password: string,
         email: string | null,
         avatar_url: string | null,
         captcha_token: string | null
     ) {
+        this.display_name = display_name;
         this.user_name = userName;
         this.password = password;
         this.email = email;
@@ -43,9 +48,14 @@ class RegisterProps {
     }
 }
 
+export const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
 function Register({ app }: RegisterProps) {
     const [password, setPassword] = useState("");
+    const [displayName, setDisplayName] = useState("");
     const [userName, setUserName] = useState("");
+    const [email, setEmail] = useState("");
+    const [emailInvalid, setEmailInvalid] = useState(false);
     const [loginDisabled, setLoginDisabled] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [passwordScore, setPasswordScore] = useState(0);
@@ -56,14 +66,18 @@ function Register({ app }: RegisterProps) {
     const navigate = useNavigate();
 
     async function register() {
+        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
         try {
-            let response = await http.post<LoginResponse>("/register", new UserRegistration(userName, password, null, null, captchaToken));
+            let response = await http.post<LoginResponse>("/register", new UserRegistration(displayName, userName, password, email, null, captchaToken), { withCredentials: true });
             setLoginDisabled(false);
             app.handleLogin(response.data);
             navigate("/profile");
+            modal.close();
         } catch (e) {
             setLoginDisabled(false);
             console.error("Register failed: " + e);
+            modal.close();
+            app.openModal("Error", <p>An error occurred while registering, please try again.</p>);
         }
     }
 
@@ -86,16 +100,24 @@ function Register({ app }: RegisterProps) {
 
     useEffect(() => {
         if (password) {
-            setPasswordScore(zxcvbn(password, [userName]).score);
+            setPasswordScore(zxcvbn(password, [userName, email, displayName]).score);
         } else {
             setPasswordScore(0);
         }
-    }, [password]);
+    }, [password, userName, email, displayName]);
+
+    useEffect(() => {
+        if (email) {
+            setEmailInvalid(!emailRegex.test(email));
+        } else {
+            setEmailInvalid(false);
+        }
+    }, [email]);
 
     return (
         <div id="Register">
             <div className="standard-form">
-                <form autoComplete="off" onSubmit={(e) => {
+                <form onSubmit={(e) => {
                     e.preventDefault();
                     setLoginDisabled(true);
                     register();
@@ -106,27 +128,44 @@ function Register({ app }: RegisterProps) {
                             <tr className="form-row">
                                 <td className="form-row-full-td">
                                     <TextField
+                                        label="Display Name"
+                                        variant="outlined"
+                                        value={displayName}
+                                        fullWidth
+                                        onChange={e => setDisplayName(e.currentTarget.value)}
+                                        inputProps={{ maxLength: 32 }}
+                                    />
+                                </td>
+                            </tr>
+                            <tr className="form-row">
+                                <td className="form-row-full-td">
+                                    <TextField
                                         label="User Name"
                                         variant="outlined"
                                         value={userName}
+                                        error={userNameInvalid || userNameTaken}
+                                        helperText={(userNameInvalid || userNameTaken) && (userNameInvalid ? "User name invalid: cannot contain whitespace" : "User name taken")}
                                         fullWidth
                                         onChange={e => { setUserNameInvalid(false); setUserNameTaken(false); setUserName(e.currentTarget.value) }}
-                                        inputProps={{ maxLength: 50 }}
+                                        inputProps={{ maxLength: 25 }}
                                         required
                                         onBlur={checkUserName}
                                     />
                                 </td>
                             </tr>
-                            {userName && userNameInvalid &&
-                                <tr className="form-row">
-                                    <p className="error-txt">User name is invalid: Cannot contain whitespace</p>
-                                </tr>
-                            }
-                            {userName && userNameTaken && !userNameInvalid &&
-                                <tr className="form-row">
-                                    <p className="error-txt">User name is taken</p>
-                                </tr>
-                            }
+                            <tr className="form-row">
+                                <td className="form-row-full-td">
+                                    <TextField
+                                        label="Email"
+                                        variant="outlined"
+                                        type="email"
+                                        error={emailInvalid}
+                                        value={email}
+                                        fullWidth
+                                        onChange={e => setEmail(e.currentTarget.value)}
+                                    />
+                                </td>
+                            </tr>
                             <tr className="form-row">
                                 <td className="form-row-full-td">
                                     <TextField
@@ -135,6 +174,9 @@ function Register({ app }: RegisterProps) {
                                         type="password"
                                         variant="outlined"
                                         value={password}
+                                        // use !! to force this to be a boolean instead of boolean | string
+                                        error={!!(passwordConfirm && password && password !== passwordConfirm)}
+                                        helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
                                         fullWidth
                                         onChange={e => setPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
                                         required
@@ -145,7 +187,6 @@ function Register({ app }: RegisterProps) {
                             {password &&
                                 <tr className="form-row">
                                     <PasswordStrengthMeter passwordScore={passwordScore} />
-                                    <br />
                                 </tr>
                             }
                             <tr className="form-row">
@@ -156,6 +197,9 @@ function Register({ app }: RegisterProps) {
                                         type="password"
                                         variant="outlined"
                                         value={passwordConfirm}
+                                        // use !! to force this to be a boolean instead of boolean | string
+                                        error={!!(passwordConfirm && password && password !== passwordConfirm)}
+                                        helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
                                         fullWidth
                                         onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
                                         required
@@ -163,15 +207,10 @@ function Register({ app }: RegisterProps) {
                                     />
                                 </td>
                             </tr>
-                            {passwordConfirm && password && password !== passwordConfirm &&
-                                <tr className="form-row">
-                                    <p className="error-txt">Passwords do not match</p>
-                                </tr>
-                            }
                         </tbody>
                     </table>
                     <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
-                    <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length === 0 || password.length === 0 || !captchaToken || passwordScore < 3 || !passwordConfirm || password !== passwordConfirm}>Register</button></div>
+                    <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length === 0 || password.length === 0 || !captchaToken || passwordScore < 3 || !passwordConfirm || password !== passwordConfirm || emailInvalid}>Register</button></div>
                 </form>
             </div>
         </div>

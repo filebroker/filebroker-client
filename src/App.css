@@ -178,24 +178,46 @@ body {
 .standard-button:hover:enabled {
     background-color: white;
     color: black;
+    cursor: pointer;
 }
 
 .standard-button:disabled {
     color: darkgray;
-    border: 1px dotted darkgray;
+    border: 1px solid darkgray;
+    cursor: not-allowed;
 }
 
 .standard-button-large:hover:enabled {
     background-color: white;
     color: black;
+    cursor: pointer;
 }
 
 .standard-button-large:disabled {
     color: darkgray;
-    border: 1px dotted darkgray;
+    border: 1px solid darkgray;
+    cursor: not-allowed;
+}
+
+.underscore-button {
+    text-decoration: underline;
+    background-color: transparent;
+    color: white;
+    border: none;
+    font-size: medium;
+}
+
+.underscore-button:hover:enabled {
+    cursor: pointer;
+}
+
+.underscore-button:disabled {
+    color: darkgray;
+    cursor: not-allowed;
 }
 
 .standard-form {
+    display: flex;
     border: 2px solid white;
     border-radius: 5px;
     text-align: center;
@@ -210,6 +232,15 @@ body {
     -moz-box-shadow: 0 0 3px #ccc;
     -webkit-box-shadow: 0 0 3px #ccc;
     box-shadow: 0 0 3px #ccc;
+    min-width: 500px;
+    min-height: 500px;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+}
+
+.standard-form-container {
+    width: 300px;
 }
 
 #modal-content fieldset {

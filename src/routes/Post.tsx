@@ -56,24 +56,26 @@ function Post({ app }: PostProps) {
     useEffect(() => {
         setPost(null);
         let fetch = async () => {
-            let config = await app.getAuthorization(location, navigate, false);
+            try {
+                let config = await app.getAuthorization(location, navigate, false);
 
-            http
-                .get<PostDetailed>(`/get-post/${id}${search}`, config)
-                .then(result => {
-                    updatePost(result.data);
-                });
+                let post = await http.get<PostDetailed>(`/get-post/${id}${search}`, config);
+                updatePost(post.data);
 
-            http
-                .get<UserGroup[]>("/get-current-user-groups", config)
-                .then(result => setCurrentUserGroups(result.data));
+                let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
+                setCurrentUserGroups(currentUserGroups.data);
+            } catch (e: any) {
+                if (e.response?.status === 403) {
+                    app.openModal("Error", <p>This post is unavailable.</p>);
+                } else if (e.response?.status === 401) {
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                }
+                console.error(e);
+            }
         };
 
         const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
-        fetch().then(() => modal.close()).catch(e => {
-            console.error(e);
-            modal.close();
-        });
+        fetch().then(() => modal.close()).catch(() => modal.close());
     }, [id]);
 
     useEffect(() => {

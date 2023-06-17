@@ -188,8 +188,13 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
                 let response = await http.post<UpsertTagResponse>("/upsert-tag", new UpsertTagRequest(tagName, parentPks, aliasPks), config);
                 loadingModal.close();
                 modal.close(response.data);
-            } catch (e) {
+            } catch (e: any) {
                 loadingModal.close();
+                if (e.response?.status === 401) {
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                } else {
+                    app.openModal("Error", <p>An error occurred saving the tag.</p>);
+                }
                 throw e;
             }
         }}>

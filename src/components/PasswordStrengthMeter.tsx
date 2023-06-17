@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import zxcvbn from "zxcvbn";
 import "./PasswordStrengthMeter.css";
 
 export function PasswordStrengthMeter({ passwordScore }: {

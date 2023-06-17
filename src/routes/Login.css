@@ -10,3 +10,26 @@
 #register-link a:visited {
     color: white;
 }
+
+.login-button {
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: transparent;
+    color: white;
+    padding: 5px;
+    margin: 5px;
+    width: 200px;
+    height: 50px;
+}
+
+.login-button:hover:enabled {
+    background-color: white;
+    color: black;
+    cursor: pointer;
+}
+
+.login-button:disabled {
+    color: darkgray;
+    border: 1px solid darkgray;
+    cursor: not-allowed;
+}

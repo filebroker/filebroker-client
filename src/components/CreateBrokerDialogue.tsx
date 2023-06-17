@@ -45,7 +45,7 @@ class CreateBrokerRequest {
     }
 }
 
-function CreateBrokerDialogue({app, modal}: CreateBrokerDialogueProps) {
+function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -67,9 +67,11 @@ function CreateBrokerDialogue({app, modal}: CreateBrokerDialogueProps) {
                 let config = await app.getAuthorization(location, navigate);
                 let response = await http.post("/create-broker", new CreateBrokerRequest(name, bucket, endpoint, accessKey, secretKey, isAwsRegion, removeDuplicateFiles), config);
                 modal.close(response.data);
-            } catch(e: any) {
+            } catch (e: any) {
                 if (e.response && e.response.status === 400) {
                     app.openModal("Error", <p>The provided S3 config is invalid, make sure the endpoint is reachable, the bucket and region are valid and the provided credentials have access to the bucket.</p>);
+                } else if (e.response?.status === 401) {
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                 } else {
                     console.error("Failed to create broker", e);
                 }

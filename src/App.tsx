@@ -17,23 +17,30 @@ import UploadDialogue from './components/UploadDialogue';
 import { AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion } from './Model';
 import { replaceStringRange } from './Util';
 import { Combobox } from '@filebroker/react-widgets/lib/cjs';
+import { EmailConfirmation } from './routes/EmailConfirmation';
 
 export class User {
     user_name: string;
-    email: string;
+    email: string | null;
     avatar_url: string;
     creation_timestamp: string;
+    email_confirmed: boolean;
+    display_name: string | null;
 
     constructor(
         user_name: string,
-        email: string,
+        email: string | null,
         avatar_url: string,
         creation_timestamp: string,
+        email_confirmed: boolean,
+        display_name: string | null
     ) {
         this.user_name = user_name;
         this.email = email;
         this.avatar_url = avatar_url;
         this.creation_timestamp = creation_timestamp;
+        this.email_confirmed = email_confirmed;
+        this.display_name = display_name;
     }
 }
 
@@ -155,7 +162,7 @@ export class App extends React.Component<{}, {
         if (this.state.user == null) {
             loginAccountLink = <NavLink to="/login">Log In</NavLink>;
         } else {
-            loginAccountLink = <NavLink to="/profile">{this.state.user.user_name}</NavLink>;
+            loginAccountLink = <NavLink to="/profile">{this.state.user.display_name ?? this.state.user.user_name}</NavLink>;
         }
 
         const modalStyles = {
@@ -221,6 +228,7 @@ export class App extends React.Component<{}, {
                     <Route path="/profile" element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}></Route>
                     <Route path="/register" element={<Register app={this}></Register>}></Route>
                     <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
+                    <Route path="/confirm-email/:token" element={<EmailConfirmation app={this}></EmailConfirmation>}></Route>
                     <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                 </Routes>
             </BrowserRouter>
