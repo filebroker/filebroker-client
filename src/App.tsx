@@ -282,7 +282,7 @@ export class App extends React.Component<{}, {
             if (this.pendingLogin != null) {
                 promise = this.pendingLogin;
             } else {
-                promise = http.post<LoginResponse>("/refresh-login", null, { withCredentials: true });
+                promise = http.post<LoginResponse>("/try-refresh-login", null, { withCredentials: true });
                 this.pendingLogin = promise;
             }
             try {
