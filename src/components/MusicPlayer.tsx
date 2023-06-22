@@ -228,7 +228,7 @@ export function MusicPlayer({ src }: { src: string }) {
             </div>
             <div className="song-control-container">
                 <div className="flex-grid-item volume-control-container">
-                    <button className="song-volume-button" onClick={() => setMuted(!muted)}><FontAwesomeIcon icon={volumeLabel} /></button>
+                    <button className="song-volume-button" onClick={() => setMuted(!muted)}><FontAwesomeIcon className="player-icon" icon={volumeLabel} /></button>
                     <input
                         type="range"
                         className="volume-slider"
