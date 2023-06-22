@@ -13,6 +13,7 @@ import { FormControlLabel, Switch, TextField } from "@mui/material";
 import { TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import urlJoin from "url-join";
+import { MusicPlayer } from "../components/MusicPlayer";
 
 class PostProps {
     app: App;
@@ -107,6 +108,8 @@ function Post({ app }: PostProps) {
             let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
                 return <img className="image-post" src={dataUrl} alt={`Image of post ${post.pk}`}></img>;
+            } else if (post.s3_object.mime_type.startsWith("audio")) {
+                return <MusicPlayer src={dataUrl} />
             } else if (post.s3_object.mime_type.startsWith("video")) {
                 let videoType = post.s3_object.mime_type;
                 let sources = [{

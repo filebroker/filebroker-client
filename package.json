@@ -36,6 +36,7 @@
     "react-tooltip": "^4.2.21",
     "typescript": "^4.7.2",
     "url-join": "^5.0.0",
+    "use-sound": "^4.0.1",
     "video.js": "^7.20.1",
     "web-vitals": "^2.1.4",
     "zxcvbn": "^4.4.2"
