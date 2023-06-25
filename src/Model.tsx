@@ -8,8 +8,8 @@ export class PostDetailed {
     score: number;
     s3_object: S3Object | null;
     thumbnail_url: string | null;
-    prev_post_pk: number | null;
-    next_post_pk: number | null;
+    prev_post: PostWindowObject | null;
+    next_post: PostWindowObject | null;
     is_public: boolean;
     public_edit: boolean;
     description: string | null;
@@ -27,8 +27,8 @@ export class PostDetailed {
         score: number,
         s3_object: S3Object | null,
         thumbnail_url: string | null,
-        prev_post_pk: number | null,
-        next_post_pk: number | null,
+        prev_post: PostWindowObject | null,
+        next_post: PostWindowObject | null,
         is_public: boolean,
         public_edit: boolean,
         description: string | null,
@@ -45,14 +45,24 @@ export class PostDetailed {
         this.score = score;
         this.s3_object = s3_object;
         this.thumbnail_url = thumbnail_url;
-        this.prev_post_pk = prev_post_pk;
-        this.next_post_pk = next_post_pk;
+        this.prev_post = prev_post;
+        this.next_post = next_post;
         this.is_public = is_public;
         this.public_edit = public_edit;
         this.description = description;
         this.is_editable = is_editable;
         this.tags = tags;
         this.group_access = group_access;
+    }
+}
+
+export class PostWindowObject {
+    pk: number;
+    page: number;
+
+    constructor (pk: number, page: number) {
+        this.pk = pk;
+        this.page = page;
     }
 }
 

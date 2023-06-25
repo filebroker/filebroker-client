@@ -159,12 +159,16 @@ function Post({ app }: PostProps) {
             <FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}
         </div>;
 
-        if (post.prev_post_pk) {
-            let location: Partial<Location> = { pathname: "/post/" + post.prev_post_pk, search: search, key: post.prev_post_pk.toString() };
+        if (post.prev_post) {
+            let searchParams = new URLSearchParams(search);
+            searchParams.set("page", post.prev_post.page.toString());
+            let location: Partial<Location> = { pathname: "/post/" + post.prev_post.pk, search: searchParams.toString(), key: post.prev_post.pk.toString() };
             prevLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon></Link>;
         }
-        if (post.next_post_pk) {
-            let location: Partial<Location> = { pathname: "/post/" + post.next_post_pk, search: search, key: post.next_post_pk.toString() };
+        if (post.next_post) {
+            let searchParams = new URLSearchParams(search);
+            searchParams.set("page", post.next_post.page.toString());
+            let location: Partial<Location> = { pathname: "/post/" + post.next_post.pk, search: searchParams.toString(), key: post.next_post.pk.toString() };
             nextLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-right")}></FontAwesomeIcon></Link>;
         }
     } else {
@@ -236,8 +240,8 @@ function Post({ app }: PostProps) {
                             ), config);
 
                             if (post) {
-                                result.data.prev_post_pk = post.prev_post_pk;
-                                result.data.next_post_pk = post.next_post_pk;
+                                result.data.prev_post = post.prev_post;
+                                result.data.next_post = post.next_post;
                             }
                             updatePost(result.data);
                         } catch (e) {
