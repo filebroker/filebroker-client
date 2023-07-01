@@ -82,12 +82,37 @@ function Post({ app }: PostProps) {
     }, [id]);
 
     useEffect(() => {
+        const fetch = async () => {
+            try {
+                let config = await app.getAuthorization(location, navigate, false);
+                let searchParams = new URLSearchParams(search);
+                searchParams.set("exclude_window", "true");
+                let result = await http.get<PostDetailed>(`/get-post/${id}?${searchParams}`, config);
+                if (post) {
+                    result.data.prev_post = post.prev_post;
+                    result.data.next_post = post.next_post;
+                }
+                updatePost(result.data);
+            } catch (e: any) {
+                if (e.response?.status === 403) {
+                    app.openModal("Error", <p>This post is unavailable.</p>);
+                } else if (e.response?.status === 401) {
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                }
+                console.error(e);
+            }
+        };
+        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        fetch().then(() => modal.close()).catch(() => modal.close());
+    }, [isEditMode]);
+
+    useEffect(() => {
         if (post) {
             setMediaComponent(getComponentForData(post));
         } else {
             setMediaComponent(null);
         }
-    }, [post, hlsEnabled])
+    }, [post?.s3_object?.object_key, hlsEnabled])
 
     const playerRef = React.useRef(null);
     const handlePlayerReady = (player: any) => {
