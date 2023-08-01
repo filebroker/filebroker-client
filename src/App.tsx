@@ -65,6 +65,8 @@ export class ModalContent {
     }
 }
 
+let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
+
 export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     const location = useLocation();
     const search = location.search;
@@ -84,14 +86,12 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
         return null;
     }
 
-    let scheduledRequest: NodeJS.Timeout | null = null;
-
-    function handleQueryChange(cursorPos: number, query: string) {
+    const handleQueryChange = (cursorPos: number, query: string) => {
         setQueryAutocompleteSuggestions([]);
-        if (scheduledRequest) {
-            clearTimeout(scheduledRequest);
+        if (scheduledAnalyzeQueryRequest) {
+            clearTimeout(scheduledAnalyzeQueryRequest);
         }
-        scheduledRequest = setTimeout(async () => {
+        scheduledAnalyzeQueryRequest = setTimeout(async () => {
             const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query));
             setQueryAutocompleteSuggestions(response.data.suggestions);
         }, 250);
