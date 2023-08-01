@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useRef } from "react";
 import { useEffect, useState } from "react";
 import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
@@ -29,6 +29,8 @@ function Post({ app }: PostProps) {
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
+
+    const isInitialMount = useRef(true);
 
     const [isEditMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<(string | { label: string, pk: number })[]>([]);
@@ -82,6 +84,10 @@ function Post({ app }: PostProps) {
     }, [id]);
 
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
         const fetch = async () => {
             try {
                 let config = await app.getAuthorization(location, navigate, false);
