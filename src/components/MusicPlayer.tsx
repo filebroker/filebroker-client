@@ -36,13 +36,15 @@ export function MusicPlayer({ src }: { src: string }) {
         soundEnabled: !muted,
         onend: () => {
             setIsPlaying(false);
-        }
+        },
+        // enable HTML5 streaming and avoid web audio API memory leak issues (howler issue #914)
+        html5: true
     });
     const [title, setTitle] = useState("");
     const [album, setAlbum] = useState("");
     const [artist, setArtist] = useState("");
-    const [pictureFormat, setPictureFormat] = useState("");
-    const [pictureBase64, setPictureBase64] = useState("");
+    const [pictureBlobUrl, setPictureBlobUrl] = useState("");
+    const pictureBlobUrlRef = useRef("");
 
     const [time, setTime] = useState({
         min: 0,
@@ -126,6 +128,9 @@ export function MusicPlayer({ src }: { src: string }) {
         return () => {
             clearInterval(interval);
             stop();
+            if (sound) {
+                sound.unload();
+            }
         }
     }, [sound]);
 
@@ -133,27 +138,41 @@ export function MusicPlayer({ src }: { src: string }) {
         setTitle("");
         setAlbum("");
         setArtist("");
-        setPictureFormat("");
-        setPictureBase64("");
+        setPictureBlobUrl("");
         jsmediatags.read(src, {
             onSuccess: function (tag: ID3Tag) {
                 setTitle(tag.tags.title);
                 setAlbum(tag.tags.album);
                 setArtist(tag.tags.artist);
-                setPictureFormat(tag.tags.picture.format);
+                const pictureFormat = tag.tags.picture.format;
 
                 const pictureData = tag.tags.picture.data;
-                let base64String = "";
+                let pictureByteString = "";
                 for (let i = 0; i < pictureData.length; i++) {
-                    base64String += String.fromCharCode(pictureData[i]);
+                    pictureByteString += String.fromCharCode(pictureData[i]);
                 }
 
-                setPictureBase64(base64String);
+                const ab = new ArrayBuffer(pictureByteString.length);
+                const ia = new Uint8Array(ab);
+                for (var i = 0; i < pictureByteString.length; i++) {
+                    ia[i] = pictureByteString.charCodeAt(i);
+                }
+
+                const blob = new Blob([ab], { type: pictureFormat });
+                const blobUrl = URL.createObjectURL(blob);
+                pictureBlobUrlRef.current = blobUrl;
+                setPictureBlobUrl(blobUrl);
             },
             onError: function (error: any) {
                 console.error("Error reading tag: " + error);
             }
         });
+
+        return () => {
+            if (pictureBlobUrlRef.current) {
+                URL.revokeObjectURL(pictureBlobUrlRef.current);
+            }
+        }
     }, [src]);
 
     const onPlayPause = () => {
@@ -168,8 +187,8 @@ export function MusicPlayer({ src }: { src: string }) {
 
     let scheduledScrub: NodeJS.Timeout | null = null;
 
-    const cover = pictureBase64
-        ? `data:${pictureFormat};base64,${window.btoa(pictureBase64)}`
+    const cover = pictureBlobUrl
+        ? pictureBlobUrl
         : urlJoin(getPublicUrl(), "logo512.png");
 
     return (
