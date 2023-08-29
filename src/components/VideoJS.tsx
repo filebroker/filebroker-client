@@ -27,13 +27,15 @@ export const VideoJS = (props: any) => {
 
             player.src(options.sources);
         }
+    }, [options, videoRef]);
 
+    React.useEffect(() => {
         return () => {
             if (playerRef.current) {
                 playerRef.current.dispose();
             }
         }
-    }, [options, videoRef]);
+    }, []);
 
     return (
         <div data-vjs-player>
