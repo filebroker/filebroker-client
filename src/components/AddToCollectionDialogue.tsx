@@ -184,7 +184,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                     count={pageCount ?? 999}
                     showFirstButton
                     showLastButton={pageCount !== null}
-                    siblingCount={pageCount !== null ? 3 : 0}
+                    siblingCount={pageCount !== null ? 1 : 0}
                     boundaryCount={pageCount !== null ? 1 : 0}
                     color='primary'
                     onChange={(_e, page) => setListPage(page - 1)}
