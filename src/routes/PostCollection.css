@@ -1,0 +1,30 @@
+#PostCollection {
+    width: 100%;
+}
+
+#post-collection-information {
+    text-align: right;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#post-collection-head {
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-bottom: 25px;
+}
+
+#post-collection-information-container {
+    background-color: #161b22;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    padding: 10px;
+    left: 50%;
+    -webkit-transform: translate(-50%, 0%);
+    transform: translate(-50%, 0%);
+    position: relative;
+}
+
+#post-collection-button-row > * {
+    margin-right: 10px;
+}

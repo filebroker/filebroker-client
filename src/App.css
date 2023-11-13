@@ -106,7 +106,7 @@ body {
 }
 
 #search-bar input {
-    width: 500px;
+    width: 25vw;
 }
 
 #nav-box-left {
@@ -173,6 +173,7 @@ body {
     color: white;
     padding: 5px;
     margin: 5px;
+    font-size: 16px;
 }
 
 .standard-button:hover:enabled {
@@ -394,6 +395,7 @@ body {
     text-decoration: none;
     padding: 5px;
     margin: 5px;
+    font-size: 16px;
 }
 
 .standard-link-button-large:visited {
@@ -439,6 +441,10 @@ body {
     font-size: 13.3333px;
 }
 
+.rw-input:disabled {
+    background-color: transparent;
+}
+
 .rw-widget-picker {
     min-height: auto;
     background-color: transparent;
@@ -457,6 +463,14 @@ body {
     border: 1px solid white;
     border-right: none;
     height: 30px;
+}
+
+.rw-widget-input:disabled {
+    background-color: transparent;
+}
+
+.rw-widget-input.rw-state-disabled, .rw-state-disabled .rw-widget-input, fieldset[disabled] .rw-widget-input {
+    background-color: transparent;
 }
 
 .rw-state-focus .rw-widget-picker {
@@ -538,6 +552,12 @@ body {
     cursor: pointer;
 }
 
+.search-button:hover:disabled {
+    color: white;
+    background-color: transparent;
+    cursor: not-allowed;
+}
+
 .tag-selector-div {
     width: 250px;
 }
@@ -588,4 +608,8 @@ input:-webkit-autofill:focus {
 
 .error-txt {
     color: red;
+}
+
+.MuiSvgIcon-root {
+    color: inherit !important;
 }

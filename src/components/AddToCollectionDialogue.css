@@ -1,0 +1,19 @@
+#AddToCollectionDialogue {
+    width: 500px;
+}
+
+#add-to-collection-search-box {
+    width: 100%;
+}
+
+#add-to-collection-list {
+    width: 100%;
+}
+
+#add-to-collection-pagination {
+    width: 100%;
+    text-align: center;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}

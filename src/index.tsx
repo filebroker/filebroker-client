@@ -4,6 +4,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Modal from 'react-modal';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { closeSnackbar, SnackbarProvider } from 'notistack';
+import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -16,6 +19,9 @@ const MUI_THEME = createTheme({
         "fontFamily": `-apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif`,
         "allVariants": {
             "color": "white"
+        },
+        button: {
+            textTransform: 'none'
         }
     },
     palette: {
@@ -81,7 +87,13 @@ const MUI_THEME = createTheme({
 
 root.render(
     <ThemeProvider theme={MUI_THEME}>
-        <App></App>
+        <SnackbarProvider autoHideDuration={6000} anchorOrigin={{ horizontal: "right", vertical: "bottom" }} action={(snackbarId) => (
+            <IconButton onClick={() => closeSnackbar(snackbarId)}>
+                <CloseIcon />
+            </IconButton>
+        )}>
+            <App></App>
+        </SnackbarProvider>
     </ThemeProvider>
 );
 

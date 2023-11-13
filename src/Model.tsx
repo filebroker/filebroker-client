@@ -1,4 +1,6 @@
-export class PostDetailed {
+import { User } from "./App";
+
+export class Post {
     pk: number;
     data_url: string | null;
     source_url: string | null;
@@ -6,16 +8,11 @@ export class PostDetailed {
     creation_timestamp: string;
     fk_create_user: number;
     score: number;
-    s3_object: S3Object | null;
+    s3_object: string | null;
     thumbnail_url: string | null;
-    prev_post: PostWindowObject | null;
-    next_post: PostWindowObject | null;
     is_public: boolean;
     public_edit: boolean;
     description: string | null;
-    is_editable: boolean;
-    tags: Tag[];
-    group_access: PostGroupAccessDetailed[];
 
     constructor(
         pk: number,
@@ -25,16 +22,11 @@ export class PostDetailed {
         creation_timestamp: string,
         fk_create_user: number,
         score: number,
-        s3_object: S3Object | null,
+        s3_object: string | null,
         thumbnail_url: string | null,
-        prev_post: PostWindowObject | null,
-        next_post: PostWindowObject | null,
         is_public: boolean,
         public_edit: boolean,
-        description: string | null,
-        is_editable: boolean,
-        tags: Tag[],
-        group_access: PostGroupAccessDetailed[]
+        description: string | null
     ) {
         this.pk = pk;
         this.data_url = data_url;
@@ -45,12 +37,68 @@ export class PostDetailed {
         this.score = score;
         this.s3_object = s3_object;
         this.thumbnail_url = thumbnail_url;
+        this.is_public = is_public;
+        this.public_edit = public_edit;
+        this.description = description;
+    }
+}
+
+export class PostDetailed {
+    pk: number;
+    data_url: string | null;
+    source_url: string | null;
+    title: string | null;
+    creation_timestamp: string;
+    create_user: User;
+    score: number;
+    s3_object: S3Object | null;
+    thumbnail_url: string | null;
+    prev_post: PostWindowObject | null;
+    next_post: PostWindowObject | null;
+    is_public: boolean;
+    public_edit: boolean;
+    description: string | null;
+    is_editable: boolean;
+    is_deletable: boolean;
+    tags: Tag[];
+    group_access: PostGroupAccessDetailed[];
+
+    constructor(
+        pk: number,
+        data_url: string | null,
+        source_url: string | null,
+        title: string | null,
+        creation_timestamp: string,
+        create_user: User,
+        score: number,
+        s3_object: S3Object | null,
+        thumbnail_url: string | null,
+        prev_post: PostWindowObject | null,
+        next_post: PostWindowObject | null,
+        is_public: boolean,
+        public_edit: boolean,
+        description: string | null,
+        is_editable: boolean,
+        is_deletable: boolean,
+        tags: Tag[],
+        group_access: PostGroupAccessDetailed[]
+    ) {
+        this.pk = pk;
+        this.data_url = data_url;
+        this.source_url = source_url;
+        this.title = title;
+        this.creation_timestamp = creation_timestamp;
+        this.create_user = create_user;
+        this.score = score;
+        this.s3_object = s3_object;
+        this.thumbnail_url = thumbnail_url;
         this.prev_post = prev_post;
         this.next_post = next_post;
         this.is_public = is_public;
         this.public_edit = public_edit;
         this.description = description;
         this.is_editable = is_editable;
+        this.is_deletable = is_deletable;
         this.tags = tags;
         this.group_access = group_access;
     }
@@ -60,9 +108,86 @@ export class PostWindowObject {
     pk: number;
     page: number;
 
-    constructor (pk: number, page: number) {
+    constructor(pk: number, page: number) {
         this.pk = pk;
         this.page = page;
+    }
+}
+
+export class PostCollection {
+    pk: number;
+    title: string;
+    fk_create_user: number;
+    creation_timestamp: string;
+    is_public: boolean;
+    public_edit: boolean;
+    poster_object_key: string | null;
+    description: string | null;
+
+    constructor(
+        pk: number,
+        title: string,
+        fk_create_user: number,
+        creation_timestamp: string,
+        is_public: boolean,
+        public_edit: boolean,
+        poster_object_key: string | null,
+        description: string | null,
+    ) {
+        this.pk = pk;
+        this.title = title;
+        this.fk_create_user = fk_create_user;
+        this.creation_timestamp = creation_timestamp;
+        this.is_public = is_public;
+        this.public_edit = public_edit;
+        this.poster_object_key = poster_object_key;
+        this.description = description;
+    }
+}
+
+export class PostCollectionDetailed {
+    pk: number;
+    title: string;
+    create_user: User;
+    creation_timestamp: string;
+    is_public: boolean;
+    public_edit: boolean;
+    poster_object: S3Object | null;
+    poster_object_key: string | null;
+    description: string | null;
+    is_editable: boolean;
+    is_deletable: boolean;
+    tags: Tag[];
+    group_access: PostCollectionGroupAccessDetailed[];
+
+    constructor(
+        pk: number,
+        title: string,
+        create_user: User,
+        creation_timestamp: string,
+        is_public: boolean,
+        public_edit: boolean,
+        poster_object: S3Object | null,
+        poster_object_key: string | null,
+        description: string | null,
+        is_editable: boolean,
+        is_deletable: boolean,
+        tags: Tag[],
+        group_access: PostCollectionGroupAccessDetailed[]
+    ) {
+        this.pk = pk;
+        this.title = title;
+        this.create_user = create_user;
+        this.creation_timestamp = creation_timestamp;
+        this.is_public = is_public;
+        this.public_edit = public_edit;
+        this.poster_object = poster_object;
+        this.poster_object_key = poster_object_key;
+        this.description = description;
+        this.is_editable = is_editable;
+        this.is_deletable = is_deletable;
+        this.tags = tags;
+        this.group_access = group_access;
     }
 }
 
@@ -184,7 +309,7 @@ export class UserGroup {
     }
 }
 
-export class GrantedPostGroupAccess {
+export class GroupAccessDefinition {
     group_pk: number;
     write: boolean;
 
@@ -216,13 +341,37 @@ export class PostGroupAccessDetailed {
     }
 }
 
+export class PostCollectionGroupAccessDetailed {
+    fk_post_collection: number;
+    write: boolean;
+    fk_granted_by: number;
+    creation_timestamp: string;
+    granted_group: UserGroup;
+
+    constructor(
+        fk_post_collection: number,
+        write: boolean,
+        fk_granted_by: number,
+        creation_timestamp: string,
+        granted_group: UserGroup
+    ) {
+        this.fk_post_collection = fk_post_collection;
+        this.write = write;
+        this.fk_granted_by = fk_granted_by;
+        this.creation_timestamp = creation_timestamp;
+        this.granted_group = granted_group;
+    }
+}
+
 export class AnalyzeQueryRequest {
     cursor_pos: number | null | undefined;
     query: string;
+    scope: string;
 
-    constructor(cursor_pos: number | null | undefined, query: string) {
+    constructor(cursor_pos: number | null | undefined, query: string, scope: string) {
         this.cursor_pos = cursor_pos;
         this.query = query;
+        this.scope = scope;
     }
 }
 
@@ -287,5 +436,26 @@ export class AnalyzeQueryResponse {
     constructor(error: QueryCompilationError | null | undefined, suggestions: QueryAutocompleteSuggestion[]) {
         this.error = error;
         this.suggestions = suggestions;
+    }
+}
+
+export class DeletePostsResponse {
+    deleted_posts: Post[];
+    deleted_objects: S3Object[];
+
+    constructor(
+        deleted_posts: Post[],
+        deleted_objects: S3Object[]
+    ) {
+        this.deleted_posts = deleted_posts;
+        this.deleted_objects = deleted_objects;
+    }
+}
+
+export class DeletePostCollectionsResponse {
+    deleted_post_collections: PostCollection[];
+
+    constructor(deleted_post_collections: PostCollection[]) {
+        this.deleted_post_collections = deleted_post_collections;
     }
 }

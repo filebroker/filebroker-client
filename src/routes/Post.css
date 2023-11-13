@@ -48,3 +48,7 @@
     transform: translate(-50%, 0%);
     position: relative;
 }
+
+#post-container-bottom-row {
+    display: inline-block;
+}

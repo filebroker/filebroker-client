@@ -1,0 +1,5 @@
+#QueryAutocompleteSuggestionSearchBox {
+    display: grid;
+    grid-template-rows: 2em;
+    grid-template-columns: 1fr auto;
+}

@@ -8,12 +8,15 @@ import VideoJS from "../components/VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { GrantedPostGroupAccess, PostDetailed, UserGroup } from "../Model";
+import { DeletePostsResponse, GroupAccessDefinition, PostDetailed, UserGroup } from "../Model";
 import { FormControlLabel, Switch, TextField } from "@mui/material";
 import { TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import urlJoin from "url-join";
 import { MusicPlayer } from "../components/MusicPlayer";
+import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
+import { useSnackbar } from "notistack";
+import { ActionModal } from "../components/ActionModal";
 
 class PostProps {
     app: App;
@@ -24,11 +27,12 @@ class PostProps {
 }
 
 function Post({ app }: PostProps) {
-    let { id } = useParams();
+    let { collection_id, id } = useParams();
     const [post, setPost] = useState<PostDetailed | null>(null);
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
 
     const isInitialMount = useRef(true);
 
@@ -62,7 +66,8 @@ function Post({ app }: PostProps) {
             try {
                 let config = await app.getAuthorization(location, navigate, false);
 
-                let post = await http.get<PostDetailed>(`/get-post/${id}${search}`, config);
+                let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
+                let post = await http.get<PostDetailed>(`${basePath}/${id}${search}`, config);
                 updatePost(post.data);
 
                 if (config) {
@@ -93,7 +98,8 @@ function Post({ app }: PostProps) {
                 let config = await app.getAuthorization(location, navigate, false);
                 let searchParams = new URLSearchParams(search);
                 searchParams.set("exclude_window", "true");
-                let result = await http.get<PostDetailed>(`/get-post/${id}?${searchParams}`, config);
+                let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
+                let result = await http.get<PostDetailed>(`${basePath}/${id}?${searchParams}`, config);
                 if (post) {
                     result.data.prev_post = post.prev_post;
                     result.data.next_post = post.next_post;
@@ -180,26 +186,69 @@ function Post({ app }: PostProps) {
     let component;
     let postInformation;
     let downloadLink;
+    let addToCollectionBtn;
+    let deleteBtn;
     let prevLink;
     let nextLink;
     if (post) {
         let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
-        downloadLink = dataUrl && <p><a className="standard-link-button-large" target={"_blank"} rel="noreferrer" href={dataUrl}><FontAwesomeIcon icon={solid("download")}></FontAwesomeIcon></a></p>;
+        downloadLink = dataUrl && <a className="standard-link-button-large" target={"_blank"} rel="noreferrer" href={dataUrl}><FontAwesomeIcon icon={solid("download")} size="1x"></FontAwesomeIcon></a>;
+        addToCollectionBtn = <button className="standard-button-large" onClick={() => app.openModal("Add to collection", (addToCollectionModal) => <AddToCollectionDialogue app={app} postPks={[post.pk]} modal={addToCollectionModal} />)}><FontAwesomeIcon icon={solid("plus")} size="1x" /></button>;
+        deleteBtn = post.is_deletable && <button className="standard-button-large" onClick={() => app.openModal(
+            "Delete post",
+            (modal) => <ActionModal
+                modalContent={modal}
+                text={post.title ? `Delete post '${post.title}'` : `Delete 1 post`}
+                actions={[
+                    {
+                        name: "Ok",
+                        fn: async () => {
+                            try {
+                                const config = await app.getAuthorization(location, navigate);
+                                const result = await http.post<DeletePostsResponse>("/delete-posts", {
+                                    post_pks: [post.pk],
+                                    inaccessible_post_mode: "skip",
+                                    delete_unreferenced_objects: true
+                                }, config);
+
+                                navigate({
+                                    pathname: collection_id ? "/collection/" + collection_id : "/posts",
+                                    search: search
+                                });
+
+                                enqueueSnackbar({
+                                    message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? 's' : ''}`,
+                                    variant: "success"
+                                });
+                                return result.data;
+                            } catch (e) {
+                                console.error(e);
+                                enqueueSnackbar({
+                                    message: "Failed to delete post",
+                                    variant: "error"
+                                });
+                            }
+                        }
+                    }
+                ]}
+            />,
+        )}><FontAwesomeIcon icon={solid("trash")} size="1x" /></button>;
         component = mediaComponent;
         postInformation = <div id="post-information">
             <FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}
         </div>;
 
+        let basePostPath = collection_id ? "/collection/" + collection_id + "/post/" : "/post/"
         if (post.prev_post) {
             let searchParams = new URLSearchParams(search);
             searchParams.set("page", post.prev_post.page.toString());
-            let location: Partial<Location> = { pathname: "/post/" + post.prev_post.pk, search: searchParams.toString(), key: post.prev_post.pk.toString() };
+            let location: Partial<Location> = { pathname: basePostPath + post.prev_post.pk, search: searchParams.toString(), key: post.prev_post.pk.toString() };
             prevLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon></Link>;
         }
         if (post.next_post) {
             let searchParams = new URLSearchParams(search);
             searchParams.set("page", post.next_post.page.toString());
-            let location: Partial<Location> = { pathname: "/post/" + post.next_post.pk, search: searchParams.toString(), key: post.next_post.pk.toString() };
+            let location: Partial<Location> = { pathname: basePostPath + post.next_post.pk, search: searchParams.toString(), key: post.next_post.pk.toString() };
             nextLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-right")}></FontAwesomeIcon></Link>;
         }
     } else {
@@ -211,7 +260,7 @@ function Post({ app }: PostProps) {
             <div id="post-container">
                 <div id="post-container-top-row">
                     <Link className="standard-link-button-large" to={{
-                        pathname: "/posts",
+                        pathname: collection_id ? "/collection/" + collection_id : "/posts",
                         search: search
                     }}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon> Back</Link>
                     {post?.s3_object?.hls_master_playlist
@@ -226,6 +275,8 @@ function Post({ app }: PostProps) {
                 {postInformation}
                 <div id="post-container-bottom-row">
                     {downloadLink}
+                    {addToCollectionBtn}
+                    {deleteBtn}
                 </div>
             </div>
             <div id="post-information-container">
@@ -247,8 +298,8 @@ function Post({ app }: PostProps) {
                 </div>
                 <div className="material-row">
                     <button hidden={!isEditMode} className="standard-button" onClick={async () => {
-                        let groupAccess: GrantedPostGroupAccess[] = [];
-                        selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
+                        let groupAccess: GroupAccessDefinition[] = [];
+                        selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
 
                         const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
                         try {
@@ -274,10 +325,18 @@ function Post({ app }: PostProps) {
                                 result.data.prev_post = post.prev_post;
                                 result.data.next_post = post.next_post;
                             }
+
+                            enqueueSnackbar({
+                                message: "Post edited",
+                                variant: "success"
+                            });
                             updatePost(result.data);
                         } catch (e) {
-                            console.error("Error occured editing post " + e);
-                            app.openModal("Error", <p>An error occurred editing your post, please try again.</p>);
+                            console.error("Error occurred editing post " + e);
+                            enqueueSnackbar({
+                                message: "An error occurred editing your post, please try again",
+                                variant: "error"
+                            });
                         }
 
                         loadingModal.close();
@@ -303,8 +362,8 @@ export class EditPostRequest {
     is_public: boolean | null;
     public_edit: boolean | null;
     description: string | null;
-    group_access_overwrite: GrantedPostGroupAccess[] | null;
-    added_group_access: GrantedPostGroupAccess[] | null;
+    group_access_overwrite: GroupAccessDefinition[] | null;
+    added_group_access: GroupAccessDefinition[] | null;
     removed_group_access: number[] | null;
 
     constructor(
@@ -319,8 +378,8 @@ export class EditPostRequest {
         is_public: boolean | null,
         public_edit: boolean | null,
         description: string | null,
-        group_access_overwrite: GrantedPostGroupAccess[] | null,
-        added_group_access: GrantedPostGroupAccess[] | null,
+        group_access_overwrite: GroupAccessDefinition[] | null,
+        added_group_access: GroupAccessDefinition[] | null,
         removed_group_access: number[] | null
     ) {
         this.tags_overwrite = tags_overwrite;

@@ -14,10 +14,10 @@ import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import UploadDialogue from './components/UploadDialogue';
-import { AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion } from './Model';
-import { replaceStringRange } from './Util';
-import { Combobox } from '@filebroker/react-widgets/lib/cjs';
 import { EmailConfirmation } from './routes/EmailConfirmation';
+import PostCollectionSearch from './routes/PostCollectionSearch';
+import { PostCollection } from './routes/PostCollection';
+import { QueryAutocompleteSuggestionCombobox } from './components/QueryAutocompleteSuggestions';
 
 export class User {
     user_name: string;
@@ -65,8 +65,6 @@ export class ModalContent {
     }
 }
 
-let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
-
 export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     const location = useLocation();
     const search = location.search;
@@ -76,7 +74,6 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     let searchParams = new URLSearchParams(search);
     let queryParam: string = searchParams.get("query") ?? "";
     const [queryString, setQueryString] = useState(queryParam);
-    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
 
     useEffect(() => {
         setQueryString(queryParam);
@@ -86,15 +83,15 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
         return null;
     }
 
-    const handleQueryChange = (cursorPos: number, query: string) => {
-        setQueryAutocompleteSuggestions([]);
-        if (scheduledAnalyzeQueryRequest) {
-            clearTimeout(scheduledAnalyzeQueryRequest);
-        }
-        scheduledAnalyzeQueryRequest = setTimeout(async () => {
-            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query));
-            setQueryAutocompleteSuggestions(response.data.suggestions);
-        }, 250);
+    const searchSite = pathName === "/collections" || pathName.startsWith("/collection/")
+        ? pathName
+        : "/posts";
+
+    let placeholder = "Search Post";
+    if (pathName.startsWith("/collection/")) {
+        placeholder = "Search Within Collection";
+    } else if (pathName.startsWith("/collections")) {
+        placeholder = "Search Collection";
     }
 
     return (
@@ -102,8 +99,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
             e.preventDefault();
             let searchParams = new URLSearchParams();
             searchParams.set("query", queryString);
-            navigate({ pathname: "/posts", search: searchParams.toString() });
-            setQueryAutocompleteSuggestions([]);
+            navigate({ pathname: searchSite, search: searchParams.toString() });
             document.getElementById("App")?.focus();
 
             // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
@@ -116,19 +112,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
                 });
             }
         }}>
-            <Combobox hideCaret hideEmptyPopup data={queryAutocompleteSuggestions} textField="display" value={queryString} onChange={(value, event) => {
-                if (typeof value === "string") {
-                    setQueryString(value);
-                    let inputElement = event.originalEvent!!.currentTarget as HTMLInputElement;
-                    handleQueryChange(inputElement.selectionStart || value.length, value);
-                } else {
-                    let prevVal = event.lastValue as string;
-                    let targetLocation = value.target_location;
-                    let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, value.text);
-                    setQueryString(newVal);
-                    setQueryAutocompleteSuggestions([]);
-                }
-            }} placeholder="Search" filter={() => true} autoFocus={!hideOnHome} inputProps={{ autoFocus: !hideOnHome }}></Combobox>
+            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} autoFocus={!hideOnHome} placeholder={placeholder} />
             <button className="search-button" type="submit"><FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon></button>
         </form>
     );
@@ -190,6 +174,7 @@ export class App extends React.Component<{}, {
                         <div id="nav-box-left">
                             <div className="nav-el"><NavLink to="/">Home</NavLink></div>
                             <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
+                            <div className="nav-el"><NavLink to="/collections">Collections</NavLink></div>
                         </div>
 
                         <div id="search-bar">
@@ -207,8 +192,8 @@ export class App extends React.Component<{}, {
                             <div className="nav-el nav-el-right">{loginAccountLink}</div>
                         </div>
                     </div>
-                    {this.state.modalStack.map(modal => {
-                        return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={modal.title}>
+                    {this.state.modalStack.map((modal, idx) => {
+                        return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={"modal_" + idx}>
                             <div id="modal-title-row">
                                 <button hidden={!modal.showCloseButton} disabled={!modal.showCloseButton} id="modal-close-btn" onClick={() => this.closeModal(modal)}>
                                     <FontAwesomeIcon icon={solid("xmark")} size="2x" />
@@ -229,6 +214,9 @@ export class App extends React.Component<{}, {
                     <Route path="/register" element={<Register app={this}></Register>}></Route>
                     <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
                     <Route path="/confirm-email/:token" element={<EmailConfirmation app={this}></EmailConfirmation>}></Route>
+                    <Route path="/collections" element={<PostCollectionSearch app={this} />} />
+                    <Route path="/collection/:id" element={<PostCollection app={this} />} />
+                    <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
                     <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                 </Routes>
             </BrowserRouter>
