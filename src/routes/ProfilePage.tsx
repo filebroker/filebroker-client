@@ -137,7 +137,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                         <tr className="form-row">
                             <td className="form-row-full-td">
                                 <button className="underscore-button" onClick={async () => {
-                                    const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                                    const loadingModal = app.openLoadingModal();
                                     try {
                                         let config = await app.getAuthorization(location, navigate);
                                         await http.post("send-email-confirmation-link", null, config);
@@ -171,7 +171,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                         : <button className="standard-button-large" onClick={() => setEditMode(true)}><FontAwesomeIcon icon={solid("pen-to-square")}></FontAwesomeIcon> Edit</button>}
                     <button className="standard-button-large" hidden={editMode} onClick={handleLogout}><FontAwesomeIcon icon={solid("sign-out")} /> Logout</button>
                     <button className="standard-button-large" hidden={!editMode} disabled={emailInvalid} onClick={async () => {
-                        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                        const modal = app.openLoadingModal();
                         try {
                             let config = await app.getAuthorization(location, navigate);
                             let response = await http.post<User>("edit-user", new UpdateUserRequest(displayName, email, null), config);
@@ -296,7 +296,7 @@ function ChangePasswordForm({ app, user, modal }: { app: App, user: User, modal:
             }
             <button className="standard-button-large" disabled={!password || passwordScore < 3 || !newPassword || !passwordConfirm || newPassword !== passwordConfirm || newPassword === password || (showCaptcha && !captchaToken)} onClick={async () => {
                 let config = await app.getAuthorization(location, navigate);
-                const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                const loadingModal = app.openLoadingModal();
                 try {
                     let loginResponse = await http.post<LoginResponse>("change-password", new ChangePasswordRequest(password, newPassword, showCaptcha ? captchaToken : null), { ...config, withCredentials: true });
                     app.handleLogin(loginResponse.data);

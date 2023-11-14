@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { Tag } from "../Model";
 import http from "../http-common";
 import App, { ModalContent } from "../App";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { useLocation, useNavigate } from "react-router-dom";
 
 class FindTagResponse {
@@ -182,7 +180,7 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
         <form className="modal-form" onSubmit={async e => {
             e.preventDefault();
 
-            const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+            const loadingModal = app.openLoadingModal();
             try {
                 let config = await app.getAuthorization(location, navigate);
                 let response = await http.post<UpsertTagResponse>("/upsert-tag", new UpsertTagRequest(tagName, parentPks, aliasPks), config);

@@ -54,7 +54,7 @@ function Login({ app }: LoginProps) {
     const { state }: any = useLocation();
 
     async function login() {
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
         try {
             let response = await http.post<LoginResponse>("/login", new LoginRequest(userName, password, showCaptcha ? captchaToken : null), { withCredentials: true });
             app.handleLogin(response.data);
@@ -335,7 +335,7 @@ function ResetPasswordForm({ app, modal, initialUserName }: { app: App, modal: M
             </table>
             {emailSent
                 ? <button className="standard-button-large" disabled={!email || emailInvalid || !userName || passwordScore < 3 || !newPassword || !passwordConfirm || newPassword !== passwordConfirm || invalidCredentials} onClick={async () => {
-                    const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                    const loadingModal = app.openLoadingModal();
                     try {
                         let response = await http.post<LoginResponse>("reset-password", new PasswordResetRequest(userName, email, otp, newPassword), { withCredentials: true });
                         loadingModal.close();
@@ -356,7 +356,7 @@ function ResetPasswordForm({ app, modal, initialUserName }: { app: App, modal: M
                 : <>
                     <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
                     <button className="standard-button-large" disabled={!email || emailInvalid || !userName || !captchaToken} onClick={async () => {
-                        const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                        const loadingModal = app.openLoadingModal();
                         try {
                             await http.post("send-password-reset", new SendPasswordResetRequest(userName, email, captchaToken));
                             setEmailSent(true);

@@ -1,5 +1,4 @@
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import App from '../App';
@@ -31,7 +30,7 @@ function PostSearch({ app }: PostSearchProps) {
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
 
         performSearchQuery(search, app, location, navigate, modal).then(searchResult => {
             setFullCount(searchResult.full_count);
@@ -102,6 +101,7 @@ function PostSearch({ app }: PostSearchProps) {
                                     {
                                         name: "Ok",
                                         fn: async () => {
+                                            const loadingModal = app.openLoadingModal();
                                             try {
                                                 const config = await app.getAuthorization(location, navigate);
                                                 const result = await http.post<DeletePostsResponse>("/delete-posts", {
@@ -110,6 +110,7 @@ function PostSearch({ app }: PostSearchProps) {
                                                     delete_unreferenced_objects: true
                                                 }, config);
 
+                                                loadingModal.close();
                                                 setModCount(modCount + 1);
                                                 enqueueSnackbar({
                                                     message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? 's' : ''}`,
@@ -118,6 +119,7 @@ function PostSearch({ app }: PostSearchProps) {
                                                 return result.data;
                                             } catch (e) {
                                                 console.error(e);
+                                                loadingModal.close();
                                                 enqueueSnackbar({
                                                     message: "Failed to delete post",
                                                     variant: "error"

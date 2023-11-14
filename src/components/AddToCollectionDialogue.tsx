@@ -1,4 +1,4 @@
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Pagination, Typography } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Pagination, Typography } from "@mui/material";
 import App, { ModalContent } from "../App";
 import { useEffect, useState } from "react";
 import { PostCollectionQueryObject, performSearchQuery } from "../Search";
@@ -72,9 +72,9 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                     actions={[{
                                         name: "Ok",
                                         fn: async () => {
+                                            const loadingModal = app.openLoadingModal();
                                             try {
                                                 const config = await app.getAuthorization(location, navigate);
-
                                                 try {
                                                     const response = await http.post<PostCollectionDetailed>(`/edit-collection/${collection.pk}`, {
                                                         added_post_pks: postPks,
@@ -85,8 +85,10 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                         message: `Added ${postQuery ? 'all found posts' : `${postPks.length} post${postPks.length !== 1 ? 's' : ''}`} to collection`,
                                                         variant: "success"
                                                     });
+                                                    loadingModal.close();
                                                     return response.data;
                                                 } catch (e: any) {
+                                                    loadingModal.close();
                                                     if (e?.response?.data?.error_code === 400018) {
                                                         app.openModal(
                                                             "Duplicates detected",
@@ -97,6 +99,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                     {
                                                                         name: "Ignore",
                                                                         fn: async () => {
+                                                                            const loadingModal = app.openLoadingModal();
                                                                             try {
                                                                                 const config = await app.getAuthorization(location, navigate);
                                                                                 const response = await http.post<PostCollectionDetailed>(`/edit-collection/${collection.pk}`, {
@@ -104,6 +107,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                                     added_post_query: postQuery,
                                                                                     duplicate_mode: "ignore"
                                                                                 }, config);
+                                                                                loadingModal.close();
                                                                                 enqueueSnackbar({
                                                                                     message: `Added ${postQuery ? 'all found posts' : `${postPks.length} post${postPks.length !== 1 ? 's' : ''}`} to collection`,
                                                                                     variant: "success"
@@ -112,6 +116,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                                 return response.data;
                                                                             } catch (e: any) {
                                                                                 console.error(e);
+                                                                                loadingModal.close();
                                                                                 const message = e?.response?.data?.error_code === 400010 ? "Could not update collection: Invalid query" : "Failed to update collection";
                                                                                 enqueueSnackbar({
                                                                                     message: message,
@@ -123,6 +128,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                     {
                                                                         name: "Skip",
                                                                         fn: async () => {
+                                                                            const loadingModal = app.openLoadingModal();
                                                                             try {
                                                                                 const config = await app.getAuthorization(location, navigate);
                                                                                 const response = await http.post<PostCollectionDetailed>(`/edit-collection/${collection.pk}`, {
@@ -130,6 +136,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                                     added_post_query: postQuery,
                                                                                     duplicate_mode: "skip"
                                                                                 }, config);
+                                                                                loadingModal.close();
                                                                                 enqueueSnackbar({
                                                                                     message: `Added post(s) to collection`,
                                                                                     variant: "success"
@@ -138,6 +145,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                                 return response.data;
                                                                             } catch (e: any) {
                                                                                 console.error(e);
+                                                                                loadingModal.close();
                                                                                 const message = e?.response?.data?.error_code === 400010 ? "Could not update collection: Invalid query" : "Failed to update collection";
                                                                                 enqueueSnackbar({
                                                                                     message: message,

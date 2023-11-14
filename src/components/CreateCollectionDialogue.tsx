@@ -90,7 +90,7 @@ export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { p
             </fieldset>
             <div className="modal-form-submit-btn">
                 <button className="standard-button-large" disabled={!(title && title.length > 0)} onClick={async e => {
-                    const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                    const loadingModal = app.openLoadingModal();
                     try {
                         const config = await app.getAuthorization(location, navigate);
 

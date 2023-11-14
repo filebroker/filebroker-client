@@ -322,6 +322,10 @@ export class App extends React.Component<{}, {
         return modal;
     }
 
+    openLoadingModal() {
+        return this.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+    }
+
     closeModal(modal: ModalContent, result: any = undefined) {
         if (modal.closed) {
             console.warn("Tried to close an already closed modal");

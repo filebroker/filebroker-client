@@ -84,7 +84,7 @@ function Post({ app }: PostProps) {
             }
         };
 
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
         fetch().then(() => modal.close()).catch(() => modal.close());
     }, [id]);
 
@@ -114,7 +114,7 @@ function Post({ app }: PostProps) {
                 console.error(e);
             }
         };
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
         fetch().then(() => modal.close()).catch(() => modal.close());
     }, [isEditMode]);
 
@@ -203,6 +203,7 @@ function Post({ app }: PostProps) {
                     {
                         name: "Ok",
                         fn: async () => {
+                            const loadingModal = app.openLoadingModal();
                             try {
                                 const config = await app.getAuthorization(location, navigate);
                                 const result = await http.post<DeletePostsResponse>("/delete-posts", {
@@ -211,6 +212,7 @@ function Post({ app }: PostProps) {
                                     delete_unreferenced_objects: true
                                 }, config);
 
+                                loadingModal.close();
                                 navigate({
                                     pathname: collection_id ? "/collection/" + collection_id : "/posts",
                                     search: search
@@ -223,6 +225,7 @@ function Post({ app }: PostProps) {
                                 return result.data;
                             } catch (e) {
                                 console.error(e);
+                                loadingModal.close();
                                 enqueueSnackbar({
                                     message: "Failed to delete post",
                                     variant: "error"
@@ -301,7 +304,7 @@ function Post({ app }: PostProps) {
                         let groupAccess: GroupAccessDefinition[] = [];
                         selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
 
-                        const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                        const loadingModal = app.openLoadingModal();
                         try {
                             let config = await app.getAuthorization(location, navigate);
                             let result = await http.post<PostDetailed>(`/edit-post/${id}`, new EditPostRequest(

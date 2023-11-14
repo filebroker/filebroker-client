@@ -7,8 +7,6 @@ import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { TextField } from "@mui/material";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 export class UserRegistration {
     display_name: string;
@@ -66,7 +64,7 @@ function Register({ app }: RegisterProps) {
     const navigate = useNavigate();
 
     async function register() {
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
         try {
             let response = await http.post<LoginResponse>("/register", new UserRegistration(displayName, userName, password, email, null, captchaToken), { withCredentials: true });
             setLoginDisabled(false);

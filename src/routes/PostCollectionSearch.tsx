@@ -1,5 +1,4 @@
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import App from '../App';
@@ -30,7 +29,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
 
         performSearchQuery("/collection" + search, app, location, navigate, modal).then(searchResult => {
             setFullCount(searchResult.full_count);
@@ -89,6 +88,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                                         {
                                             name: "Ok",
                                             fn: async () => {
+                                                const loadingModal = app.openLoadingModal();
                                                 try {
                                                     const config = await app.getAuthorization(location, navigate);
                                                     const result = await http.post<DeletePostCollectionsResponse>("/delete-collections", {
@@ -96,6 +96,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                                                         inaccessible_post_mode: "skip"
                                                     }, config);
 
+                                                    loadingModal.close();
                                                     setModCount(modCount + 1);
                                                     enqueueSnackbar({
                                                         message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? 's' : ''}`,
@@ -104,6 +105,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                                                     return result.data;
                                                 } catch (e) {
                                                     console.error(e);
+                                                    loadingModal.close();
                                                     enqueueSnackbar({
                                                         message: "Failed to delete collection",
                                                         variant: "error"

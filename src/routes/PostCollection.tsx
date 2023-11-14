@@ -72,13 +72,13 @@ export function PostCollection({ app }: { app: App }) {
             }
         };
 
-        const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        const modal = app.openLoadingModal();
         fetch().then(() => modal.close()).catch(() => modal.close());
     }, [isEditMode, location, navigate, app]);
 
     const loadPosts = () => {
         if (postCollection) {
-            const modal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+            const modal = app.openLoadingModal();
             performSearchQuery("/collection/" + postCollection.pk + search, app, location, navigate, modal).then(searchResult => {
                 setFullCount(searchResult.full_count);
                 setPageCount(searchResult.pages);
@@ -118,6 +118,7 @@ export function PostCollection({ app }: { app: App }) {
                                     {
                                         name: "Ok",
                                         fn: async () => {
+                                            const loadingModal = app.openLoadingModal();
                                             try {
                                                 const config = await app.getAuthorization(location, navigate);
                                                 const result = await http.post<DeletePostCollectionsResponse>("/delete-collections", {
@@ -125,6 +126,7 @@ export function PostCollection({ app }: { app: App }) {
                                                     inaccessible_post_mode: "skip"
                                                 }, config);
 
+                                                loadingModal.close();
                                                 navigate({
                                                     pathname: "/collections"
                                                 });
@@ -136,6 +138,7 @@ export function PostCollection({ app }: { app: App }) {
                                                 return result.data;
                                             } catch (e) {
                                                 console.error(e);
+                                                loadingModal.close();
                                                 enqueueSnackbar({
                                                     message: "Failed to delete collection",
                                                     variant: "error"
@@ -165,7 +168,7 @@ export function PostCollection({ app }: { app: App }) {
                             let groupAccess: GroupAccessDefinition[] = [];
                             selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
 
-                            const loadingModal = app.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+                            const loadingModal = app.openLoadingModal();
                             try {
                                 const config = await app.getAuthorization(location, navigate);
                                 const result = await http.post<PostCollectionDetailed>(`/edit-collection/${id}`, {
@@ -237,12 +240,14 @@ export function PostCollection({ app }: { app: App }) {
                                     {
                                         name: "Ok",
                                         fn: async () => {
+                                            const loadingModal = app.openLoadingModal();
                                             try {
                                                 const config = await app.getAuthorization(location, navigate);
                                                 const result = await http.post<PostCollectionDetailed>(`/edit-collection/${postCollection!.pk}`, {
                                                     removed_item_pks: items.map(item => item.pk)
                                                 }, config);
 
+                                                loadingModal.close();
                                                 updatePostCollection(result.data);
                                                 enqueueSnackbar({
                                                     message: items.length === 1 ? "Removed post from collection" : "Removed selected posts from collection",
@@ -252,6 +257,7 @@ export function PostCollection({ app }: { app: App }) {
                                                 return result.data;
                                             } catch (e) {
                                                 console.error(e);
+                                                loadingModal.close();
                                                 enqueueSnackbar({
                                                     message: "An error occurred editing your collection, please try again",
                                                     variant: "error"
