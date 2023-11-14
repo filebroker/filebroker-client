@@ -83,9 +83,12 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
         return null;
     }
 
-    const searchSite = pathName === "/collections" || pathName.startsWith("/collection/")
-        ? pathName
-        : "/posts";
+    let searchSite = "/posts";
+    if (pathName === "/collections") {
+        searchSite = pathName;
+    } else if (pathName.startsWith("/collection/")) {
+        searchSite = pathName.split("/").filter((part) => part.length > 0).slice(0, 2).join("/");
+    }
 
     let placeholder = "Search Post";
     if (pathName.startsWith("/collection/")) {
