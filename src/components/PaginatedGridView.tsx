@@ -105,7 +105,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                                 <Button component={Link} to={{
                                     pathname: onItemClickPath(item),
                                     search: stripQueryParamsOnItemClick ? undefined : search,
-                                }} className="paginated_grid_view_item_button" key={"link_" + item.pk} sx={{ height: "100%" }} onClick={(e) => {
+                                }} className="paginated_grid_view_item_button" key={"link_" + item.pk} sx={{ height: "100%" }} onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
                                     if (selectionMode) {
                                         e.preventDefault();
                                         setSelectedItems((selectedItems) => {
