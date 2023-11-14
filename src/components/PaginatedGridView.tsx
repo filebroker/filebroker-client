@@ -4,7 +4,7 @@ import { getApiUrl, getPublicUrl } from "../http-common";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import {  NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { User } from "../App";
 
 import "./PaginatedGridView.css";
@@ -102,19 +102,18 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                         }
                         return (
                             <ImageListItem key={item.pk}>
-                                <Button className="paginated_grid_view_item_button" key={"link_" + item.pk} sx={{ height: "100%" }} onClick={() => {
+                                <Button component={Link} to={{
+                                    pathname: onItemClickPath(item),
+                                    search: stripQueryParamsOnItemClick ? undefined : search,
+                                }} className="paginated_grid_view_item_button" key={"link_" + item.pk} sx={{ height: "100%" }} onClick={(e) => {
                                     if (selectionMode) {
+                                        e.preventDefault();
                                         setSelectedItems((selectedItems) => {
                                             if (selectedItems.findIndex((other) => other.pk === item.pk) >= 0) {
                                                 return selectedItems.filter((other) => other.pk !== item.pk);
                                             } else {
                                                 return [...selectedItems, item];
                                             }
-                                        });
-                                    } else {
-                                        navigate({
-                                            pathname: onItemClickPath(item),
-                                            search: stripQueryParamsOnItemClick ? undefined : search,
                                         });
                                     }
                                 }}>
