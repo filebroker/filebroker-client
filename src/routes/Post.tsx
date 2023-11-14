@@ -307,7 +307,7 @@ function Post({ app }: PostProps) {
                         const loadingModal = app.openLoadingModal();
                         try {
                             let config = await app.getAuthorization(location, navigate);
-                            let result = await http.post<PostDetailed>(`/edit-post/${id}`, new EditPostRequest(
+                            let result = await http.post<PostDetailed>(`/edit-post/${post!.pk}`, new EditPostRequest(
                                 enteredTags,
                                 selectedTags,
                                 null,
