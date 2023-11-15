@@ -80,41 +80,47 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                         },
                         fn(items, cb) {
                             app.openModal(
-                                "Delete collection",
-                                (modal) => <ActionModal
-                                    modalContent={modal}
-                                    text={items.length === 1 && items[0].title ? `Delete collection '${items[0].title}'` : `Delete ${items.length} collection${items.length === 1 ? '' : 's'}. Collections you are not allowed to delete will be ignored.`}
-                                    actions={[
-                                        {
-                                            name: "Ok",
-                                            fn: async () => {
-                                                const loadingModal = app.openLoadingModal();
-                                                try {
-                                                    const config = await app.getAuthorization(location, navigate);
-                                                    const result = await http.post<DeletePostCollectionsResponse>("/delete-collections", {
-                                                        post_collection_pks: items.map(item => item.pk),
-                                                        inaccessible_post_mode: "skip"
-                                                    }, config);
+                                items.length > 1000 ? "Error" : "Delete collection",
+                                (modal) => {
+                                    if (items.length > 1000) {
+                                        return <p>Cannot delete more than 1000 collections at once.</p>;
+                                    }
 
-                                                    loadingModal.close();
-                                                    setModCount(modCount + 1);
-                                                    enqueueSnackbar({
-                                                        message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? 's' : ''}`,
-                                                        variant: "success"
-                                                    });
-                                                    return result.data;
-                                                } catch (e) {
-                                                    console.error(e);
-                                                    loadingModal.close();
-                                                    enqueueSnackbar({
-                                                        message: "Failed to delete collection",
-                                                        variant: "error"
-                                                    });
+                                    return <ActionModal
+                                        modalContent={modal}
+                                        text={items.length === 1 && items[0].title ? `Delete collection '${items[0].title}'` : `Delete ${items.length} collection${items.length === 1 ? '' : 's'}. Collections you are not allowed to delete will be ignored.`}
+                                        actions={[
+                                            {
+                                                name: "Ok",
+                                                fn: async () => {
+                                                    const loadingModal = app.openLoadingModal();
+                                                    try {
+                                                        const config = await app.getAuthorization(location, navigate);
+                                                        const result = await http.post<DeletePostCollectionsResponse>("/delete-collections", {
+                                                            post_collection_pks: items.map(item => item.pk),
+                                                            inaccessible_post_mode: "skip"
+                                                        }, config);
+
+                                                        loadingModal.close();
+                                                        setModCount(modCount + 1);
+                                                        enqueueSnackbar({
+                                                            message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? 's' : ''}`,
+                                                            variant: "success"
+                                                        });
+                                                        return result.data;
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                        loadingModal.close();
+                                                        enqueueSnackbar({
+                                                            message: "Failed to delete collection",
+                                                            variant: "error"
+                                                        });
+                                                    }
                                                 }
                                             }
-                                        }
-                                    ]}
-                                />,
+                                        ]}
+                                    />;
+                                },
                                 (result) => cb?.(result)
                             )
                         },

@@ -93,42 +93,48 @@ function PostSearch({ app }: PostSearchProps) {
                             return result.data.is_deletable;
                         },
                         fn: (items, cb) => app.openModal(
-                            "Delete post",
-                            (modal) => <ActionModal
-                                modalContent={modal}
-                                text={items.length === 1 && items[0].title ? `Delete post '${items[0].title}'` : `Delete ${items.length} post${items.length === 1 ? '' : 's'}. Posts you are not allowed to delete will be ignored.`}
-                                actions={[
-                                    {
-                                        name: "Ok",
-                                        fn: async () => {
-                                            const loadingModal = app.openLoadingModal();
-                                            try {
-                                                const config = await app.getAuthorization(location, navigate);
-                                                const result = await http.post<DeletePostsResponse>("/delete-posts", {
-                                                    post_pks: items.map(item => item.pk),
-                                                    inaccessible_post_mode: "skip",
-                                                    delete_unreferenced_objects: true
-                                                }, config);
+                            items.length > 1000 ? "Error" : "Delete post",
+                            (modal) => {
+                                if (items.length > 1000) {
+                                    return <p>Cannot delete more than 1000 posts at once.</p>;
+                                }
 
-                                                loadingModal.close();
-                                                setModCount(modCount + 1);
-                                                enqueueSnackbar({
-                                                    message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? 's' : ''}`,
-                                                    variant: "success"
-                                                });
-                                                return result.data;
-                                            } catch (e) {
-                                                console.error(e);
-                                                loadingModal.close();
-                                                enqueueSnackbar({
-                                                    message: "Failed to delete post",
-                                                    variant: "error"
-                                                });
+                                return <ActionModal
+                                    modalContent={modal}
+                                    text={items.length === 1 && items[0].title ? `Delete post '${items[0].title}'` : `Delete ${items.length} post${items.length === 1 ? '' : 's'}. Posts you are not allowed to delete will be ignored.`}
+                                    actions={[
+                                        {
+                                            name: "Ok",
+                                            fn: async () => {
+                                                const loadingModal = app.openLoadingModal();
+                                                try {
+                                                    const config = await app.getAuthorization(location, navigate);
+                                                    const result = await http.post<DeletePostsResponse>("/delete-posts", {
+                                                        post_pks: items.map(item => item.pk),
+                                                        inaccessible_post_mode: "skip",
+                                                        delete_unreferenced_objects: true
+                                                    }, config);
+
+                                                    loadingModal.close();
+                                                    setModCount(modCount + 1);
+                                                    enqueueSnackbar({
+                                                        message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? 's' : ''}`,
+                                                        variant: "success"
+                                                    });
+                                                    return result.data;
+                                                } catch (e) {
+                                                    console.error(e);
+                                                    loadingModal.close();
+                                                    enqueueSnackbar({
+                                                        message: "Failed to delete post",
+                                                        variant: "error"
+                                                    });
+                                                }
                                             }
                                         }
-                                    }
-                                ]}
-                            />,
+                                    ]}
+                                />;
+                            },
                             (result) => cb?.(result)
                         )
                     }

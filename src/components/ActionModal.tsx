@@ -19,8 +19,12 @@ export function ActionModal({ modalContent, text, actions, showCancelButton = tr
                 <div style={{ "float": "right" }}>
                     <ButtonGroup variant="outlined">
                         {actions.map((action) => <Button key={"action_button_" + action.name} onClick={async () => {
-                            const returnValue = await action.fn(modalContent);
-                            modalContent.close(returnValue);
+                            let returnValue;
+                            try {
+                                returnValue = await action.fn(modalContent);
+                            } finally {
+                                modalContent.close(returnValue);
+                            }
                         }}>{action.name}</Button>)}
                     </ButtonGroup>
                 </div>

@@ -41,6 +41,20 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
         executeSearch();
     }, [listPage]);
 
+    const errorHandler = (e: any) => {
+        console.error(e);
+        let message = "Failed to update collection";
+        if (e?.response?.data?.error_code === 400010) {
+            message = "Could not update collection: Invalid query";
+        } else if (e?.response?.data?.error_code === 400017) {
+            message = "Collection exceeded maximum size";
+        }
+        enqueueSnackbar({
+            message: message,
+            variant: "error"
+        });
+    };
+
     return (
         <div id="AddToCollectionDialogue">
             <div id="add-to-collection-title">
@@ -115,13 +129,8 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                                 modal?.close(response.data);
                                                                                 return response.data;
                                                                             } catch (e: any) {
-                                                                                console.error(e);
                                                                                 loadingModal.close();
-                                                                                const message = e?.response?.data?.error_code === 400010 ? "Could not update collection: Invalid query" : "Failed to update collection";
-                                                                                enqueueSnackbar({
-                                                                                    message: message,
-                                                                                    variant: "error"
-                                                                                });
+                                                                                errorHandler(e);
                                                                             }
                                                                         }
                                                                     },
@@ -144,13 +153,8 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                                                 modal?.close(response.data);
                                                                                 return response.data;
                                                                             } catch (e: any) {
-                                                                                console.error(e);
                                                                                 loadingModal.close();
-                                                                                const message = e?.response?.data?.error_code === 400010 ? "Could not update collection: Invalid query" : "Failed to update collection";
-                                                                                enqueueSnackbar({
-                                                                                    message: message,
-                                                                                    variant: "error"
-                                                                                });
+                                                                                errorHandler(e);
                                                                             }
                                                                         }
                                                                     }
@@ -158,16 +162,11 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                                                             />
                                                         );
                                                     } else {
-                                                        throw e;
+                                                        errorHandler(e);
                                                     }
                                                 }
                                             } catch (e: any) {
-                                                console.error(e);
-                                                const message = e?.response?.data?.error_code === 400010 ? "Could not update collection: Invalid query" : "Failed to update collection";
-                                                enqueueSnackbar({
-                                                    message: message,
-                                                    variant: "error"
-                                                });
+                                                errorHandler(e);
                                             }
                                         }
                                     }]}
