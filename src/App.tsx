@@ -48,15 +48,15 @@ export class ModalContent {
     title: string;
     content: JSX.Element | ((modal: ModalContent) => JSX.Element);
     closeCallback: ((result: any) => void) | undefined;
-    showCloseButton: boolean;
+    allowClose: boolean;
     app: App;
     closed: boolean = false;
 
-    constructor(title: string, content: JSX.Element | ((modal: ModalContent) => JSX.Element), app: App, closeCallback: ((result: any) => void) | undefined, showCloseButton: boolean) {
+    constructor(title: string, content: JSX.Element | ((modal: ModalContent) => JSX.Element), app: App, closeCallback: ((result: any) => void) | undefined, allowClose: boolean) {
         this.title = title;
         this.content = content;
         this.closeCallback = closeCallback;
-        this.showCloseButton = showCloseButton;
+        this.allowClose = allowClose;
         this.app = app;
     }
 
@@ -196,9 +196,22 @@ export class App extends React.Component<{}, {
                         </div>
                     </div>
                     {this.state.modalStack.map((modal, idx) => {
-                        return <Modal isOpen={true} style={modalStyles} contentLabel={modal.title} key={"modal_" + idx}>
+                        return <Modal
+                            isOpen={true}
+                            style={modalStyles}
+                            contentLabel={modal.title}
+                            key={"modal_" + idx}
+                            shouldCloseOnEsc={modal.allowClose}
+                            shouldCloseOnOverlayClick={modal.allowClose}
+                            preventScroll={true}
+                            onRequestClose={() => {
+                                if (modal.allowClose) {
+                                    modal.close();
+                                }
+                            }}
+                        >
                             <div id="modal-title-row">
-                                <button hidden={!modal.showCloseButton} disabled={!modal.showCloseButton} id="modal-close-btn" onClick={() => this.closeModal(modal)}>
+                                <button hidden={!modal.allowClose} disabled={!modal.allowClose} id="modal-close-btn" onClick={() => this.closeModal(modal)}>
                                     <FontAwesomeIcon icon={solid("xmark")} size="2x" />
                                 </button>
                                 <span id="modal-title">{modal.title}</span>
@@ -311,8 +324,8 @@ export class App extends React.Component<{}, {
         }
     }
 
-    openModal(title: string, modalElement: JSX.Element | ((modal: ModalContent) => JSX.Element), closeCallback: ((result: any) => void) | undefined = undefined, showCloseButton: boolean = true): ModalContent {
-        const modal = new ModalContent(title, modalElement, this, closeCallback, showCloseButton);
+    openModal(title: string, modalElement: JSX.Element | ((modal: ModalContent) => JSX.Element), closeCallback: ((result: any) => void) | undefined = undefined, allowClose: boolean = true): ModalContent {
+        const modal = new ModalContent(title, modalElement, this, closeCallback, allowClose);
         this.setState(state => {
             const newModalStack = state.modalStack.concat(modal);
             return {
