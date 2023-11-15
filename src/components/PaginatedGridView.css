@@ -161,9 +161,13 @@
     background-color: #161b22;
 }
 
+.MuiPaginationItem-textPrimary.active:not(.Mui-selected):focus {
+    color: white;
+    background-color: #161b22;
+}
+
 .MuiPaginationItem-textPrimary:not(.Mui-selected):not(.active) {
     color: white;
-    opacity: 0.38;
 }
 
 .MuiImageList-standard {
