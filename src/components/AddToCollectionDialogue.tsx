@@ -29,6 +29,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
         search.set("query", searchQuery);
         search.set("page", listPage.toString());
         search.set("writable_only", "true");
+        search.set("limit", "15");
 
         setQueryLoading(true);
         performSearchQuery("/collection?" + search, app, location, navigate, modal).then(searchResult => {
