@@ -172,7 +172,9 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             minWidth: preventStretch ? 'fit-content' : '250px',
             display: "flex",
             outline: "none",
-            boxShadow: "0 0 20px rgba(0, 0, 0, 0.8)"
+            boxShadow: "0 0 20px rgba(0, 0, 0, 0.8)",
+            overflowX: "auto",
+            overflowY: "auto"
         });
 
         return (
@@ -231,7 +233,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                     </IconButton>}
                                     <span id="modal-title">{modal.title}</span>
                                 </div>}
-                                <div className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`} style={{ maxHeight: this.isDesktop() ? "80vh" : "100vh", maxWidth: this.isDesktop() ? "80vw" : "100vh", overflow: "scroll", width: "100%", flex: "1 1 auto", display: "flex" }}>
+                                <div className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`} style={{ maxHeight: this.isDesktop() ? "80vh" : "100vh", maxWidth: this.isDesktop() ? "80vw" : "100vh", overflow: "auto", width: "100%", flex: "1 1 auto", display: "flex" }}>
                                     {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
                                 </div>
                             </Paper>
