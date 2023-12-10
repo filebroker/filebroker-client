@@ -44,7 +44,7 @@
 
     #post-container > .video-container {
         width: calc(100vw - 20px);
-        height: 28.125vw;
+        height: calc((100vw - 20px) / (16 / 9));
     }
 
     #post-information-container {
