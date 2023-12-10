@@ -1,15 +1,14 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import App, { ModalContent } from "../App";
 import { TagCreator, TagSelector } from "./TagEditor";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { useEffect, useState } from "react";
 import { GroupAccessDefinition, PostCollectionDetailed, UserGroup } from "../Model";
-import { Checkbox, TextField } from "@mui/material";
+import { Button, Checkbox, IconButton, Paper, TextField } from "@mui/material";
 import { GroupSelector } from "./GroupEditor";
 import EditIcon from '@mui/icons-material/Edit';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import http from "../http-common";
 import "./CreateCollectionDialogue.css";
+import AddIcon from '@mui/icons-material/Add';
 
 export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { postPks: number[], modal: ModalContent, app: App, postQuery?: string }) {
     const location = useLocation();
@@ -41,8 +40,7 @@ export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { p
 
     return (
         <div id="CreateCollectionDialogue">
-            <fieldset>
-                <legend>Collection</legend>
+            <Paper elevation={2} className="fieldset-paper">
                 <table className="fieldset-container">
                     <tbody>
                         <tr className="form-row">
@@ -53,16 +51,19 @@ export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { p
                         </tr>
                     </tbody>
                 </table>
-            </fieldset>
-            <div id="tag-editor-div">
-                <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
-                <button className="standard-button" onClick={e => {
-                    e.preventDefault();
-                    app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
-                }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
-            </div>
-            <fieldset>
-                <legend>Share</legend>
+            </Paper>
+            <Paper elevation={2} className="fieldset-paper">
+                <div id="tag-editor-div">
+                    <div className="autocomplete-container">
+                        <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
+                    </div>
+                    <IconButton size="medium" onClick={e => {
+                        e.preventDefault();
+                        app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
+                    }}><AddIcon /></IconButton>
+                </div>
+            </Paper>
+            <Paper elevation={2} className="fieldset-paper">
                 <table className="fieldset-container">
                     <tbody>
                         <tr className="form-row">
@@ -87,9 +88,9 @@ export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { p
                         </tr>
                     </tbody>
                 </table>
-            </fieldset>
+            </Paper>
             <div className="modal-form-submit-btn">
-                <button className="standard-button-large" disabled={!(title && title.length > 0)} onClick={async e => {
+                <Button color="secondary" disabled={!(title && title.length > 0)} onClick={async e => {
                     const loadingModal = app.openLoadingModal();
                     try {
                         const config = await app.getAuthorization(location, navigate);
@@ -123,7 +124,7 @@ export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { p
                             app.openModal("Error", <p>An unexpected error occurred</p>);
                         }
                     }
-                }}>Create Collection</button>
+                }}>Create Collection</Button>
             </div>
         </div>
     );

@@ -7,15 +7,16 @@ import http from "../http-common";
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
-import ProgressBar from 'react-bootstrap/ProgressBar';
 import { Broker, PostDetailed, S3Object, UserGroup } from "../Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
-import { Checkbox, TextField } from "@mui/material";
+import { Box, Button, Checkbox, FormControl, IconButton, InputLabel, LinearProgress, LinearProgressProps, MenuItem, Paper, Select, Tab, Tabs, TextField, Typography } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { GroupSelector } from "./GroupEditor";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { EditPostRequest } from "../routes/Post";
+import AddIcon from '@mui/icons-material/Add';
+import { TabPanel, a11yProps } from "./TabPanel";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 class UploadDialogueProps {
     app: App;
@@ -112,6 +113,21 @@ class ProgressSubject {
     }
 }
 
+function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ width: '100%', mr: 1 }}>
+                <LinearProgress variant="determinate" {...props} />
+            </Box>
+            <Box sx={{ minWidth: 35 }}>
+                <Typography variant="body2" color="text.secondary">{`${Math.round(
+                    props.value,
+                )}%`}</Typography>
+            </Box>
+        </Box>
+    );
+}
+
 function UploadProgress({ progressSubject, steps }: { progressSubject: ProgressSubject, steps: number }) {
     const [progress, setProgress] = useState(0);
     const [step, setStep] = useState(0);
@@ -132,8 +148,10 @@ function UploadProgress({ progressSubject, steps }: { progressSubject: ProgressS
     return (
         <div id="upload-progress">
             <p>Uploading File</p>
-            <ProgressBar now={progress} />
-            <p>{step} / {steps}</p>
+            <LinearProgressWithLabel value={progress} />
+            <Box sx={{ minWidth: 35 }}>
+                <Typography variant="body2" color="text.secondary">{`${step} / ${steps}`}</Typography>
+            </Box>
         </div>
     );
 }
@@ -183,134 +201,111 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
     function setFileLabelTrimmed(name: string) {
         if (name.length > 50) {
-            setFileLabel(name.substring(0, 20) + "..." + name.substring(name.length - 20));
+            setFileLabel(name.substring(0, 40) + "..." + name.substring(name.length - 20));
         } else {
             setFileLabel(name);
         }
     }
 
+    const brokerSelector = <div className="flex-row">
+        <FontAwesomeIcon icon={solid("circle-info")} data-tip="Select or create a new file server to upload files to."></FontAwesomeIcon>
+        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
+        <div id="broker-selector"><FormControl fullWidth>
+            <InputLabel>Broker *</InputLabel>
+            <Select label="Broker" value={selectedBroker || ''} onChange={(e) => setSelectedBroker(e.target.value)} required>
+                {brokers.sort((a, b) => a.name.localeCompare(b.name)).map((broker) => <MenuItem key={broker.pk} value={broker.pk}>{broker.name}</MenuItem>)}
+            </Select>
+        </FormControl></div>
+        <IconButton size="medium" onClick={e => {
+            e.preventDefault();
+            app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
+                let config = await app.getAuthorization(location, navigate);
+
+                http
+                    .get<Broker[]>("/get-brokers", config)
+                    .then(result => setBrokers(result.data));
+            });
+        }}><AddIcon /></IconButton>
+    </div>;
+
     return (
         <div className="modal-form">
             <p>{isUploadingFolder ? "Create posts for each file in the uploaded folder" : "Create a post for a new file upload"}</p>
-            <fieldset>
-                <legend>Upload</legend>
-                <Tabs onSelect={index => {
-                    setUploadingFolder(index === 1);
-                    setFile(null);
-                    setFileLabel("No file chosen");
-                }}>
-                    <TabList>
-                        <Tab>File</Tab>
-                        <Tab>Folder</Tab>
-                    </TabList>
-                    <TabPanel>
-                        <table className="fieldset-container">
-                            <tbody>
-                                <tr className="form-row">
-                                    <td className="form-label">
-                                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="Select or create a new file server to upload files to."></FontAwesomeIcon>
-                                        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
-                                    </td>
-                                </tr>
-                                <tr className="form-row">
-                                    <td className="form-label"><label>Select broker</label></td>
-                                    <td className="form-field">
-                                        <select value={selectedBroker} onChange={e => setSelectedBroker(e.target.value)} disabled={brokerOptions.length === 0}>
-                                            <option value={""} hidden>{brokerOptions.length === 0 ? "None Available" : ""}</option>
-                                            {brokerOptions}
-                                        </select>&nbsp;
-                                        <button className="standard-button" onClick={e => {
-                                            e.preventDefault();
-                                            app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
-                                                let config = await app.getAuthorization(location, navigate);
-
-                                                http
-                                                    .get<Broker[]>("/get-brokers", config)
-                                                    .then(result => setBrokers(result.data));
-                                            });
-                                        }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
-                                    </td>
-                                </tr>
-                                <tr className="form-row">
-                                    <td className="form-label"><label>Pick File</label></td>
-                                    <td className="form-field">
-                                        <label className="file-name">{fileLabel}</label>&nbsp;
-                                        <button className="standard-button" onClick={e => { e.preventDefault(); hiddenFileInput.current?.click(); }}>Choose File</button>
-                                        <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} onChange={e => {
-                                            let fileList = e.target.files;
-                                            if (fileList && fileList.length > 0) {
-                                                setFile(fileList[0]);
-                                                setFileLabelTrimmed(fileList[0].name);
-                                            } else {
-                                                setFile(null);
-                                                setFileLabel("No file chosen");
-                                            }
-                                        }}></input>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </TabPanel>
-                    <TabPanel>
-                        <table className="fieldset-container">
-                            <tbody>
-                                <tr className="form-row">
-                                    <td className="form-label">
-                                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="Select or create a new file server to upload files to."></FontAwesomeIcon>
-                                        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
-                                    </td>
-                                </tr>
-                                <tr className="form-row">
-                                    <td className="form-label"><label>Select broker</label></td>
-                                    <td className="form-field">
-                                        <select value={selectedBroker} onChange={e => setSelectedBroker(e.target.value)} disabled={brokerOptions.length === 0}>
-                                            <option value={""} hidden>{brokerOptions.length === 0 ? "None Available" : ""}</option>
-                                            {brokerOptions}
-                                        </select>&nbsp;
-                                        <button className="standard-button" onClick={e => {
-                                            e.preventDefault();
-                                            app.openModal("Create Broker", createBrokerModal => <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>, async () => {
-                                                let config = await app.getAuthorization(location, navigate);
-
-                                                http
-                                                    .get<Broker[]>("/get-brokers", config)
-                                                    .then(result => setBrokers(result.data));
-                                            });
-                                        }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
-                                    </td>
-                                </tr>
-                                <tr className="form-row">
-                                    <td className="form-label"><label>Pick Folder</label></td>
-                                    <td className="form-field">
-                                        <label className="file-name">{fileLabel}</label>&nbsp;
-                                        <button className="standard-button" onClick={e => { e.preventDefault(); hiddenFileInput.current?.click(); }}>Choose Folder</button>
-                                        {/*@ts-ignore*/}
-                                        <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} directory="" webkitdirectory="" multiple onChange={e => {
-                                            let fileList = e.target.files;
-                                            if (fileList) {
-                                                setFileList(fileList);
-                                                setFileLabelTrimmed(`Selected ${fileList.length} files`);
-                                            } else {
-                                                setFile(null);
-                                                setFileLabel("No file chosen");
-                                            }
-                                        }}></input>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </TabPanel>
-                </Tabs>
-            </fieldset>
-            <div id="tag-editor-div">
-                <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
-                <button className="standard-button" onClick={e => {
-                    e.preventDefault();
-                    app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
-                }}><FontAwesomeIcon icon={solid("plus")}></FontAwesomeIcon></button>
-            </div>
-            <fieldset>
-                <legend>Share</legend>
+            <Paper elevation={2} className="fieldset-paper">
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs value={isUploadingFolder ? 1 : 0} onChange={(_e, idx) => {
+                        setUploadingFolder(idx === 1);
+                        setFile(null);
+                        setFileLabel("No file chosen");
+                    }} aria-label="basic tabs example">
+                        <Tab label="File" {...a11yProps(0)} />
+                        <Tab label="Folder" {...a11yProps(1)} />
+                    </Tabs>
+                </Box>
+                <TabPanel value={isUploadingFolder ? 1 : 0} index={0}>
+                    {brokerSelector}
+                    <div className="file-selector-row">
+                        <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+                            Select file
+                            <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} onChange={e => {
+                                let fileList = e.target.files;
+                                if (fileList && fileList.length > 0) {
+                                    setFile(fileList[0]);
+                                    setFileLabelTrimmed(fileList[0].name);
+                                } else {
+                                    setFile(null);
+                                    setFileLabel("No file chosen");
+                                }
+                            }}></input>
+                        </Button>
+                        <label className="file-name" style={{ flex: "1" }}>{fileLabel}</label>
+                    </div>
+                </TabPanel>
+                <TabPanel value={isUploadingFolder ? 1 : 0} index={1}>
+                    {brokerSelector}
+                    <div className="file-selector-row">
+                        <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+                            Select folder
+                            {/*@ts-ignore*/}
+                            <input id="upload-file-picker" type={"file"} ref={hiddenFileInput} style={{ display: "none" }} directory="" webkitdirectory="" multiple onChange={e => {
+                                let fileList = e.target.files;
+                                if (fileList) {
+                                    setFileList(fileList);
+                                    setFileLabelTrimmed(`Selected ${fileList.length} files`);
+                                } else {
+                                    setFile(null);
+                                    setFileLabel("No file chosen");
+                                }
+                            }}></input>
+                        </Button>
+                        <label className="file-name">{fileLabel}</label>
+                    </div>
+                </TabPanel>
+            </Paper>
+            <Paper elevation={2} hidden={isUploadingFolder} className="fieldset-paper">
+                <table className="fieldset-container">
+                    <tbody>
+                        <tr className="form-row">
+                            <td className="form-row-full-td"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></td>
+                        </tr>
+                        <tr className="form-row">
+                            <td className="form-row-full-td"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} maxRows={5} inputProps={{ maxLength: 30000 }}></TextField></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Paper>
+            <Paper elevation={2} className="fieldset-paper">
+                <div id="tag-editor-div">
+                    <div className="autocomplete-container">
+                        <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
+                    </div>
+                    <IconButton size="medium" onClick={e => {
+                        e.preventDefault();
+                        app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
+                    }}><AddIcon /></IconButton>
+                </div>
+            </Paper>
+            <Paper elevation={2} className="fieldset-paper">
                 <table className="fieldset-container">
                     <tbody>
                         <tr className="form-row">
@@ -335,22 +330,9 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                         </tr>
                     </tbody>
                 </table>
-            </fieldset>
-            <fieldset hidden={isUploadingFolder}>
-                <legend>Post</legend>
-                <table className="fieldset-container">
-                    <tbody>
-                        <tr className="form-row">
-                            <td className="form-row-full-td"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></td>
-                        </tr>
-                        <tr className="form-row">
-                            <td className="form-row-full-td"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} maxRows={5} inputProps={{ maxLength: 30000 }}></TextField></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </fieldset>
+            </Paper>
             <div className="modal-form-submit-btn">
-                <button className="standard-button-large" onClick={async e => {
+                <Button color="secondary" disabled={((file != null || fileList != null) && !selectedBroker) || (!isUploadingFolder && file === null) || (isUploadingFolder && (fileList === null || fileList.length === 0))} onClick={async (e) => {
                     e.preventDefault();
 
                     if ((file != null || fileList != null) && !selectedBroker) {
@@ -359,7 +341,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                     }
 
                     if (isUploadingFolder && (fileList === null || fileList.length === 0)) {
-                        app.openModal("Error", <p>No folder selected</p>);
+                        app.openModal("Error", <p>No files selected</p>);
                         return;
                     }
                     if (!isUploadingFolder && file === null) {
@@ -381,7 +363,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                         selectedUserGroups.forEach(group => groupAccess.push(new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
                         try {
                             const files = Array.from(fileList);
-                            files.sort((a, b) => a.name.localeCompare(b.name, navigator.languages[0] || navigator.language, {numeric: true}));
+                            files.sort((a, b) => a.name.localeCompare(b.name, navigator.languages[0] || navigator.language, { numeric: true }));
                             for (let i = 0; i < files.length; i++) {
                                 let file = files[i];
                                 let config = await app.getAuthorization(location, navigate);
@@ -504,7 +486,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                             app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
                         }
                     }
-                }}>{isUploadingFolder ? "Create Posts" : "Create Post"}</button>
+                }}>{isUploadingFolder ? "Create Posts" : "Create Post"}</Button>
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 import { Button, ButtonGroup } from "@mui/material";
 import { ModalContent } from "../App";
+import "./ActionModal.css";
 
 export interface Action {
     name: string;

@@ -5,7 +5,7 @@ import reportWebVitals from './reportWebVitals';
 import Modal from 'react-modal';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { closeSnackbar, SnackbarProvider } from 'notistack';
-import { IconButton } from '@mui/material';
+import { IconButton, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const root = ReactDOM.createRoot(
@@ -25,6 +25,7 @@ const MUI_THEME = createTheme({
         }
     },
     palette: {
+        mode: 'dark',
         primary: {
             main: "#ffffff"
         },
@@ -33,66 +34,27 @@ const MUI_THEME = createTheme({
         }
     },
     components: {
-        MuiPaper: {
+        MuiAutocomplete: {
             styleOverrides: {
-                root: {
-                    backgroundColor: "#232629"
-                }
-            }
-        },
-        MuiInput: {
-            styleOverrides: {
-                root: {
-                    color: "white"
-                }
-            }
-        },
-        MuiInputBase: {
-            styleOverrides: {
-                root: {
-                    color: "white"
-                }
-            }
-        },
-        MuiOutlinedInput: {
-            styleOverrides: {
-                root: {
-                    color: "white"
-                }
-            }
-        },
-        MuiButtonBase: {
-            styleOverrides: {
-                root: {
-                    color: "white"
-                }
-            }
-        },
-        MuiSvgIcon: {
-            styleOverrides: {
-                root: {
-                    color: "white"
-                }
-            }
-        },
-        MuiSelect: {
-            styleOverrides: {
-                icon: {
-                    color: "white"
-                }
+                
             }
         }
     }
 });
 
+const DimensionAwareApp = () => {
+    const matches = useMediaQuery('(min-width: 800px)');
+    return (<App isDesktop={matches} />)
+};
+
 root.render(
     <ThemeProvider theme={MUI_THEME}>
         <SnackbarProvider autoHideDuration={6000} anchorOrigin={{ horizontal: "right", vertical: "bottom" }} action={(snackbarId) => (
             <IconButton onClick={() => closeSnackbar(snackbarId)}>
-                <CloseIcon />
+                <CloseIcon color='primary' />
             </IconButton>
         )}>
-            <App></App>
+            <DimensionAwareApp />
         </SnackbarProvider>
     </ThemeProvider>
 );

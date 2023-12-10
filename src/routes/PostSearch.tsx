@@ -57,6 +57,7 @@ function PostSearch({ app }: PostSearchProps) {
                 pagePath='/posts'
                 fullCount={fullCount}
                 pageCount={pageCount}
+                isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {
                         name: "Add to collection",

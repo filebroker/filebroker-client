@@ -8,11 +8,7 @@
     transform: translateY(-50%);
 }
 
-#Home input {
-    width: 500px;
-}
-
 #home-search {
-    width: auto;
+    width: min(500px, 75vw);
     display: inline-block;
 }

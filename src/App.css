@@ -1,7 +1,5 @@
-body {
-    background-color: #000a14;
+input {
     color: white;
-    margin-top: 50px;
 }
 
 .App {
@@ -61,6 +59,28 @@ body {
     padding-bottom: 5px;
 }
 
+.navbar {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: rgba(0, 10, 20, 0.9);
+    backdrop-filter: blur(6px);
+    font-weight: 500;
+    display: flex;
+    -moz-box-align: stretch;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    flex-direction: row;
+}
+
+.navbar-expand .navbar-collapse {
+    flex-basis: 100% !important;
+}
+
 .nav-el {
     float: left;
     font-size: 20pt;
@@ -71,7 +91,7 @@ body {
 }
 
 .nav-el:hover {
-    color: #2a52be;
+    color: #2a52be !important;
 }
 
 .nav-el a {
@@ -105,29 +125,23 @@ body {
     width: 100%;
 }
 
+.navbar-toggler {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.navbar-toggler:active {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.navbar-toggler:focus {
+    border: none !important;
+    box-shadow: none !important;
+}
+
 #search-bar input {
-    width: 25vw;
-}
-
-#nav-box-left {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    -moz-box-align: center;
-    justify-content: flex-start;
-    -moz-box-pack: start;
-    flex-wrap: nowrap;
-    margin-left: 25px;
-}
-
-#nav-box-right {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    -moz-box-align: center;
-    justify-content: flex-end;
-    -moz-box-pack: end;
-    margin-right: 25px;
+    width: var(--search-bar-width);
 }
 
 #Home {
@@ -164,6 +178,7 @@ body {
     border-radius: 5px;
     background-color: transparent;
     color: white;
+    font-size: 14px;
 }
 
 .standard-button-large {
@@ -233,8 +248,8 @@ body {
     -moz-box-shadow: 0 0 3px #ccc;
     -webkit-box-shadow: 0 0 3px #ccc;
     box-shadow: 0 0 3px #ccc;
-    min-width: 500px;
-    min-height: 500px;
+    min-width: 25vw;
+    min-height: 25vw;
     vertical-align: middle;
     align-items: center;
     justify-content: center;
@@ -244,39 +259,31 @@ body {
     width: 300px;
 }
 
-#modal-content fieldset {
-    border: 1px solid white;
-    border-radius: 5px;
+.modal-content > div:only-child {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
 }
 
-#modal-content select {
-    background-color: transparent;
-    color: white;
-    border-radius: 5px;
-}
-
-#modal-content select option {
-    background-color: black;
-    color: white;
-}
-
-#modal-close-btn {
-    background-color: transparent;
-    color: white;
-    border: none;
-}
-
-#modal-close-btn:hover {
-    color: black;
-}
-
-#modal-title-row {
+.modal-title-row {
+    position: absolute;
+    left: 20px;
+    top: 20px;
     font-weight: bold;
     font-size: 25px;
+    display: flex;
+    align-items: center;
+    background: inherit;
+    width: calc(100%, -20px);
+    z-index: 999;
+}
+
+.modal-content-with-title-row {
+    margin-top: 40px; /* (modal-title-row top position): 20px + (modal-title-row height): 52px - (modal padding): 32px */
 }
 
 .modal-form {
-    min-width: 500px;
+    min-width: 200px;
 }
 
 .fieldset-container {
@@ -497,8 +504,9 @@ body {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     border: none;
     background-clip: padding-box;
-    background: #202020;
+    background: #121212;
     color: white;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05));
 }
 
 .rw-list-option,
@@ -610,6 +618,23 @@ input:-webkit-autofill:focus {
     color: red;
 }
 
-.MuiSvgIcon-root {
-    color: inherit !important;
+.fieldset-paper {
+    padding: 15px;
+    margin-bottom: 5px;
+    margin-top: 10px;
+}
+
+.autocomplete-container {
+    flex: 1;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: stretch;
+}
+
+.form-container {
+    gap: 10px;
 }

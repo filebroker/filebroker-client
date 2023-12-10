@@ -125,7 +125,7 @@
     width: fit-content;
     flex-direction: column;
     max-width: 288px;
-    min-width: 150px;
+    min-width: 125px;
 }
 
 .paginated_grid_view_item_button:hover img {
@@ -150,24 +150,6 @@
 .lazy-load-image-loaded {
     width: inherit;
     height: inherit;
-}
-
-.MuiPaginationItem-textPrimary.active:not(.Mui-selected) {
-    color: white;
-}
-
-.MuiPaginationItem-textPrimary.active:not(.Mui-selected):hover {
-    color: white;
-    background-color: #161b22;
-}
-
-.MuiPaginationItem-textPrimary.active:not(.Mui-selected):focus {
-    color: white;
-    background-color: #161b22;
-}
-
-.MuiPaginationItem-textPrimary:not(.Mui-selected):not(.active) {
-    color: white;
 }
 
 .MuiImageList-standard {

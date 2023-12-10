@@ -2,10 +2,11 @@ import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import ReactTooltip from "react-tooltip";
 import App, { ModalContent } from "../App";
 import http from "../http-common";
+import { Box, Button, Checkbox, FormControlLabel, FormGroup, Tab, Tabs, TextField } from "@mui/material";
+import { TabPanel, a11yProps } from "./TabPanel";
 
 class CreateBrokerDialogueProps {
     app: App;
@@ -82,90 +83,70 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
             <p>Add a new S3 file server. You may add an S3 bucket from any Amazon AWS region<br></br>or any S3 compatible storage solution, such as MinIO.<br></br>
                 To host your files on a pay-what-you-use cloud bucket, check out <a className="standard-link" href="https://aws.amazon.com/s3/">Amazon S3</a>,<br></br>
                 to explore free and self-hosted solutions, check out <a className="standard-link" href="https://www.min.io/">MinIO</a>.</p>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={isAwsRegion ? 0 : 1} onChange={(_e, idx) => setAwsRegion(idx === 0)} aria-label="basic tabs example">
+                    <Tab label="Amazon S3" {...a11yProps(0)} />
+                    <Tab label="Other S3 storage" {...a11yProps(1)} />
+                </Tabs>
+            </Box>
+            <TabPanel value={0} index={0}>
+                <FormGroup className="form-container">
+                    <TextField
+                        label="Broker Name"
+                        variant="outlined"
+                        value={name}
+                        fullWidth
+                        onChange={(e) => setName(e.currentTarget.value)}
+                        inputProps={{ maxLength: 32 }}
+                        placeholder="Choose Any Name"
+                    />
+                    <TextField
+                        label="S3 Bucket"
+                        variant="outlined"
+                        value={bucket}
+                        fullWidth
+                        onChange={(e) => setBucket(e.currentTarget.value)}
+                        inputProps={{ maxLength: 255 }}
+                        placeholder="Name of S3 Bucket"
+                    />
+                    <TextField
+                        label={isAwsRegion ? "AWS Region" : "Endpoint URL"}
+                        variant="outlined"
+                        value={endpoint}
+                        fullWidth
+                        onChange={(e) => setEndpoint(e.currentTarget.value)}
+                        inputProps={{ maxLength: 2048 }}
+                        placeholder={isAwsRegion ? "e.g. eu-west-2" : "URL of S3 endpoint"}
+                    />
+                    <TextField
+                        label="Access Key"
+                        variant="outlined"
+                        value={accessKey}
+                        fullWidth
+                        onChange={(e) => setAccessKey(e.currentTarget.value)}
+                        inputProps={{ maxLength: 255 }}
+                        placeholder="Access Key / User Name"
+                    />
+                    <TextField
+                        label="Secret Key"
+                        variant="outlined"
+                        value={secretKey}
+                        fullWidth
+                        onChange={(e) => setSecretKey(e.currentTarget.value)}
+                        inputProps={{ maxLength: 255 }}
+                        placeholder="Secret Key / Password"
+                    />
+                    <div className="flex-row">
+                        <FormControlLabel control={<Checkbox checked={removeDuplicateFiles} onChange={(e) => setRemoveDuplicateFiles(e.currentTarget.checked)} />} label="Merge Duplicate Files" />
+                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="With this option enabled, duplicate files uploads that generate the same file hash will be removed and new posts will reference the existing file instead."></FontAwesomeIcon>
+                        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
+                    </div>
+                </FormGroup>
+            </TabPanel>
 
-            <Tabs onSelect={(index) => setAwsRegion(index === 0)}>
-                <TabList>
-                    <Tab>Amazon S3</Tab>
-                    <Tab>Other S3 storage</Tab>
-                </TabList>
-
-                <TabPanel>
-                    <table className="fieldset-container">
-                        <tbody>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Broker Name</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Choose Any Name" value={name} onChange={e => setName(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>S3 Bucket</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Name of S3 Bucket" value={bucket} onChange={e => setBucket(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>AWS Region</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="e.g. eu-west-2" value={endpoint} onChange={e => setEndpoint(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Access Key</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Access Key / User Name" value={accessKey} onChange={e => setAccessKey(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Secret Key</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Secret Key / Password" value={secretKey} onChange={e => setSecretKey(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label">
-                                    <FontAwesomeIcon icon={solid("circle-info")} data-tip="With this option enabled, duplicate files uploads that generate the same file hash will be removed and new posts will reference the existing file instead."></FontAwesomeIcon>
-                                    <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
-                                </td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Merge Duplicate Files</label></td>
-                                <td className="form-field"><input type={"checkbox"} checked={removeDuplicateFiles} onChange={e => setRemoveDuplicateFiles(e.currentTarget.checked)}></input></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </TabPanel>
-                <TabPanel>
-                    <table className="fieldset-container">
-                        <tbody>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Broker Name</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Choose Any Name" value={name} onChange={e => setName(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>S3 Bucket</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Name of S3 Bucket" value={bucket} onChange={e => setBucket(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Endpoint URL</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="URL of S3 endpoint" value={endpoint} onChange={e => setEndpoint(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Access Key</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Access Key / User Name" value={accessKey} onChange={e => setAccessKey(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Secret Key</label></td>
-                                <td className="form-field"><input type={"text"} placeholder="Secret Key / Password" value={secretKey} onChange={e => setSecretKey(e.currentTarget.value)} required></input></td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label">
-                                    <FontAwesomeIcon icon={solid("circle-info")} data-tip="With this option enabled, duplicate files uploads that generate the same file hash will be removed and new posts will reference the existing file instead."></FontAwesomeIcon>
-                                    <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
-                                </td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-label"><label>Merge Duplicate Files</label></td>
-                                <td className="form-field"><input type={"checkbox"} checked={removeDuplicateFiles} onChange={e => setRemoveDuplicateFiles(e.currentTarget.checked)} required></input></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </TabPanel>
-            </Tabs>
-
-            <div className="modal-form-submit-btn"><button type="submit" className="standard-button-large" disabled={
+            <div className="modal-form-submit-btn"><Button color="secondary" type="submit" disabled={
                 submitDisabled || name.length === 0 || bucket.length === 0 || endpoint.length === 0 || accessKey.length === 0 || secretKey.length === 0
-            }>Register</button></div>
+            }>Create Broker</Button></div>
         </form>
     );
 }

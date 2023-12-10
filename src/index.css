@@ -1,10 +1,42 @@
 body {
+  --bs-body-font-family: -apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  --bs-body-color: white;
+  --bs-body-bg: #000a14;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  padding-top: 56px;
+  background-color: #000a14;
+  color: white;
+  --bs-body-line-height: 1;
+  --bs-navbar-color: white;
+  --bs-nav-link-font-size: 12pt;
+}
+
+@media (min-width: 1200px) {
+  body {
+    --bs-nav-link-font-size: 18pt;
+  }
+}
+
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700 !important;
 }
 
 button {

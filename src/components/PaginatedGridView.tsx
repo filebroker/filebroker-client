@@ -42,14 +42,15 @@ export interface GridItemAction {
     allowExecuteForAll?: boolean;
 }
 
-export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryParamsOnItemClick, pagePath, fullCount, pageCount, gridItemActions = undefined }: {
+export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryParamsOnItemClick, pagePath, fullCount, pageCount, gridItemActions = undefined, isDesktop = true }: {
     itemsProperty: PaginatedGridViewItem[] | PaginatedGridViewItemFunction<any>,
     onItemClickPath: (item: PaginatedGridViewItem) => string,
     stripQueryParamsOnItemClick?: boolean,
     pagePath: string,
     fullCount: number | null,
     pageCount: number | null,
-    gridItemActions?: GridItemAction[] | undefined
+    gridItemActions?: GridItemAction[] | undefined,
+    isDesktop?: boolean
 }) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -204,18 +205,22 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                     )}
                 </ImageList>
             </div>
-            <div id='page-button-container'>
-                <div id="page-full-count">{fullCount !== null && <span>{fullCount} results</span>}</div>
+            <div id='page-button-container' style={{
+                gridTemplateColumns: isDesktop ? "1fr 2fr 1fr" : "4.5fr 2.5fr"
+            }}>
+                {isDesktop && <div id="page-full-count">{fullCount !== null && <span>{fullCount} results</span>}</div>}
                 <div id="page-grid-pagination-container">
                     <Pagination
                         page={pageParam + 1}
                         count={pageCount ?? 999}
                         showFirstButton
                         showLastButton={pageCount !== null}
-                        siblingCount={pageCount !== null ? 3 : 0}
-                        boundaryCount={pageCount !== null ? 1 : 0}
+                        hideNextButton={!isDesktop}
+                        hidePrevButton={!isDesktop}
+                        siblingCount={pageCount !== null ? (isDesktop ? 3 : 1) : 0}
+                        boundaryCount={pageCount !== null && isDesktop ? 1 : 0}
                         color='primary'
-                        size='large'
+                        size={isDesktop ? 'large' : 'medium'}
                         renderItem={item => {
                             let page = item.page ?? 1;
                             let searchParams = new URLSearchParams();
@@ -233,7 +238,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                     />
                 </div>
                 <div id="selection-action-tool-row">
-                    {selectionMode && <span className="selected-amount-label">{`${selectedItems.length} selected`}</span>}
+                    {selectionMode && isDesktop && <span className="selected-amount-label">{`${selectedItems.length} selected`}</span>}
                     {selectionMode
                         ? <IconButton color='primary' size='medium' onClick={() => { setSelectionMode(false); setSelectedItems([]) }}><DeselectIcon /></IconButton>
                         : <IconButton color='primary' size='medium' onClick={() => setSelectionMode(true)}><SelectAllIcon /></IconButton>

@@ -10,7 +10,6 @@ import Register from './routes/Register';
 import Post from './routes/Post';
 import Home from './routes/Home';
 import { AxiosResponse } from 'axios';
-import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import UploadDialogue from './components/UploadDialogue';
@@ -18,6 +17,17 @@ import { EmailConfirmation } from './routes/EmailConfirmation';
 import PostCollectionSearch from './routes/PostCollectionSearch';
 import { PostCollection } from './routes/PostCollection';
 import { QueryAutocompleteSuggestionCombobox } from './components/QueryAutocompleteSuggestions';
+import { CircularProgress, IconButton, Modal, Paper } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { Container, Nav, Navbar } from 'react-bootstrap';
+import NavbarCollapse from 'react-bootstrap/esm/NavbarCollapse';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+declare module 'react' {
+    interface CSSProperties {
+        [key: `--${string}`]: string | number
+    }
+}
 
 export class User {
     user_name: string;
@@ -49,14 +59,18 @@ export class ModalContent {
     content: JSX.Element | ((modal: ModalContent) => JSX.Element);
     closeCallback: ((result: any) => void) | undefined;
     allowClose: boolean;
+    preventStretch: boolean = false;
+    disableFocus: boolean = false;
     app: App;
     closed: boolean = false;
 
-    constructor(title: string, content: JSX.Element | ((modal: ModalContent) => JSX.Element), app: App, closeCallback: ((result: any) => void) | undefined, allowClose: boolean) {
+    constructor(title: string, content: JSX.Element | ((modal: ModalContent) => JSX.Element), app: App, closeCallback: ((result: any) => void) | undefined, allowClose: boolean, preventStretch: boolean, disableFocus: boolean) {
         this.title = title;
         this.content = content;
         this.closeCallback = closeCallback;
         this.allowClose = allowClose;
+        this.disableFocus = disableFocus;
+        this.preventStretch = preventStretch;
         this.app = app;
     }
 
@@ -121,7 +135,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
     );
 }
 
-export class App extends React.Component<{}, {
+export class App extends React.Component<{ isDesktop: boolean }, {
     jwt: string | null;
     user: User | null;
     loginExpiry: number | null;
@@ -130,7 +144,7 @@ export class App extends React.Component<{}, {
 
     pendingLogin: Promise<AxiosResponse<LoginResponse, any>> | null;
 
-    constructor(props: any) {
+    constructor(props: { isDesktop: boolean }) {
         super(props);
         this.state = {
             jwt: null,
@@ -145,82 +159,84 @@ export class App extends React.Component<{}, {
     }
 
     render(): React.ReactNode {
-        let loginAccountLink;
-        if (this.state.user == null) {
-            loginAccountLink = <NavLink to="/login">Log In</NavLink>;
-        } else {
-            loginAccountLink = <NavLink to="/profile">{this.state.user.display_name ?? this.state.user.user_name}</NavLink>;
-        }
-
-        const modalStyles = {
-            content: {
-                top: '50%',
-                left: '50%',
-                right: 'auto',
-                bottom: 'auto',
-                marginRight: '-50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: "#161b22",
-                color: "white",
-                padding: "10px"
-            },
-            overlay: {
-                backgroundColor: "rgba(0, 0, 0, 0.75)",
-                zIndex: 1000
-            }
-        };
+        const modalStyle = (preventStretch: boolean) => ({
+            position: 'absolute' as 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            p: "32px",
+            height: preventStretch || this.isDesktop() ? 'fit-content' : '100vh',
+            width: preventStretch || this.isDesktop() ? 'fit-content' : '100vw',
+            maxHeight: '100vh',
+            maxWidth: '100vw',
+            minWidth: preventStretch ? 'fit-content' : '250px',
+            display: "flex",
+            outline: "none",
+            boxShadow: "0 0 20px rgba(0, 0, 0, 0.8)"
+        });
 
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
                 <div id="App">
-                    <div id="nav">
-                        <div id="nav-box-left">
-                            <div className="nav-el"><NavLink to="/">Home</NavLink></div>
-                            <div className="nav-el"><NavLink to="/posts">Posts</NavLink></div>
-                            <div className="nav-el"><NavLink to="/collections">Collections</NavLink></div>
-                        </div>
+                    <Navbar expand={this.isDesktop()} fixed='top' collapseOnSelect variant='dark'>
+                        <Container style={{ margin: "0", width: "100%", flex: "1 auto", maxWidth: "none" }}>
+                            <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+                            <NavbarCollapse style={this.isDesktop() ? {
+                                justifyContent: "flex-start",
+                                marginLeft: "25px"
+                            } : {}}>
+                                <Nav>
+                                    <Nav.Link eventKey={0} className="nav-el" as={NavLink} to="/">Home</Nav.Link>
+                                    <Nav.Link eventKey={1} className="nav-el" as={NavLink} to="/posts">Posts</Nav.Link>
+                                    <Nav.Link eventKey={2} className="nav-el" as={NavLink} to="/collections">Collections</Nav.Link>
+                                </Nav>
+                            </NavbarCollapse>
 
-                        <div id="search-bar">
-                            <PostQueryInput hideOnHome></PostQueryInput>
-                        </div>
-
-                        <div id="nav-box-right">
-                            <button className="nav-el nav-el-right" onClick={() => {
-                                if (this.state.user == null) {
-                                    this.openModal("Error", <p>Must be logged in</p>);
-                                } else {
-                                    this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
-                                }
-                            }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
-                            <div className="nav-el nav-el-right">{loginAccountLink}</div>
-                        </div>
-                    </div>
-                    {this.state.modalStack.map((modal, idx) => {
-                        return <Modal
-                            isOpen={true}
-                            style={modalStyles}
-                            contentLabel={modal.title}
+                            <div id="search-bar" style={{ position: this.isDesktop() ? "relative" : "absolute", width: this.isDesktop() ? "100%" : "calc(100vw - 68px)", right: this.isDesktop() ? "auto" : "12px", top: this.isDesktop() ? "auto" : "13px", "--search-bar-width": this.isDesktop() ? "25vw" : "calc(100vw - 68px - 27px - 24px)" }}>
+                                <PostQueryInput hideOnHome></PostQueryInput>
+                            </div>
+                            <NavbarCollapse style={this.isDesktop() ? {
+                                justifyContent: "flex-end",
+                                marginRight: "25px",
+                            } : {}}>
+                                <Nav>
+                                    <button className="nav-el nav-el-right" disabled={this.state.user == null} style={{ textAlign: "left", fontSize: "var(--bs-nav-link-font-size)", fontWeight: "500" }} onClick={() => {
+                                        if (this.state.user == null) {
+                                            this.openModal("Error", <p>Must be logged in</p>);
+                                        } else {
+                                            this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
+                                        }
+                                    }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
+                                    <Nav.Link eventKey={5} active className="nav-el nav-el-right" as={NavLink} to={this.state.user == null ? "/login" : "/profile"}>{this.state.user == null ? "Log In" : (this.state.user.display_name ?? this.state.user.user_name)}</Nav.Link>
+                                </Nav>
+                            </NavbarCollapse>
+                        </Container>
+                    </Navbar>
+                    {this.state.modalStack.map((modal, idx) =>
+                        <Modal
+                            open={true}
                             key={"modal_" + idx}
-                            shouldCloseOnEsc={modal.allowClose}
-                            shouldCloseOnOverlayClick={modal.allowClose}
-                            preventScroll={true}
-                            onRequestClose={() => {
+                            disableEscapeKeyDown={!modal.allowClose}
+                            disableAutoFocus={modal.disableFocus}
+                            onClose={() => {
                                 if (modal.allowClose) {
                                     modal.close();
                                 }
                             }}
                         >
-                            <div id="modal-title-row">
-                                <button hidden={!modal.allowClose} disabled={!modal.allowClose} id="modal-close-btn" onClick={() => this.closeModal(modal)}>
-                                    <FontAwesomeIcon icon={solid("xmark")} size="2x" />
-                                </button>
-                                <span id="modal-title">{modal.title}</span>
-                            </div>
-                            <div id="modal-content">
-                                {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
-                            </div>
+                            <Paper elevation={0} sx={modalStyle(modal.preventStretch)}>
+                                {(modal.allowClose || modal.title) && <div className="modal-title-row">
+                                    {modal.allowClose && <IconButton className='modal-close-btn' size='large' hidden={!modal.allowClose} disabled={!modal.allowClose} onClick={() => this.closeModal(modal)}>
+                                        <CloseIcon fontSize='inherit' />
+                                    </IconButton>}
+                                    <span id="modal-title">{modal.title}</span>
+                                </div>}
+                                <div className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`} style={{ maxHeight: this.isDesktop() ? "80vh" : "100vh", maxWidth: this.isDesktop() ? "80vw" : "100vh", overflow: "scroll", width: "100%", flex: "1 1 auto", display: "flex" }}>
+                                    {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
+                                </div>
+                            </Paper>
                         </Modal>
-                    })}
+                    )}
                 </div>
                 <Routes>
                     <Route path="/" element={<Home></Home>}></Route>
@@ -324,8 +340,15 @@ export class App extends React.Component<{}, {
         }
     }
 
-    openModal(title: string, modalElement: JSX.Element | ((modal: ModalContent) => JSX.Element), closeCallback: ((result: any) => void) | undefined = undefined, allowClose: boolean = true): ModalContent {
-        const modal = new ModalContent(title, modalElement, this, closeCallback, allowClose);
+    openModal(
+        title: string,
+        modalElement: JSX.Element | ((modal: ModalContent) => JSX.Element),
+        closeCallback: ((result: any) => void) | undefined = undefined,
+        allowClose: boolean = true,
+        preventStretch: boolean = false,
+        disableFocus: boolean = false,
+    ): ModalContent {
+        const modal = new ModalContent(title, modalElement, this, closeCallback, allowClose, preventStretch, disableFocus);
         this.setState(state => {
             const newModalStack = state.modalStack.concat(modal);
             return {
@@ -336,7 +359,7 @@ export class App extends React.Component<{}, {
     }
 
     openLoadingModal() {
-        return this.openModal("", <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>, undefined, false);
+        return this.openModal("", <CircularProgress color='primary' />, undefined, false, true, true);
     }
 
     closeModal(modal: ModalContent, result: any = undefined) {
@@ -378,6 +401,10 @@ export class App extends React.Component<{}, {
                 modalStack: newModalStack
             };
         });
+    }
+
+    isDesktop(): boolean {
+        return this.props.isDesktop;
     }
 }
 

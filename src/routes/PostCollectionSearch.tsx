@@ -68,6 +68,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                 pagePath='/collections'
                 fullCount={fullCount}
                 pageCount={pageCount}
+                isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {
                         name: "Delete collection",

@@ -1,4 +1,4 @@
-import { Autocomplete, Chip, TextField } from "@mui/material";
+import { Autocomplete, Button, Chip, FormGroup, TextField } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { Tag } from "../Model";
 import http from "../http-common";
@@ -44,12 +44,13 @@ class UpsertTagResponse {
     }
 }
 
-export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false }: {
+export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label }: {
     setSelectedTags: (v: number[]) => void,
     setEnteredTags?: (v: string[]) => void,
     limit?: number,
     values?: (string | { label: string, pk: number })[],
-    readOnly?: boolean
+    readOnly?: boolean,
+    label?: string
 }) {
     const [suggestedTags, setSuggestedTags] = useState<{ label: string, pk: number }[]>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
@@ -103,14 +104,29 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
             <Autocomplete
                 multiple
                 freeSolo={setEnteredTags !== undefined}
-                disabled={inputDisabled}
+                disabled={inputDisabled || readOnly}
                 options={suggestedTags}
                 value={value}
                 readOnly={readOnly}
                 renderInput={params => {
                     const { InputProps, ...restParams } = params;
                     const { startAdornment, ...restInputProps } = InputProps;
-                    return <TextField {...restParams} InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>) }} label="Tags"></TextField>;
+                    return <TextField
+                        {...restParams}
+                        InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>) }}
+                        label={label ?? "Tags"}
+                        sx={{
+                            "& .MuiInputLabel-root.Mui-disabled": {
+                                color: "white",
+                            },
+                            "& .MuiInputBase-root.Mui-disabled": {
+                                "& > fieldset": {
+                                    borderColor: "rgba(0, 0, 0, 0.23)",
+                                    color: "white",
+                                }
+                            }
+                        }}
+                    />;
                 }}
                 filterOptions={x => x}
                 renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
@@ -177,43 +193,34 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
     const [aliasPks, setAliasPks] = useState<number[]>([]);
 
     return (
-        <form className="modal-form" onSubmit={async e => {
-            e.preventDefault();
+        <div id="TagEditor" style={{ minWidth: "250px", padding: "5px" }}>
+            <form className="modal-form" onSubmit={async e => {
+                e.preventDefault();
 
-            const loadingModal = app.openLoadingModal();
-            try {
-                let config = await app.getAuthorization(location, navigate);
-                let response = await http.post<UpsertTagResponse>("/upsert-tag", new UpsertTagRequest(tagName, parentPks, aliasPks), config);
-                loadingModal.close();
-                modal.close(response.data);
-            } catch (e: any) {
-                loadingModal.close();
-                if (e.response?.status === 401) {
-                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
-                } else {
-                    app.openModal("Error", <p>An error occurred saving the tag.</p>);
+                const loadingModal = app.openLoadingModal();
+                try {
+                    let config = await app.getAuthorization(location, navigate);
+                    let response = await http.post<UpsertTagResponse>("/upsert-tag", new UpsertTagRequest(tagName, parentPks, aliasPks), config);
+                    loadingModal.close();
+                    modal.close(response.data);
+                } catch (e: any) {
+                    loadingModal.close();
+                    if (e.response?.status === 401) {
+                        app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                    } else {
+                        app.openModal("Error", <p>An error occurred saving the tag.</p>);
+                    }
+                    throw e;
                 }
-                throw e;
-            }
-        }}>
-            <table className="fieldset-container">
-                <tbody>
-                    <tr className="form-row padded-row">
-                        <td className="form-label"><label>Tag Name</label></td>
-                        <td className="form-field"><TextField InputProps={{ className: "material-input" }} inputProps={{ maxLength: 50 }} variant="outlined" value={tagName} onChange={e => setTagName(e.currentTarget.value)} required></TextField></td>
-                    </tr>
-                    <tr className="form-row padded-row">
-                        <td className="form-label"><label>Parents</label></td>
-                        <td className="form-field"><div className="tag-selector-div"><TagSelector setSelectedTags={setParentPks} limit={25}></TagSelector></div></td>
-                    </tr>
-                    <tr className="form-row padded-row">
-                        <td className="form-label"><label>Aliases</label></td>
-                        <td className="form-field"><div className="tag-selector-div"><TagSelector setSelectedTags={setAliasPks} limit={25}></TagSelector></div></td>
-                    </tr>
-                </tbody>
-            </table>
+            }}>
+                <FormGroup className="form-container">
+                    <TextField inputProps={{ maxLength: 50 }} variant="outlined" value={tagName} onChange={e => setTagName(e.currentTarget.value)} label="Tag Name" required />
+                    <TagSelector setSelectedTags={setParentPks} limit={25} label="Parents" />
+                    <TagSelector setSelectedTags={setAliasPks} limit={25} label="Aliases" />
 
-            <div className="modal-form-submit-btn"><button type="submit" className="standard-button-large" disabled={tagName.length === 0}>Create</button></div>
-        </form>
+                    <div className="modal-form-submit-btn"><Button color="secondary" type="submit" disabled={tagName.length === 0}>Create</Button></div>
+                </FormGroup>
+            </form>
+        </div>
     );
 }

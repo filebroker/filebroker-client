@@ -1,5 +1,6 @@
 #AddToCollectionDialogue {
-    width: 500px;
+    width: 100%;
+    min-width: 35vw;
 }
 
 #add-to-collection-search-box {
@@ -7,6 +8,8 @@
 }
 
 #add-to-collection-list {
+    display: flex;
+    flex: 1 1 auto;
     width: 100%;
 }
 

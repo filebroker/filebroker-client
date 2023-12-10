@@ -42,7 +42,13 @@ export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryStrin
                 setQueryString(newVal);
                 setQueryAutocompleteSuggestions([]);
             }
-        }} placeholder={placeholder ?? "Search"} filter={() => true} autoFocus={autoFocus} inputProps={{ autoFocus: autoFocus }} disabled={disabled}></Combobox>
+        }} placeholder={placeholder ?? "Search"} filter={() => true} autoFocus={autoFocus} inputProps={{ autoFocus: autoFocus }} disabled={disabled} onKeyDown={(e) => {
+            let { key } = e;
+            if (key === "Escape") {
+                // prevent propagating escape key in case it would close surrounding modal
+                e.stopPropagation();
+            }
+        }}></Combobox>
     );
 }
 

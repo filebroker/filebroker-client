@@ -110,7 +110,7 @@ export function PostCollection({ app }: { app: App }) {
                             ? <button className="standard-button" onClick={() => setEditMode(false)}><FontAwesomeIcon icon={solid("xmark")}></FontAwesomeIcon> Cancel</button>
                             : <button hidden={!postCollection?.is_editable} className="standard-button" onClick={() => setEditMode(true)}><FontAwesomeIcon icon={solid("pen-to-square")}></FontAwesomeIcon> Edit</button>}
                         {postCollection?.is_deletable && <button className="standard-button" onClick={() => app.openModal(
-                            "Delete post",
+                            "Delete collection",
                             (modal) => <ActionModal
                                 modalContent={modal}
                                 text={postCollection.title ? `Delete collection '${postCollection.title}'` : `Delete 1 collection`}
@@ -216,6 +216,7 @@ export function PostCollection({ app }: { app: App }) {
                 pagePath={"/collection/" + postCollection?.pk}
                 fullCount={fullCount}
                 pageCount={pageCount}
+                isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {
                         name: "Add to collection",

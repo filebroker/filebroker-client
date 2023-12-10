@@ -65,7 +65,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                 <QueryAutocompleteSuggestionSearchBox queryString={searchQuery} setQueryString={setSearchQuery} onSubmit={() => executeSearch()} isLoading={queryLoading} />
             </div>
             <div id="add-to-collection-list">
-                <List sx={{ width: "100%", minHeight: "300px", maxHeight: "52vh", overflow: 'auto' }}>
+                <List sx={{ width: "100%", minHeight: "300px", overflow: 'auto', flex: "1 1 auto" }}>
                     <ListItemButton onClick={() => app.openModal("Create Collection", (modal) => <CreateCollectionDialogue postPks={postPks} modal={modal} app={app} postQuery={postQuery} />, (result) => {
                         if (result) {
                             modal?.close(result);
