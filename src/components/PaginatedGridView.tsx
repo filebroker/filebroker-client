@@ -90,7 +90,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
             <div id="image-wall-container">
                 <ImageList gap={25} sx={{
                     width: "100%", height: "100%", paddingTop: "25px", paddingBottom: "25px", gridTemplateColumns:
-                        'repeat(auto-fill, minmax(368px, 1fr))!important'
+                        'repeat(auto-fill, minmax(360px, 1fr))!important'
                 }}>
                     {items.map(item => {
                         let thumbnailUrl;
@@ -206,7 +206,9 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                 </ImageList>
             </div>
             <div id='page-button-container' style={{
-                gridTemplateColumns: isDesktop ? "1fr 2fr 1fr" : "4.5fr 2.5fr"
+                gridTemplateColumns: isDesktop ? "1fr 2fr 1fr" : "4fr 2fr",
+                paddingRight: isDesktop ? "25px" : "10px",
+                paddingLeft: isDesktop ? "25px" : "10px",
             }}>
                 {isDesktop && <div id="page-full-count">{fullCount !== null && <span>{fullCount} results</span>}</div>}
                 <div id="page-grid-pagination-container" style={{ justifySelf: isDesktop ? "center" : "flex-start" }}>
@@ -217,7 +219,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                         showLastButton={pageCount !== null}
                         hideNextButton={!isDesktop}
                         hidePrevButton={!isDesktop}
-                        siblingCount={pageCount !== null ? (isDesktop ? 3 : 1) : 0}
+                        siblingCount={isDesktop ? 3 : 1}
                         boundaryCount={pageCount !== null && isDesktop ? 1 : 0}
                         color='primary'
                         size={isDesktop ? 'large' : 'medium'}
