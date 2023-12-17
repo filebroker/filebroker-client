@@ -98,7 +98,12 @@ input {
     cursor: not-allowed;
 }
 
-.nav-el:hover:enabled {
+.nav-el:hover:disabled {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+}
+
+.nav-el:hover {
     color: #2a52be !important;
 }
 
