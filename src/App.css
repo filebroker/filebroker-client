@@ -88,9 +88,17 @@ input {
     background-color: transparent;
     border: none;
     cursor: pointer;
+    padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x) !important;
+    padding-right: var(--bs-navbar-nav-link-padding-x) !important;
+    padding-left: var(--bs-navbar-nav-link-padding-x) !important;
 }
 
-.nav-el:hover {
+.nav-el:disabled {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+}
+
+.nav-el:hover:enabled {
     color: #2a52be !important;
 }
 

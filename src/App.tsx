@@ -202,13 +202,15 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                 marginRight: "25px",
                             } : {}}>
                                 <Nav>
-                                    <button className="nav-el nav-el-right" disabled={this.state.user == null} style={{ textAlign: "left", fontSize: "var(--bs-nav-link-font-size)", fontWeight: "500" }} onClick={() => {
+                                    <Nav.Item><button className="nav-el nav-el-right" disabled={this.state.user == null} style={{ textAlign: "left", fontSize: "var(--bs-nav-link-font-size)", fontWeight: "500" }} onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
                                         if (this.state.user == null) {
                                             this.openModal("Error", <p>Must be logged in</p>);
                                         } else {
                                             this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
                                         }
-                                    }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button>
+                                    }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button></Nav.Item>
                                     <Nav.Link eventKey={5} active className="nav-el nav-el-right" as={NavLink} to={this.state.user == null ? "/login" : "/profile"}>{this.state.user == null ? "Log In" : (this.state.user.display_name ?? this.state.user.user_name)}</Nav.Link>
                                 </Nav>
                             </NavbarCollapse>
