@@ -41,6 +41,8 @@
 #page-button-container {
     padding-top: 10px;
     padding-bottom: 10px;
+    padding-right: 25px;
+    padding-left: 25px;
     position: fixed;
     width: 100%;
     bottom: 0;
@@ -52,10 +54,6 @@
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     align-items: center;
-}
-
-#page-full-count {
-    padding-left: 25px;
 }
 
 #page-grid-pagination-container {
@@ -195,7 +193,6 @@
 
 #selection-action-tool-row {
     text-align: right;
-    padding-right: 25px;
 }
 
 .paginated_grid_view_item_footer_button {

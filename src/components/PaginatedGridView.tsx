@@ -209,7 +209,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                 gridTemplateColumns: isDesktop ? "1fr 2fr 1fr" : "4.5fr 2.5fr"
             }}>
                 {isDesktop && <div id="page-full-count">{fullCount !== null && <span>{fullCount} results</span>}</div>}
-                <div id="page-grid-pagination-container">
+                <div id="page-grid-pagination-container" style={{ justifySelf: isDesktop ? "center" : "flex-start" }}>
                     <Pagination
                         page={pageParam + 1}
                         count={pageCount ?? 999}
