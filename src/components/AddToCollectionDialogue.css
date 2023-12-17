@@ -1,6 +1,7 @@
 #AddToCollectionDialogue {
     width: 100%;
     min-width: 35vw;
+    height: 100%;
 }
 
 #add-to-collection-search-box {
@@ -11,6 +12,7 @@
     display: flex;
     flex: 1 1 auto;
     width: 100%;
+    overflow-y: auto;
 }
 
 #add-to-collection-pagination {
