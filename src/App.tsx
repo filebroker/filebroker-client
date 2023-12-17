@@ -159,6 +159,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
     }
 
     render(): React.ReactNode {
+        const pathName = window.location.pathname;
         const modalStyle = (preventStretch: boolean) => ({
             position: 'absolute' as 'absolute',
             top: '50%',
@@ -188,9 +189,9 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                 marginLeft: "25px"
                             } : {}}>
                                 <Nav>
-                                    <Nav.Link eventKey={0} className="nav-el" as={NavLink} to="/">Home</Nav.Link>
-                                    <Nav.Link eventKey={1} className="nav-el" as={NavLink} to="/posts">Posts</Nav.Link>
-                                    <Nav.Link eventKey={2} className="nav-el" as={NavLink} to="/collections">Collections</Nav.Link>
+                                    <Nav.Link eventKey={0} active={pathName === "/"} className="nav-el" as={NavLink} to="/">Home</Nav.Link>
+                                    <Nav.Link eventKey={1} active={pathName.startsWith("/post")} className="nav-el" as={NavLink} to="/posts">Posts</Nav.Link>
+                                    <Nav.Link eventKey={2} active={pathName.startsWith("/collection")} className="nav-el" as={NavLink} to="/collections">Collections</Nav.Link>
                                 </Nav>
                             </NavbarCollapse>
 
