@@ -165,8 +165,8 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             left: '50%',
             transform: 'translate(-50%, -50%)',
             p: "32px",
-            height: preventStretch || this.isDesktop() ? 'fit-content' : '100vh',
-            width: preventStretch || this.isDesktop() ? 'fit-content' : '100vw',
+            height: preventStretch || this.isDesktop() ? 'fit-content' : '100dvh',
+            width: preventStretch || this.isDesktop() ? 'fit-content' : '100dvw',
             maxHeight: '100vh',
             maxWidth: '100vw',
             minWidth: preventStretch ? 'fit-content' : '250px',
@@ -233,7 +233,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                     </IconButton>}
                                     <span id="modal-title">{modal.title}</span>
                                 </div>}
-                                <div className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`} style={{ maxHeight: this.isDesktop() ? "80vh" : "100vh", maxWidth: this.isDesktop() ? "80vw" : "100vh", overflow: "auto", width: "100%", flex: "1 1 auto", display: "flex" }}>
+                                <div className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`} style={{ maxHeight: this.isDesktop() ? "80vh" : "100dvh", maxWidth: this.isDesktop() ? "80vw" : "100dvh", overflow: "auto", width: "100%", flex: "1 1 auto", display: "flex" }}>
                                     {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
                                 </div>
                             </Paper>
