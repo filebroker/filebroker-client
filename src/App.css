@@ -103,7 +103,7 @@ input {
     cursor: not-allowed;
 }
 
-.nav-el:hover {
+.nav-el:hover:not(:disabled) {
     color: #2a52be !important;
 }
 
