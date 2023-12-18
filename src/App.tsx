@@ -364,7 +364,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
     }
 
     openLoadingModal() {
-        return this.openModal("", <CircularProgress color='primary' />, undefined, false, true, true);
+        return this.openModal("", <div style={{ margin: "0", padding: "0", width: "40px", height: "40px", overflow: "hidden" }}><CircularProgress size={40} color='primary' /></div>, undefined, false, true, true);
     }
 
     closeModal(modal: ModalContent, result: any = undefined) {
