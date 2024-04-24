@@ -225,7 +225,7 @@ export function MusicPlayer({ src }: { src: string }) {
                     }}
                 />
                 <div className="song-time">
-                    <p>
+                    <p className="song-time-stamp">
                         {currTime.min.toLocaleString("en-GB", {
                             minimumIntegerDigits: 2,
                             useGrouping: false
@@ -234,7 +234,7 @@ export function MusicPlayer({ src }: { src: string }) {
                             useGrouping: false
                         })}
                     </p>
-                    <p>
+                    <p className="song-time-stamp">
                         {time.min.toLocaleString("en-GB", {
                             minimumIntegerDigits: 2,
                             useGrouping: false
