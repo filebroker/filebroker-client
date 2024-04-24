@@ -13,7 +13,7 @@ body {
   padding-top: 56px;
   background-color: #000a14;
   color: white;
-  --bs-body-line-height: 1;
+  --bs-body-line-height: normal;
   --bs-navbar-color: white;
   --bs-nav-link-font-size: 12pt;
 }
