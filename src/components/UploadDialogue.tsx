@@ -372,7 +372,8 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                 let uploadResponse = await http.post<UploadResponse>(`/upload/${selectedBroker}`, formData, {
                                     headers: {
                                         "Content-Type": "multipart/form-data",
-                                        authorization: config!.headers.authorization
+                                        authorization: config!.headers.authorization,
+                                        "Filebroker-Upload-Size": file.size,
                                     },
                                     onUploadProgress: e => {
                                         progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
@@ -421,10 +422,14 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                             uploadProgressModal.close();
                             modal.close();
                             app.openModal("Success", <p>Posts created successfully</p>);
-                        } catch (e) {
+                        } catch (e: any) {
                             uploadProgressModal.close();
-                            console.log("Error occurred creating post for file " + e);
-                            app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                            if (e?.response?.data?.error_code === 400019) {
+                                app.openModal("Error", <p>You have run out of available storage for this broker.</p>);
+                            } else {
+                                console.error("Error occurred creating post for file " + e);
+                                app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                            }
                         }
                     } else {
                         let progressSubject = new ProgressSubject();
@@ -445,7 +450,8 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                 let uploadResponse = await http.post<UploadResponse>(`/upload/${selectedBroker}`, formData, {
                                     headers: {
                                         "Content-Type": "multipart/form-data",
-                                        authorization: config!.headers.authorization
+                                        authorization: config!.headers.authorization,
+                                        "Filebroker-Upload-Size": file.size,
                                     },
                                     onUploadProgress: e => {
                                         progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
@@ -480,10 +486,14 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                             uploadProgressModal.close();
                             modal.close();
                             app.openModal("Success", successModal => <p><Link className="standard-link" to={`post/${postResponse.data.pk + location.search}`} onClick={() => successModal.close()}>Post</Link> created successfully</p>);
-                        } catch (e) {
+                        } catch (e: any) {
                             uploadProgressModal.close();
-                            console.error("Error occurred while uploading post", e);
-                            app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                            if (e?.response?.data?.error_code === 400019) {
+                                app.openModal("Error", <p>You have run out of available storage for this broker.</p>);
+                            } else {
+                                console.error("Error occurred creating post for file " + e);
+                                app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
+                            }
                         }
                     }
                 }}>{isUploadingFolder ? "Create Posts" : "Create Post"}</Button>
