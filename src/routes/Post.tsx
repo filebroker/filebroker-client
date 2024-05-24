@@ -17,6 +17,7 @@ import { MusicPlayer } from "../components/MusicPlayer";
 import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { useSnackbar } from "notistack";
 import { ActionModal } from "../components/ActionModal";
+import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
 
 class PostProps {
     app: App;
@@ -280,6 +281,7 @@ function Post({ app }: PostProps) {
                     {downloadLink}
                     {addToCollectionBtn}
                     {deleteBtn}
+                    {post?.s3_object && <button className="standard-button-large" onClick={() => app.openModal("File metadata", <FileMetadataDisplay s3_object={post.s3_object!} s3_object_metadata={post.s3_object_metadata} />)}><FontAwesomeIcon icon={solid("info-circle")} size="1x" /></button>}
                 </div>
             </div>
             <div id="post-information-container">

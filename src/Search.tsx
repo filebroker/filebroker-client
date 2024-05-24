@@ -1,7 +1,7 @@
 import { Location, NavigateFunction } from "react-router-dom";
 import App, { ModalContent, User } from "./App";
 import http from "./http-common";
-import { S3Object } from "./Model";
+import { S3Object, S3ObjectMetadata } from "./Model";
 
 export async function performSearchQuery(search: string, app: App, location: Location, navigate: NavigateFunction, loadingModal: ModalContent | undefined = undefined): Promise<SearchResult> {
     let searchParams = new URLSearchParams(search);
@@ -96,6 +96,7 @@ export class PostQueryObject {
     create_user: User;
     score: number;
     s3_object: S3Object;
+    s3_object_metadata: S3ObjectMetadata;
     thumbnail_url: string | null;
     thumbnail_object_key: string | null;
     is_public: boolean;
@@ -111,6 +112,7 @@ export class PostQueryObject {
         create_user: User,
         score: number,
         s3_object: S3Object,
+        s3_object_metadata: S3ObjectMetadata,
         thumbnail_url: string | null,
         thumbnail_object_key: string | null,
         is_public: boolean,
@@ -125,6 +127,7 @@ export class PostQueryObject {
         this.create_user = create_user;
         this.score = score;
         this.s3_object = s3_object;
+        this.s3_object_metadata = s3_object_metadata;
         this.thumbnail_url = thumbnail_url;
         this.thumbnail_object_key = thumbnail_object_key;
         this.is_public = is_public;

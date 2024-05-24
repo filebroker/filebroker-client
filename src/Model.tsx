@@ -51,7 +51,8 @@ export class PostDetailed {
     creation_timestamp: string;
     create_user: User;
     score: number;
-    s3_object: S3Object | null;
+    s3_object: S3Object;
+    s3_object_metadata: S3ObjectMetadata;
     thumbnail_url: string | null;
     prev_post: PostWindowObject | null;
     next_post: PostWindowObject | null;
@@ -71,7 +72,8 @@ export class PostDetailed {
         creation_timestamp: string,
         create_user: User,
         score: number,
-        s3_object: S3Object | null,
+        s3_object: S3Object,
+        s3_object_metadata: S3ObjectMetadata,
         thumbnail_url: string | null,
         prev_post: PostWindowObject | null,
         next_post: PostWindowObject | null,
@@ -91,6 +93,7 @@ export class PostDetailed {
         this.create_user = create_user;
         this.score = score;
         this.s3_object = s3_object;
+        this.s3_object_metadata = s3_object_metadata;
         this.thumbnail_url = thumbnail_url;
         this.prev_post = prev_post;
         this.next_post = next_post;
@@ -200,8 +203,16 @@ export class S3Object {
     fk_uploader: number;
     thumbnail_object_key: string | null;
     creation_timestamp: string;
+    filename: string | null;
     hls_master_playlist: string | null;
     hls_disabled: boolean;
+    hls_locked_at: string | null;
+    thumbnail_locked_at: string | null;
+    hls_fail_count: number | null;
+    thumbnail_fail_count: number | null;
+    thumbnail_disabled: boolean;
+    metadata_locked_at: string | null;
+    metadata_fail_count: number | null;
 
     constructor(
         object_key: string,
@@ -212,8 +223,16 @@ export class S3Object {
         fk_uploader: number,
         thumbnail_object_key: string | null,
         creation_timestamp: string,
+        filename: string | null,
         hls_master_playlist: string | null,
         hls_disabled: boolean,
+        hls_locked_at: string | null,
+        thumbnail_locked_at: string | null,
+        hls_fail_count: number | null,
+        thumbnail_fail_count: number | null,
+        thumbnail_disabled: boolean,
+        metadata_locked_at: string | null,
+        metadata_fail_count: number | null,
     ) {
         this.object_key = object_key;
         this.sha256_hash = sha256_hash;
@@ -223,8 +242,16 @@ export class S3Object {
         this.fk_uploader = fk_uploader;
         this.thumbnail_object_key = thumbnail_object_key;
         this.creation_timestamp = creation_timestamp;
+        this.filename = filename;
         this.hls_master_playlist = hls_master_playlist;
         this.hls_disabled = hls_disabled;
+        this.hls_locked_at = hls_locked_at;
+        this.thumbnail_locked_at = thumbnail_locked_at;
+        this.hls_fail_count = hls_fail_count;
+        this.thumbnail_fail_count = thumbnail_fail_count;
+        this.thumbnail_disabled = thumbnail_disabled;
+        this.metadata_locked_at = metadata_locked_at;
+        this.metadata_fail_count = metadata_fail_count;
     }
 }
 
@@ -458,4 +485,40 @@ export class DeletePostCollectionsResponse {
     constructor(deleted_post_collections: PostCollection[]) {
         this.deleted_post_collections = deleted_post_collections;
     }
+}
+
+export interface S3ObjectMetadata {
+    object_key: string;
+    file_type: string | undefined;
+    file_type_extension: string | undefined;
+    mime_type: string | undefined;
+    title: string | undefined;
+    artist: string | undefined;
+    album: string | undefined;
+    album_artist: string | undefined;
+    composer: string | undefined;
+    genre: string | undefined;
+    date: string | undefined;
+    track_number: string | undefined;
+    disc_number: string | undefined;
+    duration: string | undefined;
+    width: number | undefined;
+    height: number | undefined;
+    size: number | undefined;
+    bit_rate: number | undefined;
+    format_name: string | undefined;
+    format_long_name: string | undefined;
+    video_stream_count: number;
+    video_codec_name: string | undefined;
+    video_codec_long_name: string | undefined;
+    video_frame_rate: number | undefined;
+    video_bit_rate_max: number | undefined;
+    audio_stream_count: number;
+    audio_codec_name: string | undefined;
+    audio_codec_long_name: string | undefined;
+    audio_sample_rate: number | undefined;
+    audio_channels: number | undefined;
+    audio_bit_rate_max: number | undefined;
+    raw: object;
+    loaded: boolean;
 }

@@ -10,6 +10,7 @@ import { ActionModal } from '../components/ActionModal';
 import { DeletePostsResponse, PostDetailed } from '../Model';
 import http from "../http-common";
 import { useSnackbar } from 'notistack';
+import { FileMetadataDisplay } from '../components/FileMetadataDisplay';
 
 class PostSearchProps {
     app: App;
@@ -59,6 +60,21 @@ function PostSearch({ app }: PostSearchProps) {
                 pageCount={pageCount}
                 isDesktop={app.isDesktop()}
                 gridItemActions={[
+                    {
+                        name: "Show metadata",
+                        icon: solid("info-circle"),
+                        allowExecuteForAll: false,
+                        disallowMultiSelect: true,
+                        enableForItem: (post) => post.source.s3_object,
+                        fn: (items) => {
+                            if (items && items.length > 0) {
+                                const post = items[0].source as unknown as PostQueryObject;
+                                if (post.s3_object) {
+                                    app.openModal("File metadata", <FileMetadataDisplay s3_object={post.s3_object} s3_object_metadata={post.s3_object_metadata} />);
+                                }
+                            }
+                        }
+                    },
                     {
                         name: "Add to collection",
                         icon: solid("square-plus"),
