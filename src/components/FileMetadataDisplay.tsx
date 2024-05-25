@@ -55,6 +55,7 @@ export function FileMetadataDisplay({ s3_object, s3_object_metadata }: { s3_obje
                         <AutoHideTableRow title="HLS" value={hls} />
                         <AutoHideTableRow title="Duration" value={s3_object_metadata.duration} />
                         <AutoHideTableRow title="Resolution" value={resolution} />
+                        <AutoHideTableRow title="Date" value={s3_object_metadata.date} />
                         <AutoHideTableRow title="Title" value={s3_object_metadata.title} />
                         <AutoHideTableRow title="Artist" value={s3_object_metadata.artist} />
                         <AutoHideTableRow title="Album" value={s3_object_metadata.album} />
@@ -66,6 +67,7 @@ export function FileMetadataDisplay({ s3_object, s3_object_metadata }: { s3_obje
                         <AutoHideTableRow title="Bitrate" value={s3_object_metadata.bit_rate} />
                         <AutoHideTableRow title="Format" value={s3_object_metadata.format_name + " (" + s3_object_metadata.format_long_name + ")"} />
                         <AutoHideTableRow title="Video Codec" value={s3_object_metadata.video_codec_name + " (" + s3_object_metadata.video_codec_long_name + ")"} />
+                        <AutoHideTableRow title="Video Framerate" value={s3_object_metadata.video_frame_rate} />
                         <AutoHideTableRow title="Video Bitrate Max" value={s3_object_metadata.video_bit_rate_max} />
                         <AutoHideTableRow title="Audio Codec" value={s3_object_metadata.audio_codec_name + " (" + s3_object_metadata.audio_codec_long_name + ")"} />
                         <AutoHideTableRow title="Audio Bitrate Max" value={s3_object_metadata.audio_bit_rate_max} />
