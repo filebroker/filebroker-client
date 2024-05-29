@@ -104,10 +104,15 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
         searchSite = pathName.split("/").filter((part) => part.length > 0).slice(0, 2).join("/");
     }
 
+    let scope = "post";
     let placeholder = "Search Post";
     if (pathName.startsWith("/collection/")) {
+        scope = "collection_item";
+        const collectionId = pathName.split("/")[2];
+        scope += `_${collectionId}`;
         placeholder = "Search Within Collection";
     } else if (pathName.startsWith("/collections")) {
+        scope = "collection";
         placeholder = "Search Collection";
     }
 
@@ -129,7 +134,7 @@ export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
                 });
             }
         }}>
-            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} autoFocus={!hideOnHome} placeholder={placeholder} />
+            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} scope={scope} autoFocus={!hideOnHome} placeholder={placeholder} />
             <button className="search-button" type="submit"><FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon></button>
         </form>
     );

@@ -9,9 +9,10 @@ import "./QueryAutocompleteSuggestions.css";
 
 let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
 
-export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryString, autoFocus = false, disabled = false, placeholder = undefined }: {
+export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryString, scope, autoFocus = false, disabled = false, placeholder = undefined }: {
     queryString: string,
     setQueryString: (queryString: string) => void,
+    scope: string,
     autoFocus?: boolean,
     disabled?: boolean,
     placeholder?: string,
@@ -24,7 +25,7 @@ export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryStrin
             clearTimeout(scheduledAnalyzeQueryRequest);
         }
         scheduledAnalyzeQueryRequest = setTimeout(async () => {
-            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query, "post"));
+            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query, scope));
             setQueryAutocompleteSuggestions(response.data.suggestions);
         }, 250);
     }
@@ -52,9 +53,10 @@ export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryStrin
     );
 }
 
-export function QueryAutocompleteSuggestionSearchBox({ queryString, setQueryString, autoFocus = false, onSubmit, isLoading = false }: {
+export function QueryAutocompleteSuggestionSearchBox({ queryString, setQueryString, scope, autoFocus = false, onSubmit, isLoading = false }: {
     queryString: string,
     setQueryString: (queryString: string) => void,
+    scope: string,
     autoFocus?: boolean,
     onSubmit: () => void,
     isLoading?: boolean
@@ -64,7 +66,7 @@ export function QueryAutocompleteSuggestionSearchBox({ queryString, setQueryStri
             e.preventDefault();
             onSubmit();
         }}>
-            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} autoFocus={autoFocus} disabled={isLoading} />
+            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} scope={scope} autoFocus={autoFocus} disabled={isLoading} />
             <button className="search-button" type="submit" disabled={isLoading}>{isLoading ? <FontAwesomeIcon icon={solid("circle-notch")} spin /> : <FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon>}</button>
         </form>
     );
