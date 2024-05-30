@@ -121,8 +121,8 @@ export function MusicPlayer({ src }: { src: string }) {
         setDuration();
         const interval = setInterval(() => {
             if (sound) {
-                let seek = sound.seek([]);
-                setSeconds(seek);
+                let seek = sound.seek();
+                setSeconds(seek.toString());
             }
         }, 1000);
         return () => {
@@ -220,7 +220,7 @@ export function MusicPlayer({ src }: { src: string }) {
                             clearTimeout(scheduledScrub);
                         }
                         scheduledScrub = setTimeout(async () => {
-                            sound.seek([value]);
+                            sound?.seek(+value);
                         }, 50);
                     }}
                 />
