@@ -499,8 +499,10 @@ export interface S3ObjectMetadata {
     composer: string | undefined;
     genre: string | undefined;
     date: string | undefined;
-    track_number: string | undefined;
-    disc_number: string | undefined;
+    track_number: number | undefined;
+    track_count: number | undefined;
+    disc_number: number | undefined;
+    disc_count: number | undefined;
     duration: string | undefined;
     width: number | undefined;
     height: number | undefined;

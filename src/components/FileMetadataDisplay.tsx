@@ -39,6 +39,15 @@ export function FileMetadataDisplay({ s3_object, s3_object_metadata }: { s3_obje
         resolution = `${s3_object_metadata.width}x${s3_object_metadata.height}`;
     }
 
+    let trackNumber = s3_object_metadata.track_number?.toString();
+    if (trackNumber && s3_object_metadata.track_count) {
+        trackNumber += " of " + s3_object_metadata.track_count;
+    }
+    let discNumber = s3_object_metadata.disc_number?.toString();
+    if (discNumber && s3_object_metadata.disc_count) {
+        discNumber += " of " + s3_object_metadata.disc_count;
+    }
+
     const [showRaw, setShowRaw] = useState(false);
 
     return (
@@ -62,8 +71,8 @@ export function FileMetadataDisplay({ s3_object, s3_object_metadata }: { s3_obje
                         <AutoHideTableRow title="Album Artist" value={s3_object_metadata.album_artist} />
                         <AutoHideTableRow title="Composer" value={s3_object_metadata.composer} />
                         <AutoHideTableRow title="Genre" value={s3_object_metadata.genre} />
-                        <AutoHideTableRow title="Track Number" value={s3_object_metadata.track_number} />
-                        <AutoHideTableRow title="Disc Number" value={s3_object_metadata.disc_number} />
+                        <AutoHideTableRow title="Track Number" value={trackNumber} />
+                        <AutoHideTableRow title="Disc Number" value={discNumber} />
                         <AutoHideTableRow title="Bitrate" value={s3_object_metadata.bit_rate} />
                         <AutoHideTableRow title="Format" value={s3_object_metadata.format_name + " (" + s3_object_metadata.format_long_name + ")"} />
                         <AutoHideTableRow title="Video Codec" value={s3_object_metadata.video_codec_name + " (" + s3_object_metadata.video_codec_long_name + ")"} />
