@@ -1,10 +1,10 @@
-import { Button, Checkbox, IconButton, ImageList, ImageListItem, ImageListItemBar, ListItemIcon, ListItemText, Menu, MenuItem, Pagination, PaginationItem } from "@mui/material";
+import { Button, Checkbox, IconButton, ImageList, ImageListItem, ImageListItemBar, ListItemIcon, ListItemText, Menu, MenuItem, Pagination, PaginationItem, useMediaQuery } from "@mui/material";
 import urlJoin from "url-join";
 import { getApiUrl, getPublicUrl } from "../http-common";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { User } from "../App";
 
 import "./PaginatedGridView.css";
@@ -53,8 +53,9 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
     isDesktop?: boolean
 }) {
     const location = useLocation();
-    const navigate = useNavigate();
     const search = location.search;
+
+    const useLargeControls = useMediaQuery('(min-width: 400px)');
 
     let items: TransformedPaginatedGridViewItem[];
     if (Array.isArray(itemsProperty)) {
@@ -222,7 +223,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                         siblingCount={isDesktop ? 3 : 1}
                         boundaryCount={pageCount !== null && isDesktop ? 1 : 0}
                         color='primary'
-                        size={isDesktop ? 'large' : 'medium'}
+                        size={useLargeControls ? (isDesktop ? 'large' : 'medium') : 'small'}
                         renderItem={item => {
                             let page = item.page ?? 1;
                             let searchParams = new URLSearchParams();
