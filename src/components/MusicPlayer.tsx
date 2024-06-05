@@ -196,80 +196,84 @@ export function MusicPlayer({ src }: { src: string }) {
             <div id="song-bg-image" style={{
                 backgroundImage: `url(${cover})`
             }} />
-            <img
-                className="song-cover"
-                src={cover}
-            />
-            <div className="song-metadata">
-                <h3 className="song-title">{title}</h3>
-                <p className="song-sub-title">{album}</p>
-                <p className="song-sub-title">{artist}</p>
-            </div>
-            <div className="song-info-container">
-                <input
-                    type="range"
-                    min="0"
-                    max={(duration ?? 0) / 1000}
-                    value={seconds}
-                    className="song-timeline"
-                    ref={timeSliderRef}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setSeconds(value);
-                        if (scheduledScrub) {
-                            clearTimeout(scheduledScrub);
-                        }
-                        scheduledScrub = setTimeout(async () => {
-                            sound?.seek(+value);
-                        }, 50);
-                    }}
+            <div className="music-player-container">
+                <img
+                    className="song-cover"
+                    src={cover}
                 />
-                <div className="song-time">
-                    <p className="song-time-stamp">
-                        {currTime.min.toLocaleString("en-GB", {
-                            minimumIntegerDigits: 2,
-                            useGrouping: false
-                        })}:{currTime.sec.toLocaleString("en-GB", {
-                            minimumIntegerDigits: 2,
-                            useGrouping: false
-                        })}
-                    </p>
-                    <p className="song-time-stamp">
-                        {time.min.toLocaleString("en-GB", {
-                            minimumIntegerDigits: 2,
-                            useGrouping: false
-                        })}:{time.sec.toLocaleString("en-GB", {
-                            minimumIntegerDigits: 2,
-                            useGrouping: false
-                        })}
-                    </p>
+                <div className="song-metadata">
+                    <h3 className="song-title">{title}</h3>
+                    <div className="song-metadata-container">
+                        <div><span className="song-sub-title">{album}</span></div>
+                        <div><span className="song-sub-title">{artist}</span></div>
+                    </div>
                 </div>
-            </div>
-            <div className="song-control-container">
-                <div className="flex-grid-item volume-control-container">
-                    <button className="song-volume-button" onClick={() => setMuted(!muted)}><FontAwesomeIcon className="player-icon" icon={volumeLabel} /></button>
+                <div className="song-info-container">
                     <input
                         type="range"
-                        className="volume-slider"
                         min="0"
-                        max="100"
-                        ref={volumeSliderRef}
-                        value={volume}
-                        onChange={(e) => setVolume(+e.target.value)}
+                        max={(duration ?? 0) / 1000}
+                        value={seconds}
+                        className="song-timeline"
+                        ref={timeSliderRef}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setSeconds(value);
+                            if (scheduledScrub) {
+                                clearTimeout(scheduledScrub);
+                            }
+                            scheduledScrub = setTimeout(async () => {
+                                sound?.seek(+value);
+                            }, 50);
+                        }}
                     />
+                    <div className="song-time">
+                        <span className="song-time-stamp">
+                            {currTime.min.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false
+                            })}:{currTime.sec.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false
+                            })}
+                        </span>
+                        <span className="song-time-stamp">
+                            {time.min.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false
+                            })}:{time.sec.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false
+                            })}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex-grid-item">
-                    {!isPlaying ? (
-                        <button className="song-play-button" disabled={!sound} onClick={onPlayPause}>
-                            <FontAwesomeIcon icon={solid("circle-play")} size="3x" />
-                        </button>
-                    ) : (
-                        <button className="song-play-button" disabled={!sound} onClick={onPlayPause}>
-                            <FontAwesomeIcon icon={solid("circle-pause")} size="3x" />
-                        </button>
-                    )}
+                <div className="song-control-container">
+                    <div className="flex-grid-item volume-control-container">
+                        <button className="song-volume-button" onClick={() => setMuted(!muted)}><FontAwesomeIcon className="player-icon" icon={volumeLabel} /></button>
+                        <input
+                            type="range"
+                            className="volume-slider"
+                            min="0"
+                            max="100"
+                            ref={volumeSliderRef}
+                            value={volume}
+                            onChange={(e) => setVolume(+e.target.value)}
+                        />
+                    </div>
+                    <div className="flex-grid-item">
+                        {!isPlaying ? (
+                            <button className="song-play-button" disabled={!sound} onClick={onPlayPause}>
+                                <FontAwesomeIcon icon={solid("circle-play")} size="3x" />
+                            </button>
+                        ) : (
+                            <button className="song-play-button" disabled={!sound} onClick={onPlayPause}>
+                                <FontAwesomeIcon icon={solid("circle-pause")} size="3x" />
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex-grid-item"></div>
                 </div>
-                <div className="flex-grid-item"></div>
             </div>
         </div>
     );

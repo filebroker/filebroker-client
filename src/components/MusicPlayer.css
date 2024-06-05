@@ -1,22 +1,64 @@
 #MusicPlayer {
     text-align: center;
-    height: 60vh;
-    width: 60vh;
     box-sizing: border-box;
     margin: 8px;
+    font-size: 14px;
+}
+
+.music-player-container {
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
 }
 
 #song-bg-image {
     filter: blur(8px);
     -webkit-filter: blur(8px);
-    height: 60vh;
-    width: 60vh;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
     z-index: -1;
     position: absolute;
     box-shadow: none;
+}
+
+@media all and (orientation:portrait) {
+    #MusicPlayer {
+        height: calc(100vw - 36px);
+        width: calc(100vw - 36px);
+    }
+    
+    #song-bg-image {
+        height: calc(100vw - 36px);
+        width: calc(100vw - 36px);
+    }
+
+    .song-cover {
+        width: calc((100vw - 36px) / 2);
+        height: calc((100vw - 36px) / 2);
+    }
+
+    .song-title {
+        font-size: 4vw;
+    }
+}
+
+@media all and (orientation:landscape) {
+    #MusicPlayer {
+        height: 60vh;
+        width: 60vh;
+    }
+    
+    #song-bg-image {
+        height: 60vh;
+        width: 60vh;
+    }
+
+    .song-cover {
+        width: 30vh;
+        height: 30vh;
+    }
 }
 
 .song-metadata {
@@ -26,8 +68,6 @@
 
 .song-cover {
     margin-top: 10px;
-    width: 30vh;
-    height: 30vh;
 }
 
 .player-icon {
@@ -94,9 +134,44 @@
 
 .song-control-container {
     display: flex;
-    width: 80%;
     margin: 0 auto;
     align-items: stretch;
+}
+
+.song-metadata-container {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+@media (min-width: 600px) {
+    #MusicPlayer {
+        font-size: 16px;
+    }
+
+    .song-metadata-container {
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 14px;
+    }
+
+    .song-control-container {
+        width: 80%;
+    }
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 5px;
+    background-image: linear-gradient(white, white);
+    background-size: 0% 100%;
+    background-repeat: no-repeat;
+    box-shadow: 0px 0px 6px black;
 }
 
 .song-volume-button {
@@ -127,18 +202,6 @@
 .volume-slider {
     width: 100px;
     flex: 1;
-}
-
-input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    height: 7px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 5px;
-    background-image: linear-gradient(white, white);
-    background-size: 0% 100%;
-    background-repeat: no-repeat;
-    box-shadow: 0px 0px 6px black;
 }
 
 /* Input Thumb */
