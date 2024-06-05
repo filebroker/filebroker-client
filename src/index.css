@@ -18,6 +18,12 @@ body {
   --bs-nav-link-font-size: 12pt;
 }
 
+@media (min-width: 600px) {
+  body {
+    padding-top: 60px;
+  }
+}
+
 @media (min-width: 1200px) {
   body {
     --bs-nav-link-font-size: 18pt;
