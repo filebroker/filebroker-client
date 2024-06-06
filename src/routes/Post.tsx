@@ -7,9 +7,9 @@ import http, { getApiUrl } from "../http-common";
 import VideoJS from "../components/VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { regular, solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { DeletePostsResponse, GroupAccessDefinition, PostDetailed, UserGroup } from "../Model";
-import { FormControlLabel, Switch, TextField } from "@mui/material";
+import { Button, ButtonGroup, FormControlLabel, Switch, TextField, useMediaQuery } from "@mui/material";
 import { TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import urlJoin from "url-join";
@@ -18,6 +18,7 @@ import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { useSnackbar } from "notistack";
 import { ActionModal } from "../components/ActionModal";
 import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
+import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 
 class PostProps {
     app: App;
@@ -48,6 +49,43 @@ function Post({ app }: PostProps) {
     const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
     const [hlsEnabled, setHlsEnabled] = useState(true);
     const [mediaComponent, setMediaComponent] = useState<ReactElement | undefined | null>(null);
+
+    const [mediaWidth, setMediaWidth] = useState<number | undefined>(undefined);
+    const [useLargeControls, setUseLargeControls] = useState(false);
+    const resizeObservers = useRef<ResizeObserver[]>([]);
+    useEffect(() => {
+        return () => {
+            resizeObservers.current.forEach(observer => observer.disconnect());
+        };
+    }, []);
+    const mediaComponentElementCallback = (el: HTMLDivElement | null) => {
+        if (el === null) {
+            return;
+        }
+
+        let currEl: HTMLElement | null = el;
+        let minWidth;
+        while (currEl && (!minWidth || minWidth === "auto" || minWidth === "inherit")) {
+            minWidth = window.getComputedStyle(currEl).minWidth;
+            currEl = currEl.parentElement;
+        }
+        let minWidthPixels = 0;
+        if (minWidth && minWidth.endsWith("px")) {
+            minWidthPixels = parseInt(minWidth.replace("px", "").trim());
+        }
+
+        const width = Math.max(el.offsetWidth, minWidthPixels);
+        setMediaWidth(width);
+        setUseLargeControls(width >= 600);
+
+        const resizeObserver = new ResizeObserver(() => {
+            const width = Math.max(el.offsetWidth, minWidthPixels);
+            setMediaWidth(width);
+            setUseLargeControls(width >= 600);
+        });
+        resizeObserver.observe(el);
+        resizeObservers.current.push(resizeObserver);
+    };
 
     function updatePost(postDetailed: PostDetailed) {
         setPost(postDetailed);
@@ -121,7 +159,13 @@ function Post({ app }: PostProps) {
 
     useEffect(() => {
         if (post) {
-            setMediaComponent(getComponentForData(post));
+            setMediaComponent(
+                <div id="post-container-media-container">
+                    <div ref={mediaComponentElementCallback} style={{ height: "max-content", width: "max-content", display: "inline-block" }}>
+                        {getComponentForData(post)}
+                    </div>
+                </div>
+            );
         } else {
             setMediaComponent(null);
         }
@@ -186,74 +230,76 @@ function Post({ app }: PostProps) {
 
     let component;
     let postInformation;
-    let downloadLink;
-    let addToCollectionBtn;
-    let deleteBtn;
     let prevLink;
     let nextLink;
+    let postContainerButtonGroup;
     if (post) {
         let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
-        downloadLink = dataUrl && <a className="standard-link-button-large" target={"_blank"} rel="noreferrer" href={dataUrl}><FontAwesomeIcon icon={solid("download")} size="1x"></FontAwesomeIcon></a>;
-        addToCollectionBtn = <button className="standard-button-large" onClick={() => app.openModal("Add to collection", (addToCollectionModal) => <AddToCollectionDialogue app={app} postPks={[post.pk]} modal={addToCollectionModal} />)}><FontAwesomeIcon icon={solid("plus")} size="1x" /></button>;
-        deleteBtn = post.is_deletable && <button className="standard-button-large" onClick={() => app.openModal(
-            "Delete post",
-            (modal) => <ActionModal
-                modalContent={modal}
-                text={post.title ? `Delete post '${post.title}'` : `Delete 1 post`}
-                actions={[
-                    {
-                        name: "Ok",
-                        fn: async () => {
-                            const loadingModal = app.openLoadingModal();
-                            try {
-                                const config = await app.getAuthorization(location, navigate);
-                                const result = await http.post<DeletePostsResponse>("/delete-posts", {
-                                    post_pks: [post.pk],
-                                    inaccessible_post_mode: "skip",
-                                    delete_unreferenced_objects: true
-                                }, config);
+        postContainerButtonGroup = <ButtonGroup size={useLargeControls ? "large" : "medium"} orientation={mediaWidth && mediaWidth < 350 ? "vertical" : "horizontal"}>
+            <Button href={dataUrl} target="_blank" rel="noreferrer"><FontAwesomeSvgIcon fontSize="inherit" icon={solid("download")} /></Button>
+            <Button onClick={() => app.openModal("Add to collection", (addToCollectionModal) => <AddToCollectionDialogue app={app} postPks={[post.pk]} modal={addToCollectionModal} />)}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("plus")} /></Button>
+            {post.is_deletable && <Button onClick={() => app.openModal(
+                "Delete post",
+                (modal) => <ActionModal
+                    modalContent={modal}
+                    text={post.title ? `Delete post '${post.title}'` : `Delete 1 post`}
+                    actions={[
+                        {
+                            name: "Ok",
+                            fn: async () => {
+                                const loadingModal = app.openLoadingModal();
+                                try {
+                                    const config = await app.getAuthorization(location, navigate);
+                                    const result = await http.post<DeletePostsResponse>("/delete-posts", {
+                                        post_pks: [post.pk],
+                                        inaccessible_post_mode: "skip",
+                                        delete_unreferenced_objects: true
+                                    }, config);
 
-                                loadingModal.close();
-                                navigate({
-                                    pathname: collection_id ? "/collection/" + collection_id : "/posts",
-                                    search: search
-                                });
+                                    loadingModal.close();
+                                    navigate({
+                                        pathname: collection_id ? "/collection/" + collection_id : "/posts",
+                                        search: search
+                                    });
 
-                                enqueueSnackbar({
-                                    message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? 's' : ''}`,
-                                    variant: "success"
-                                });
-                                return result.data;
-                            } catch (e) {
-                                console.error(e);
-                                loadingModal.close();
-                                enqueueSnackbar({
-                                    message: "Failed to delete post",
-                                    variant: "error"
-                                });
+                                    enqueueSnackbar({
+                                        message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? 's' : ''}`,
+                                        variant: "success"
+                                    });
+                                    return result.data;
+                                } catch (e) {
+                                    console.error(e);
+                                    loadingModal.close();
+                                    enqueueSnackbar({
+                                        message: "Failed to delete post",
+                                        variant: "error"
+                                    });
+                                }
                             }
                         }
-                    }
-                ]}
-            />,
-        )}><FontAwesomeIcon icon={solid("trash")} size="1x" /></button>;
+                    ]}
+                />,
+            )}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("trash")} /></Button>}
+            {post?.s3_object && <Button onClick={() => app.openModal("File metadata", <FileMetadataDisplay s3_object={post.s3_object!} s3_object_metadata={post.s3_object_metadata} />)}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("info-circle")} /></Button>}
+        </ButtonGroup>;
         component = mediaComponent;
-        postInformation = <div id="post-information">
-            <FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}
-        </div>;
+        postInformation = <>
+            <div><FontAwesomeIcon icon={solid("user")}></FontAwesomeIcon> {post.create_user.display_name || post.create_user.user_name}</div>
+            <div><FontAwesomeIcon icon={solid("clock")}></FontAwesomeIcon> {new Date(post.creation_timestamp).toLocaleString()}</div>
+        </>;
 
         let basePostPath = collection_id ? "/collection/" + collection_id + "/post/" : "/post/"
         if (post.prev_post) {
             let searchParams = new URLSearchParams(search);
             searchParams.set("page", post.prev_post.page.toString());
             let location: Partial<Location> = { pathname: basePostPath + post.prev_post.pk, search: searchParams.toString(), key: post.prev_post.pk.toString() };
-            prevLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon></Link>;
+            prevLink = <Button component={Link} to={location} size="large" sx={{ minWidth: "0" }}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("angle-left")} /></Button>;
         }
         if (post.next_post) {
             let searchParams = new URLSearchParams(search);
             searchParams.set("page", post.next_post.page.toString());
             let location: Partial<Location> = { pathname: basePostPath + post.next_post.pk, search: searchParams.toString(), key: post.next_post.pk.toString() };
-            nextLink = <Link className="standard-link-button-large" to={location}><FontAwesomeIcon icon={solid("angle-right")}></FontAwesomeIcon></Link>;
+            nextLink = <Button component={Link} to={location} size="large" sx={{ minWidth: "0" }}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("angle-right")} /></Button>;
         }
     } else {
         component = <FontAwesomeIcon icon={solid("circle-notch")} spin></FontAwesomeIcon>;
@@ -263,10 +309,10 @@ function Post({ app }: PostProps) {
         <div id="Post">
             <div id="post-container">
                 <div id="post-container-top-row">
-                    <Link className="standard-link-button-large" to={{
+                    <Button size="large" component={Link} startIcon={<FontAwesomeSvgIcon icon={solid("angle-left")} />} sx={{ marginRight: "5px" }} to={{
                         pathname: collection_id ? "/collection/" + collection_id : "/posts",
                         search: search
-                    }}><FontAwesomeIcon icon={solid("angle-left")}></FontAwesomeIcon> Back</Link>
+                    }}>Back</Button>
                     {post?.s3_object?.hls_master_playlist
                         ? <FormControlLabel className="inline-form-control-label" control={<Switch checked={hlsEnabled} onChange={(_e, checked) => {
                             setHlsEnabled(checked);
@@ -276,18 +322,20 @@ function Post({ app }: PostProps) {
                     <div id="navigate-buttons">{prevLink}{nextLink}</div>
                 </div>
                 {component}
-                {postInformation}
                 <div id="post-container-bottom-row">
-                    {downloadLink}
-                    {addToCollectionBtn}
-                    {deleteBtn}
-                    {post?.s3_object && <button className="standard-button-large" onClick={() => app.openModal("File metadata", <FileMetadataDisplay s3_object={post.s3_object!} s3_object_metadata={post.s3_object_metadata} />)}><FontAwesomeIcon icon={solid("info-circle")} size="1x" /></button>}
+                    <div className="post-container-information" style={{
+                        flexDirection: useLargeControls ? "row" : "column",
+                        maxWidth: useLargeControls ? "none" : "150px",
+                        gap: useLargeControls ? "10px" : "0",
+                        fontSize: useLargeControls ? "16px" : "12px"
+                    }}>{postInformation}</div>
+                    <div className="post-container-button-group">{postContainerButtonGroup}</div>
                 </div>
             </div>
             <div id="post-information-container">
                 {isEditMode
-                    ? <button className="standard-button" onClick={() => setEditMode(false)}><FontAwesomeIcon icon={solid("xmark")}></FontAwesomeIcon> Cancel</button>
-                    : <button hidden={!post?.is_editable} className="standard-button" onClick={() => setEditMode(true)}><FontAwesomeIcon icon={solid("pen-to-square")}></FontAwesomeIcon> Edit</button>}
+                    ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
+                    : <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!post?.is_editable} onClick={() => setEditMode(true)}>Edit</Button>}
                 {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{post && post.title}</h2>}
                 {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{post && post.description}</p>}
                 <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode}></TagSelector></div>
@@ -302,7 +350,7 @@ function Post({ app }: PostProps) {
                     />
                 </div>
                 <div className="material-row">
-                    <button hidden={!isEditMode} className="standard-button" onClick={async () => {
+                    <Button color="secondary" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} hidden={!isEditMode} onClick={async () => {
                         let groupAccess: GroupAccessDefinition[] = [];
                         selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
 
@@ -346,7 +394,7 @@ function Post({ app }: PostProps) {
 
                         loadingModal.close();
                         setEditMode(false);
-                    }}>Save</button>
+                    }}>Save</Button>
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@ import React from "react";
 
 export type FontAwesomeSvgIconProps = {
     icon: any;
+    fontSize?: 'inherit' | 'small' | 'medium' | 'large';
 };
 
 export const FontAwesomeSvgIcon = React.forwardRef<SVGSVGElement, FontAwesomeSvgIconProps>(
@@ -14,7 +15,7 @@ export const FontAwesomeSvgIcon = React.forwardRef<SVGSVGElement, FontAwesomeSvg
         } = icon;
 
         return (
-            <SvgIcon ref={ref} viewBox={`0 0 ${width} ${height}`}>
+            <SvgIcon ref={ref} viewBox={`0 0 ${width} ${height}`} fontSize={props.fontSize}>
                 {typeof svgPathData === 'string' ? (
                     <path d={svgPathData} />
                 ) : (

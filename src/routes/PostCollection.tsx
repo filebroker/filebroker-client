@@ -3,10 +3,9 @@ import App from "../App";
 import { useEffect, useState } from "react";
 import { DeletePostCollectionsResponse, GroupAccessDefinition, PostCollectionDetailed, UserGroup } from "../Model";
 import http from "../http-common";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import "./PostCollection.css";
-import { TextField } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import { PaginatedGridView } from "../components/PaginatedGridView";
@@ -15,6 +14,7 @@ import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { ActionModal } from "../components/ActionModal";
 import { useSnackbar } from "notistack";
 import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
+import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 
 export function PostCollection({ app }: { app: App }) {
     let { id } = useParams();
@@ -108,9 +108,9 @@ export function PostCollection({ app }: { app: App }) {
                 <div id="post-collection-information-container">
                     <div id="post-collection-button-row">
                         {isEditMode
-                            ? <button className="standard-button" onClick={() => setEditMode(false)}><FontAwesomeIcon icon={solid("xmark")}></FontAwesomeIcon> Cancel</button>
-                            : <button hidden={!postCollection?.is_editable} className="standard-button" onClick={() => setEditMode(true)}><FontAwesomeIcon icon={solid("pen-to-square")}></FontAwesomeIcon> Edit</button>}
-                        {postCollection?.is_deletable && <button className="standard-button" onClick={() => app.openModal(
+                            ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
+                            : <Button hidden={!postCollection?.is_editable} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>}
+                        {postCollection?.is_deletable && <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("trash")} />} onClick={() => app.openModal(
                             "Delete collection",
                             (modal) => <ActionModal
                                 modalContent={modal}
@@ -149,7 +149,7 @@ export function PostCollection({ app }: { app: App }) {
                                     }
                                 ]}
                             />,
-                        )}><FontAwesomeIcon icon={solid("trash")} /> Delete</button>}
+                        )}>Delete</Button>}
                     </div>
                     {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{postCollection && postCollection.title}</h2>}
                     {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{postCollection && postCollection.description}</p>}
