@@ -87,20 +87,20 @@ function Post({ app }: PostProps) {
         resizeObservers.current.push(resizeObserver);
     };
 
-    function updatePost(postDetailed: PostDetailed) {
+    function updatePost(postDetailed: PostDetailed | null) {
         setPost(postDetailed);
-        setTags(postDetailed.tags.map(tag => {
+        setTags(postDetailed?.tags?.map(tag => {
             return { label: tag.tag_name, pk: tag.pk };
-        }));
-        setSelectedTags(postDetailed.tags.map(tag => tag.pk));
-        setTitle(postDetailed.title || "");
-        setDescription(postDetailed.description || "");
-        setSelectedUserGroups(postDetailed.group_access.map(groupAccess => groupAccess.granted_group));
-        setSelectedUserGroupsReadOnly(postDetailed.group_access.filter(groupAccess => !groupAccess.write).map(groupAccess => groupAccess.granted_group.pk));
+        }) ?? []);
+        setSelectedTags(postDetailed?.tags?.map(tag => tag.pk) ?? []);
+        setTitle(postDetailed?.title || "");
+        setDescription(postDetailed?.description || "");
+        setSelectedUserGroups(postDetailed?.group_access?.map(groupAccess => groupAccess.granted_group) ?? []);
+        setSelectedUserGroupsReadOnly(postDetailed?.group_access?.filter(groupAccess => !groupAccess.write)?.map(groupAccess => groupAccess.granted_group.pk) ?? []);
     }
 
     useEffect(() => {
-        setPost(null);
+        updatePost(null);
         let fetch = async () => {
             try {
                 let config = await app.getAuthorization(location, navigate, false);
@@ -153,6 +153,7 @@ function Post({ app }: PostProps) {
                 console.error(e);
             }
         };
+        updatePost(null);
         const modal = app.openLoadingModal();
         fetch().then(() => modal.close()).catch(() => modal.close());
     }, [isEditMode]);
