@@ -22,6 +22,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import NavbarCollapse from 'react-bootstrap/esm/NavbarCollapse';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { TagGlossary } from './routes/TagGlossary';
+import { TagDetailPage } from './routes/TagDetailPage';
 
 declare module 'react' {
     interface CSSProperties {
@@ -208,7 +210,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                 marginRight: "25px",
                             } : {}}>
                                 <Nav>
-                                    <Nav.Item><button className="nav-el nav-el-right" disabled={this.state.user == null} style={{ textAlign: "left", fontSize: "var(--bs-nav-link-font-size)", fontWeight: "500" }} onClick={(e) => {
+                                    <Nav.Item><button className="nav-el nav-el-right" disabled={!this.isLoggedIn()} style={{ textAlign: "left", fontSize: "var(--bs-nav-link-font-size)", fontWeight: "500" }} onClick={(e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
                                         if (this.state.user == null) {
@@ -217,7 +219,8 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                             this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
                                         }
                                     }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button></Nav.Item>
-                                    <Nav.Link eventKey={5} active className="nav-el nav-el-right" as={NavLink} to={this.state.user == null ? "/login" : "/profile"}>{this.state.user == null ? "Log In" : (this.state.user.display_name ?? this.state.user.user_name)}</Nav.Link>
+                                    <Nav.Link eventKey={5} active className="nav-el" as={NavLink} to="/tags">Tags</Nav.Link>
+                                    <Nav.Link eventKey={6} active className="nav-el nav-el-right" as={NavLink} to={this.state.user == null ? "/login" : "/profile"}>{this.state.user == null ? "Log In" : (this.state.user.display_name ?? this.state.user.user_name)}</Nav.Link>
                                 </Nav>
                             </NavbarCollapse>
                         </Container>
@@ -259,6 +262,8 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                     <Route path="/collections" element={<PostCollectionSearch app={this} />} />
                     <Route path="/collection/:id" element={<PostCollection app={this} />} />
                     <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
+                    <Route path="/tags" element={<TagGlossary app={this} />} />
+                    <Route path="/tag/:id" element={<TagDetailPage app={this} />} />
                     <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                 </Routes>
             </BrowserRouter>
@@ -304,6 +309,10 @@ export class App extends React.Component<{ isDesktop: boolean }, {
         }, () => {
             this.pendingLogin = null;
         });
+    }
+
+    isLoggedIn(): boolean {
+        return this.state.user != null;
     }
 
     async getAuthorization(location: Location, navigate: NavigateFunction, require: boolean = true): Promise<{ headers: { authorization: string } } | undefined> {

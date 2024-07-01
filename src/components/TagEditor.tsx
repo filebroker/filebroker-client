@@ -44,13 +44,14 @@ class UpsertTagResponse {
     }
 }
 
-export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label }: {
+export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label, onTagClick }: {
     setSelectedTags: (v: number[]) => void,
     setEnteredTags?: (v: string[]) => void,
     limit?: number,
     values?: (string | { label: string, pk: number })[],
     readOnly?: boolean,
-    label?: string
+    label?: string,
+    onTagClick?: (tag: (string | { label: string, pk: number })) => void
 }) {
     const [suggestedTags, setSuggestedTags] = useState<{ label: string, pk: number }[]>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
@@ -130,7 +131,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                 }}
                 filterOptions={x => x}
                 renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
-                    <Chip {...getTagProps({ index })} color="secondary" variant="outlined" label={typeof option === "string" ? option : option.label} disabled={false}></Chip>
+                    <Chip {...getTagProps({ index })} color="secondary" variant="outlined" label={typeof option === "string" ? option : option.label} disabled={false} onClick={onTagClick && readOnly ? () => onTagClick(option) : undefined}></Chip>
                 ))}
                 onInputChange={(_e, newVal) => {
                     if (scheduledRequest) {

@@ -316,6 +316,30 @@ input {
     color: white;
 }
 
+.undecorated-link {
+    color: white;
+    text-decoration: none;
+}
+
+.undecorated-link:disabled {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+}
+
+.undecorated-link:hover:disabled {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+}
+
+.undecorated-link:hover:not(:disabled) {
+    color: #2a52be !important;
+}
+
+.undecorated-link:visited {
+    color: white;
+    text-decoration: none;
+}
+
 .modal-form-submit-btn {
     text-align: center;
 }

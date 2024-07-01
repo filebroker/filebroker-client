@@ -311,6 +311,32 @@ export class Tag {
     }
 }
 
+export class TagEdge {
+    fk_parent: number;
+    fk_child: number;
+
+    constructor(fk_parent: number, fk_child: number) {
+        this.fk_parent = fk_parent;
+        this.fk_child = fk_child;
+    }
+}
+
+export class TagJoined {
+    tag: Tag;
+    parents: Tag[];
+    aliases: Tag[];
+
+    constructor(
+        tag: Tag,
+        parents: Tag[],
+        aliases: Tag[]
+    ) {
+        this.tag = tag;
+        this.parents = parents;
+        this.aliases = aliases;
+    }
+}
+
 export class UserGroup {
     pk: number;
     name: string;

@@ -1,0 +1,89 @@
+#tag-glossary-container {
+    background-color: #161b22;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin-left: 25px;
+    margin-right: 25px;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    border-radius: 10px;
+    margin-bottom: 60px;
+}
+
+.tag-glossary-list {
+    columns: 1;
+}
+
+@media (min-width: 775px) {
+    .tag-glossary-list {
+        columns: 2;
+    }
+}
+
+@media (min-width: 1150px) {
+    .tag-glossary-list {
+        columns: 3;
+    }
+}
+
+@media (min-width: 1530px) {
+    .tag-glossary-list {
+        columns: 4;
+    }
+}
+
+@media (min-width: 1910px) {
+    .tag-glossary-list {
+        columns: 5;
+    }
+}
+
+.tag-glossary-letter {
+    margin-top: 0;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tag-glossary-item {
+    list-style-type: none;
+    line-height: 1.5rem;
+}
+
+#page-button-container {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    z-index: 999;
+    background-color: rgba(0, 10, 20, 0.9);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+}
+
+#page-grid-pagination-container {
+    justify-self: center;
+}
+
+.loading-container {
+    height: calc(100vh - 120px - 56px); /* 60px each for header and pagination footer, 56px for action bar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tag-glossary-action-row {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    justify-content: space-between;
+}
