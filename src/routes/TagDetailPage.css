@@ -27,12 +27,6 @@
         min-height: max(25vh, min(375px, calc(100vh - 60px)));
     }
 
-    .form-paper {
-        min-width: max(25vh, min(375px, calc(100vw - 40px)));
-        min-height: max(25vh, min(375px, calc(100vh - 60px)));
-        margin-bottom: 10px;
-    }
-
     .post-preview-container {
         min-width: max(25vh, min(375px, calc(100vw - 40px)));
         width: calc(100vw - 40px);
@@ -46,51 +40,10 @@
         justify-content: center;
     }
 
-    .form-paper {
-        min-width: max(25vw, min(375px, calc(100vw - 40px)));
-        min-height: max(25vw, min(375px, calc(100vh - 60px)));
-        margin: 10px;
-    }
-
     .post-preview-container {
         min-width: max(25vw, min(375px, calc(100vw - 40px)));
         width: 80%;
     }
-}
-
-.form-paper {
-    display: flex;
-    width: max-content;
-    height: max-content;
-    max-width: calc(100vw - 40px);
-    overflow: auto;
-    flex-direction: column;
-    vertical-align: middle;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-}
-
-.form-paper-content {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    min-width: 325px;
-}
-
-.form-paper-button-row {
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    gap: 10px;
-}
-
-.form-paper-button--expanded {
-    justify-content: space-between;
-}
-
-.form-paper-content-top-btn-row {
-    position: relative;
 }
 
 .post-preview-container {

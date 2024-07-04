@@ -4,9 +4,11 @@ import App from "../App";
 import http from "../http-common";
 import { LoginResponse } from "./Login";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
-import { TextField } from "@mui/material";
+import { Button, Paper, TextField } from "@mui/material";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
+import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 
 export class UserRegistration {
     display_name: string;
@@ -114,102 +116,76 @@ function Register({ app }: RegisterProps) {
 
     return (
         <div id="Register">
-            <div className="standard-form">
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    setLoginDisabled(true);
-                    register();
-                }}>
-                    <h1>Register</h1>
-                    <table className="fieldset-container">
-                        <tbody>
-                            <tr className="form-row">
-                                <td className="form-row-full-td">
-                                    <TextField
-                                        label="Display Name"
-                                        variant="outlined"
-                                        value={displayName}
-                                        fullWidth
-                                        onChange={e => setDisplayName(e.currentTarget.value)}
-                                        inputProps={{ maxLength: 32 }}
-                                    />
-                                </td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-row-full-td">
-                                    <TextField
-                                        label="User Name"
-                                        variant="outlined"
-                                        value={userName}
-                                        error={userNameInvalid || userNameTaken}
-                                        helperText={(userNameInvalid || userNameTaken) && (userNameInvalid ? "User name invalid: cannot contain whitespace" : "User name taken")}
-                                        fullWidth
-                                        onChange={e => { setUserNameInvalid(false); setUserNameTaken(false); setUserName(e.currentTarget.value) }}
-                                        inputProps={{ maxLength: 25 }}
-                                        required
-                                        onBlur={checkUserName}
-                                    />
-                                </td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-row-full-td">
-                                    <TextField
-                                        label="Email"
-                                        variant="outlined"
-                                        type="email"
-                                        error={emailInvalid}
-                                        value={email}
-                                        fullWidth
-                                        onChange={e => setEmail(e.currentTarget.value)}
-                                    />
-                                </td>
-                            </tr>
-                            <tr className="form-row">
-                                <td className="form-row-full-td">
-                                    <TextField
-                                        label="Password"
-                                        name="passwordNoFill"
-                                        type="password"
-                                        variant="outlined"
-                                        value={password}
-                                        // use !! to force this to be a boolean instead of boolean | string
-                                        error={!!(passwordConfirm && password && password !== passwordConfirm)}
-                                        helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
-                                        fullWidth
-                                        onChange={e => setPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
-                                        required
-                                        autoComplete="new-password"
-                                    />
-                                </td>
-                            </tr>
-                            {password &&
-                                <tr className="form-row">
-                                    <PasswordStrengthMeter passwordScore={passwordScore} />
-                                </tr>
-                            }
-                            <tr className="form-row">
-                                <td className="form-row-full-td">
-                                    <TextField
-                                        label="Confirm Password"
-                                        name="passwordNoFill2"
-                                        type="password"
-                                        variant="outlined"
-                                        value={passwordConfirm}
-                                        // use !! to force this to be a boolean instead of boolean | string
-                                        error={!!(passwordConfirm && password && password !== passwordConfirm)}
-                                        helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
-                                        fullWidth
-                                        onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
-                                        required
-                                        autoComplete="new-password"
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
-                    <div className="standard-form-field"><button type="submit" className="standard-button-large" disabled={loginDisabled || userName.length === 0 || password.length === 0 || !captchaToken || passwordScore < 3 || !passwordConfirm || password !== passwordConfirm || emailInvalid}>Register</button></div>
-                </form>
+            <div className="form-container-center">
+                <Paper elevation={2} className="form-paper">
+                    <form className="form-paper-content" style={{ gap: "10px" }} onSubmit={(e) => {
+                        e.preventDefault();
+                        setLoginDisabled(true);
+                        register();
+                    }}>
+                        <h1>Register</h1>
+                        <TextField
+                            label="Display Name"
+                            variant="outlined"
+                            value={displayName}
+                            fullWidth
+                            onChange={e => setDisplayName(e.currentTarget.value)}
+                            inputProps={{ maxLength: 32 }}
+                        />
+                        <TextField
+                            label="User Name"
+                            variant="outlined"
+                            value={userName}
+                            error={userNameInvalid || userNameTaken}
+                            helperText={(userNameInvalid || userNameTaken) && (userNameInvalid ? "User name invalid: cannot contain whitespace" : "User name taken")}
+                            fullWidth
+                            onChange={e => { setUserNameInvalid(false); setUserNameTaken(false); setUserName(e.currentTarget.value) }}
+                            inputProps={{ maxLength: 25 }}
+                            required
+                            onBlur={checkUserName}
+                        />
+                        <TextField
+                            label="Email"
+                            variant="outlined"
+                            type="email"
+                            error={emailInvalid}
+                            value={email}
+                            fullWidth
+                            onChange={e => setEmail(e.currentTarget.value)}
+                        />
+                        <TextField
+                            label="Password"
+                            name="passwordNoFill"
+                            type="password"
+                            variant="outlined"
+                            value={password}
+                            // use !! to force this to be a boolean instead of boolean | string
+                            error={!!(passwordConfirm && password && password !== passwordConfirm)}
+                            helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
+                            fullWidth
+                            onChange={e => setPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                            required
+                            autoComplete="new-password"
+                        />
+                        {password && <PasswordStrengthMeter passwordScore={passwordScore} />}
+                        <TextField
+                            label="Confirm Password"
+                            name="passwordNoFill2"
+                            type="password"
+                            variant="outlined"
+                            value={passwordConfirm}
+                            // use !! to force this to be a boolean instead of boolean | string
+                            error={!!(passwordConfirm && password && password !== passwordConfirm)}
+                            helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
+                            fullWidth
+                            onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                            required
+                            autoComplete="new-password"
+                        />
+                        <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
+                        <Button type="submit" size="large" variant="contained" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("user-plus")} />} disabled={loginDisabled || userName.length === 0 || password.length === 0 || !captchaToken || passwordScore < 3 || !passwordConfirm || password !== passwordConfirm || emailInvalid}>Register</Button>
+                    </form>
+                </Paper>
             </div>
         </div>
     );

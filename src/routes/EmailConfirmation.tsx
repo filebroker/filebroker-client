@@ -4,8 +4,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { useEffect, useState } from "react";
 import http from "../http-common";
+import { Paper } from "@mui/material";
 
-export function EmailConfirmation({ app }: { app: App}) {
+export function EmailConfirmation({ app }: { app: App }) {
     let { token } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
@@ -28,26 +29,30 @@ export function EmailConfirmation({ app }: { app: App}) {
 
     let loadingContainer;
     if (emailConfirmed) {
-        loadingContainer = <div className="loading-container">
+        loadingContainer = <>
             <FontAwesomeIcon icon={solid("check")} size="6x"></FontAwesomeIcon>
             <p>Email confirmation succeeded, you may now close this tab.</p>
-        </div>
+        </>
     } else if (emailConfirmationFailed) {
-        loadingContainer = <div className="loading-container">
+        loadingContainer = <>
             <FontAwesomeIcon icon={solid("x")} size="6x"></FontAwesomeIcon>
             <p>Email confirmation failed. Please try again.</p>
-        </div>
+        </>
     } else {
-        loadingContainer = <div className="loading-container">
+        loadingContainer = <>
             <FontAwesomeIcon icon={solid("circle-notch")} spin size="6x"></FontAwesomeIcon>
             <p>Confirming Email</p>
-        </div>
+        </>
     }
 
     return <>
         <div id="EmailConfirmation">
-            <div className="standard-form">
-                {loadingContainer}
+            <div className="form-container-center">
+                <Paper elevation={2} className="form-paper">
+                    <div className="form-paper-content">
+                        {loadingContainer}
+                    </div>
+                </Paper>
             </div>
         </div>
     </>;

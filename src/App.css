@@ -676,3 +676,79 @@ input:-webkit-autofill:focus {
 .form-container {
     gap: 10px;
 }
+
+
+.form-container-center {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    justify-content: center;
+    margin: 0 auto;
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+@media all and (orientation:portrait) {
+    .form-paper {
+        min-width: max(25vh, min(375px, calc(100vw - 40px)));
+        min-height: max(25vh, min(375px, calc(100vh - 60px)));
+        margin-bottom: 10px;
+    }
+}
+
+@media all and (orientation:landscape) {
+    .form-paper {
+        min-width: max(25vw, min(375px, calc(100vw - 40px)));
+        min-height: max(25vw, min(375px, calc(100vh - 60px)));
+        margin: 10px;
+    }
+}
+
+.form-paper {
+    display: flex;
+    width: max-content;
+    height: max-content;
+    max-width: calc(100vw - 40px);
+    overflow: auto;
+    flex-direction: column;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.form-paper-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    min-width: 325px;
+    text-align: center;
+}
+
+.form-paper-button-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.form-paper-button--expanded {
+    justify-content: space-between;
+}
+
+.form-paper-content-top-btn-row {
+    position: relative;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
