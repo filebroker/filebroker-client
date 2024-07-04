@@ -745,7 +745,7 @@ input:-webkit-autofill:focus {
     position: relative;
 }
 
-.form-row {
+.form-paper-row {
     display: flex;
     flex-direction: row;
     gap: 10px;

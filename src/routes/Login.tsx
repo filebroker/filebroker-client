@@ -236,7 +236,7 @@ function ResetPasswordForm({ app, modal, initialUserName }: { app: App, modal: M
                 fullWidth
                 onChange={e => setUserName(e.currentTarget.value)}
             />
-            <div className="form-row">
+            <div className="form-paper-row">
                 <TextField
                     label="Email"
                     variant="outlined"
