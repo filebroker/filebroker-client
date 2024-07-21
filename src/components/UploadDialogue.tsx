@@ -7,16 +7,17 @@ import http from "../http-common";
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
-import { Broker, PostDetailed, S3Object, UserGroup } from "../Model";
+import { Broker, BrokerAvailability, PostDetailed, S3Object, UserGroup } from "../Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
-import { Box, Button, Checkbox, FormControl, IconButton, InputLabel, LinearProgress, LinearProgressProps, MenuItem, Paper, Select, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, FormControl, IconButton, InputLabel, LinearProgress, LinearProgressProps, ListItemText, MenuItem, Paper, Select, Tab, Tabs, TextField, Typography } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { GroupSelector } from "./GroupEditor";
 import { EditPostRequest } from "../routes/Post";
 import AddIcon from '@mui/icons-material/Add';
 import { TabPanel, a11yProps } from "./TabPanel";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { formatBytes } from "../Util";
 
 class UploadDialogueProps {
     app: App;
@@ -161,7 +162,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
     const navigate = useNavigate();
 
     const [isUploadingFolder, setUploadingFolder] = useState(false);
-    const [brokers, setBrokers] = useState<Broker[]>([]);
+    const [brokers, setBrokers] = useState<BrokerAvailability[]>([]);
     const [selectedBroker, setSelectedBroker] = useState<string | undefined>(undefined);
     const [file, setFile] = useState<File | null>(null);
     const [fileLabel, setFileLabel] = useState("No file chosen");
@@ -185,7 +186,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
             let config = await app.getAuthorization(location, navigate);
 
             http
-                .get<Broker[]>("/get-brokers", config)
+                .get<BrokerAvailability[]>("/get-brokers", config)
                 .then(result => setBrokers(result.data));
 
             http
@@ -195,9 +196,6 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
         fetch().catch(console.error);
     }, []);
-
-    let brokerOptions: JSX.Element[] = [];
-    brokers.sort((a, b) => a.name.localeCompare(b.name)).forEach(broker => brokerOptions.push(<option key={broker.pk} value={broker.pk}>{broker.name}</option>));
 
     function setFileLabelTrimmed(name: string) {
         if (name.length > 50) {
@@ -213,7 +211,12 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
         <div id="broker-selector"><FormControl fullWidth>
             <InputLabel>Broker *</InputLabel>
             <Select label="Broker" value={selectedBroker || ''} onChange={(e) => setSelectedBroker(e.target.value)} required>
-                {brokers.sort((a, b) => a.name.localeCompare(b.name)).map((broker) => <MenuItem key={broker.pk} value={broker.pk}>{broker.name}</MenuItem>)}
+                {brokers.sort((a, b) => a.broker.name.localeCompare(b.broker.name)).map((broker) => <MenuItem key={broker.broker.pk} value={broker.broker.pk}>
+                    <ListItemText>{broker.broker.name}</ListItemText>
+                    <Typography variant="body2" color="text.secondary">
+                        {formatBytes(broker.used_bytes)} / {broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}
+                    </Typography>
+                </MenuItem>)}
             </Select>
         </FormControl></div>
         <IconButton size="medium" onClick={e => {
@@ -222,7 +225,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 let config = await app.getAuthorization(location, navigate);
 
                 http
-                    .get<Broker[]>("/get-brokers", config)
+                    .get<BrokerAvailability[]>("/get-brokers", config)
                     .then(result => setBrokers(result.data));
             });
         }}><AddIcon /></IconButton>

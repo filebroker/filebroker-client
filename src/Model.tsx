@@ -295,6 +295,22 @@ export class Broker {
     }
 }
 
+export class BrokerAvailability {
+    broker: Broker;
+    used_bytes: number;
+    quota_bytes: number | null | undefined;
+
+    constructor(
+        broker: Broker,
+        used_bytes: number,
+        quota_bytes: number | null | undefined
+    ) {
+        this.broker = broker;
+        this.used_bytes = used_bytes;
+        this.quota_bytes = quota_bytes;
+    }
+}
+
 export class Tag {
     pk: number;
     tag_name: string;
