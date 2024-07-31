@@ -48,17 +48,14 @@ export function GroupSelector({ disabled = false, limit = 50, currentUserGroups,
                     variant="outlined"
                     disabled={false}
                     label={typeof option === "string" ? option : option.name}
-                    icon={selectedUserGroupsReadOnly.includes(option.pk) ? undefined : <EditIcon></EditIcon>}
-                    onClick={() => {
-                        if (readOnly) {
-                            return;
-                        }
+                    icon={selectedUserGroupsReadOnly.includes(option.pk) ? undefined : <EditIcon/>}
+                    onClick={!readOnly ? () => {
                         if (selectedUserGroupsReadOnly.includes(option.pk)) {
                             setSelectedUserGroupsReadOnly(selectedUserGroupsReadOnly.filter(i => i !== option.pk));
                         } else {
                             setSelectedUserGroupsReadOnly(selectedUserGroupsReadOnly.concat([option.pk]));
                         }
-                    }}
+                    } : undefined}
                 />
             ))}
             value={selectedUserGroups}

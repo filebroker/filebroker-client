@@ -153,7 +153,11 @@ export function PostCollection({ app }: { app: App }) {
                     </div>
                     {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{postCollection && postCollection.title}</h2>}
                     {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{postCollection && postCollection.description}</p>}
-                    <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode}></TagSelector></div>
+                    <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
+                        if (typeof tag === "object" && "pk" in tag) {
+                            navigate("/tag/" + tag.pk);
+                        }
+                    }} /></div>
                     <div className="material-row">
                         <GroupSelector
                             currentUserGroups={currentUserGroups}
