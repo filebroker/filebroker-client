@@ -9,8 +9,8 @@ import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { regular, solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { DeletePostsResponse, GroupAccessDefinition, PostDetailed, UserGroup } from "../Model";
-import { Button, ButtonGroup, FormControlLabel, Switch, TextField, useMediaQuery } from "@mui/material";
-import { TagSelector } from "../components/TagEditor";
+import { Button, ButtonGroup, FormControlLabel, IconButton, Switch, TextField } from "@mui/material";
+import { TagCreator, TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import urlJoin from "url-join";
 import { MusicPlayer } from "../components/MusicPlayer";
@@ -19,6 +19,8 @@ import { useSnackbar } from "notistack";
 import { ActionModal } from "../components/ActionModal";
 import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import VisibilitySelect from "../components/VisibilitySelect";
+import AddIcon from '@mui/icons-material/Add';
 
 class PostProps {
     app: App;
@@ -44,6 +46,8 @@ function Post({ app }: PostProps) {
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [publicPost, setPublicPost] = useState(false);
+    const [publicPostEdit, setPublicPostEdit] = useState(false);
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
@@ -95,6 +99,8 @@ function Post({ app }: PostProps) {
         setSelectedTags(postDetailed?.tags?.map(tag => tag.pk) ?? []);
         setTitle(postDetailed?.title || "");
         setDescription(postDetailed?.description || "");
+        setPublicPost(postDetailed?.is_public || false);
+        setPublicPostEdit(postDetailed?.public_edit || false);
         setSelectedUserGroups(postDetailed?.group_access?.map(groupAccess => groupAccess.granted_group) ?? []);
         setSelectedUserGroupsReadOnly(postDetailed?.group_access?.filter(groupAccess => !groupAccess.write)?.map(groupAccess => groupAccess.granted_group.pk) ?? []);
     }
@@ -153,7 +159,11 @@ function Post({ app }: PostProps) {
                 console.error(e);
             }
         };
-        updatePost(null);
+        // clear tag and group selection state before resetting, this also forces the components to observe a change even if the persistent state is the same, making sure uncommited changes are reset
+        setTags([]);
+        setSelectedTags([]);
+        setSelectedUserGroups([]);
+        setSelectedUserGroupsReadOnly([]);
         const modal = app.openLoadingModal();
         fetch().then(() => modal.close()).catch(() => modal.close());
     }, [isEditMode]);
@@ -336,15 +346,22 @@ function Post({ app }: PostProps) {
             <div id="post-information-container">
                 {isEditMode
                     ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                    : <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!post?.is_editable} onClick={() => setEditMode(true)}>Edit</Button>}
+                    : <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!post?.is_editable || !app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>}
                 {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{post && post.title}</h2>}
                 {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{post && post.description}</p>}
-                <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
-                    if (typeof tag === "object" && "pk" in tag) {
-                        navigate("/tag/" + tag.pk);
-                    }
-                }} /></div>
-                <div className="material-row">
+                <div className="material-row-flex">
+                    <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
+                        if (typeof tag === "object" && "pk" in tag) {
+                            navigate("/tag/" + tag.pk);
+                        }
+                    }} />
+                    {isEditMode && <IconButton size="medium" sx={{ alignSelf: "center" }} onClick={e => {
+                        e.preventDefault();
+                        app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
+                    }}><AddIcon /></IconButton>}
+                </div>
+                <div className="material-row-flex">
+                    <VisibilitySelect isPublic={publicPost} isPublicEdit={publicPostEdit} readOnly={!isEditMode} setPublic={setPublicPost} setPublicEdit={setPublicPostEdit} />
                     <GroupSelector
                         currentUserGroups={currentUserGroups}
                         selectedUserGroups={selectedUserGroups}
@@ -371,8 +388,8 @@ function Post({ app }: PostProps) {
                                 null,
                                 null,
                                 title,
-                                null,
-                                null,
+                                publicPost,
+                                publicPostEdit,
                                 description,
                                 groupAccess,
                                 null,

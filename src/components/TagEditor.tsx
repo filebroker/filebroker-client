@@ -116,6 +116,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                         {...restParams}
                         InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>) }}
                         label={label ?? "Tags"}
+                        placeholder={value && value.length > 0 ? undefined : "Enter a tag and hit enter"}
                         sx={{
                             "& .MuiInputLabel-root.Mui-disabled": {
                                 color: "white",

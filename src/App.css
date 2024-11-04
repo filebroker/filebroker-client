@@ -625,6 +625,18 @@ input {
     margin-top: 10px;
 }
 
+.material-row-flex {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 10px;
+}
+
+.material-row-flex > * {
+    flex-grow: 1;
+}
+
 .multiline-text {
     white-space: pre-wrap;
 }

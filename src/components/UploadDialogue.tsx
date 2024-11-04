@@ -7,10 +7,10 @@ import http from "../http-common";
 import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
-import { Broker, BrokerAvailability, PostDetailed, S3Object, UserGroup } from "../Model";
+import { BrokerAvailability, PostDetailed, S3Object, UserGroup } from "../Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
-import { Box, Button, Checkbox, FormControl, IconButton, InputLabel, LinearProgress, LinearProgressProps, ListItemText, MenuItem, Paper, Select, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Box, Button, FormControl, IconButton, InputLabel, LinearProgress, LinearProgressProps, ListItemText, MenuItem, Paper, Select, Tab, Tabs, TextField, Typography } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import { GroupSelector } from "./GroupEditor";
 import { EditPostRequest } from "../routes/Post";
@@ -18,6 +18,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { TabPanel, a11yProps } from "./TabPanel";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { formatBytes } from "../Util";
+import VisibilitySelect from "./VisibilitySelect";
 
 class UploadDialogueProps {
     app: App;
@@ -312,15 +313,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 <table className="fieldset-container">
                     <tbody>
                         <tr className="form-row">
-                            <td className="form-label"><label>Public</label></td>
-                            <td className="form-field"><Checkbox checked={publicPost} onChange={e => setPublicPost(e.target.checked)}></Checkbox></td>
+                            <td className="form-row-full-td"><VisibilitySelect isPublic={publicPost} isPublicEdit={publicEdit} setPublic={setPublicPost} setPublicEdit={setPublicEdit} fullWidth /></td>
                         </tr>
-                        {publicPost && <tr className="form-row">
-                            <td className="form-label"><label>Public Can Edit</label></td>
-                            <td className="form-field"><Checkbox checked={publicEdit} onChange={e => setPublicEdit(e.target.checked)}></Checkbox></td>
-                        </tr>}
                         <tr className="form-row">
-                            <td className="form-row-full-td" colSpan={2}>
+                            <td className="form-row-full-td">
                                 <GroupSelector
                                     currentUserGroups={currentUserGroups}
                                     selectedUserGroups={selectedUserGroups}
@@ -328,8 +324,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                     selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
                                     setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
                                 />
-                                <span className="footnote">Groups with the <EditIcon fontSize="small"></EditIcon> icon can edit the post, click the selected group to toggle edit permissions.</span>
-                            </td>
+                                <span className="footnote">Groups with the <EditIcon fontSize="small"></EditIcon> icon can edit the post, click the selected group to toggle edit permissions.</span></td>
                         </tr>
                     </tbody>
                 </table>

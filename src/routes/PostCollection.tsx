@@ -3,10 +3,10 @@ import App from "../App";
 import { useEffect, useState } from "react";
 import { DeletePostCollectionsResponse, GroupAccessDefinition, PostCollectionDetailed, UserGroup } from "../Model";
 import http from "../http-common";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { regular, solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import "./PostCollection.css";
-import { Button, TextField } from "@mui/material";
-import { TagSelector } from "../components/TagEditor";
+import { Button, IconButton, TextField } from "@mui/material";
+import { TagCreator, TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import { PaginatedGridView } from "../components/PaginatedGridView";
 import { PostCollectionItemQueryObject, performSearchQuery } from "../Search";
@@ -15,6 +15,8 @@ import { ActionModal } from "../components/ActionModal";
 import { useSnackbar } from "notistack";
 import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import VisibilitySelect from "../components/VisibilitySelect";
+import AddIcon from '@mui/icons-material/Add';
 
 export function PostCollection({ app }: { app: App }) {
     let { id } = useParams();
@@ -34,6 +36,8 @@ export function PostCollection({ app }: { app: App }) {
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [publicCollection, setPublicCollection] = useState(false);
+    const [publicEdit, setPublicEdit] = useState(false);
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
     const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
@@ -46,6 +50,8 @@ export function PostCollection({ app }: { app: App }) {
         setSelectedTags(postCollectionDetailed.tags.map(tag => tag.pk));
         setTitle(postCollectionDetailed.title || "");
         setDescription(postCollectionDetailed.description || "");
+        setPublicCollection(postCollectionDetailed.is_public);
+        setPublicEdit(postCollectionDetailed.public_edit);
         setSelectedUserGroups(postCollectionDetailed.group_access.map(groupAccess => groupAccess.granted_group));
         setSelectedUserGroupsReadOnly(postCollectionDetailed.group_access.filter(groupAccess => !groupAccess.write).map(groupAccess => groupAccess.granted_group.pk));
     }
@@ -73,6 +79,11 @@ export function PostCollection({ app }: { app: App }) {
             }
         };
 
+        // clear tag and group selection state before resetting, this also forces the components to observe a change even if the persistent state is the same, making sure uncommited changes are reset
+        setTags([]);
+        setSelectedTags([]);
+        setSelectedUserGroups([]);
+        setSelectedUserGroupsReadOnly([]);
         const modal = app.openLoadingModal();
         fetch().then(() => modal.close()).catch(() => modal.close());
     }, [isEditMode, location, navigate, app]);
@@ -109,7 +120,7 @@ export function PostCollection({ app }: { app: App }) {
                     <div id="post-collection-button-row">
                         {isEditMode
                             ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                            : <Button hidden={!postCollection?.is_editable} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>}
+                            : <Button hidden={!postCollection?.is_editable || !app.isLoggedIn()} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>}
                         {postCollection?.is_deletable && <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("trash")} />} onClick={() => app.openModal(
                             "Delete collection",
                             (modal) => <ActionModal
@@ -153,12 +164,19 @@ export function PostCollection({ app }: { app: App }) {
                     </div>
                     {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{postCollection && postCollection.title}</h2>}
                     {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{postCollection && postCollection.description}</p>}
-                    <div className="material-row"><TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
-                        if (typeof tag === "object" && "pk" in tag) {
-                            navigate("/tag/" + tag.pk);
-                        }
-                    }} /></div>
-                    <div className="material-row">
+                    <div className="material-row-flex">
+                        <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
+                            if (typeof tag === "object" && "pk" in tag) {
+                                navigate("/tag/" + tag.pk);
+                            }
+                        }} />
+                        {isEditMode && <IconButton size="medium" sx={{ alignSelf: "center" }} onClick={e => {
+                            e.preventDefault();
+                            app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);
+                        }}><AddIcon /></IconButton>}
+                    </div>
+                    <div className="material-row-flex">
+                        <VisibilitySelect isPublic={publicCollection} isPublicEdit={publicEdit} readOnly={!isEditMode} setPublic={setPublicCollection} setPublicEdit={setPublicEdit} />
                         <GroupSelector
                             currentUserGroups={currentUserGroups}
                             selectedUserGroups={selectedUserGroups}
@@ -169,7 +187,7 @@ export function PostCollection({ app }: { app: App }) {
                         />
                     </div>
                     <div className="material-row">
-                        <button hidden={!isEditMode} className="standard-button" onClick={async () => {
+                        <Button color="secondary" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} hidden={!isEditMode} onClick={async () => {
                             let groupAccess: GroupAccessDefinition[] = [];
                             selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));
 
@@ -181,6 +199,8 @@ export function PostCollection({ app }: { app: App }) {
                                     tag_pks_overwrite: selectedTags,
                                     title: title,
                                     description: description,
+                                    is_public: publicCollection,
+                                    public_edit: publicEdit,
                                     group_access_overwrite: groupAccess
                                 }, config);
 
@@ -199,7 +219,7 @@ export function PostCollection({ app }: { app: App }) {
 
                             loadingModal.close();
                             setEditMode(false);
-                        }}>Save</button>
+                        }}>Save</Button>
                     </div>
                 </div>
             </div>
