@@ -9,6 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import http from "../http-common";
 import "./CreateCollectionDialogue.css";
 import AddIcon from '@mui/icons-material/Add';
+import VisibilitySelect from "./VisibilitySelect";
 
 export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { postPks: number[], modal: ModalContent, app: App, postQuery?: string }) {
     const location = useLocation();
@@ -67,13 +68,8 @@ export function CreateCollectionDialogue({ postPks, modal, app, postQuery }: { p
                 <table className="fieldset-container">
                     <tbody>
                         <tr className="form-row">
-                            <td className="form-label"><label>Public</label></td>
-                            <td className="form-field"><Checkbox checked={publicCollection} onChange={e => setPublicCollection(e.target.checked)}></Checkbox></td>
+                            <VisibilitySelect isPublic={publicCollection} isPublicEdit={publicEdit} setPublic={setPublicCollection} setPublicEdit={setPublicEdit} fullWidth />
                         </tr>
-                        {publicCollection && <tr className="form-row">
-                            <td className="form-label"><label>Public Can Edit</label></td>
-                            <td className="form-field"><Checkbox checked={publicEdit} onChange={e => setPublicEdit(e.target.checked)}></Checkbox></td>
-                        </tr>}
                         <tr className="form-row">
                             <td className="form-row-full-td" colSpan={2}>
                                 <GroupSelector
