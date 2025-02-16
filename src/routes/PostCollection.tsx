@@ -17,6 +17,7 @@ import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from '@mui/icons-material/Add';
+import { PostCollectionEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
 
 export function PostCollection({ app }: { app: App }) {
     let { id } = useParams();
@@ -120,47 +121,54 @@ export function PostCollection({ app }: { app: App }) {
                     <div id="post-collection-button-row">
                         {isEditMode
                             ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                            : <Button hidden={!postCollection?.is_editable || !app.isLoggedIn()} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>}
-                        {postCollection?.is_deletable && <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("trash")} />} onClick={() => app.openModal(
-                            "Delete collection",
-                            (modal) => <ActionModal
-                                modalContent={modal}
-                                text={postCollection.title ? `Delete collection '${postCollection.title}'` : `Delete 1 collection`}
-                                actions={[
-                                    {
-                                        name: "Ok",
-                                        fn: async () => {
-                                            const loadingModal = app.openLoadingModal();
-                                            try {
-                                                const config = await app.getAuthorization(location, navigate);
-                                                const result = await http.post<DeletePostCollectionsResponse>("/delete-collections", {
-                                                    post_collection_pks: [postCollection.pk],
-                                                    inaccessible_post_mode: "skip"
-                                                }, config);
-
-                                                loadingModal.close();
-                                                navigate({
-                                                    pathname: "/collections"
-                                                });
-
-                                                enqueueSnackbar({
-                                                    message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? 's' : ''}`,
-                                                    variant: "success"
-                                                });
-                                                return result.data;
-                                            } catch (e) {
-                                                console.error(e);
-                                                loadingModal.close();
-                                                enqueueSnackbar({
-                                                    message: "Failed to delete collection",
-                                                    variant: "error"
-                                                });
-                                            }
-                                        }
+                            : postCollection && <div className="button-row">
+                                <Button hidden={!postCollection?.is_editable || !app.isLoggedIn()} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>
+                                <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} hidden={!postCollection?.is_editable || !app.isLoggedIn()} onClick={() => app.openModal("History", modal => <PostCollectionEditHistoryDialogue app={app} collection={postCollection} modal={modal} />, (result) => {
+                                    if (result) {
+                                        updatePostCollection(result);
                                     }
-                                ]}
-                            />,
-                        )}>Delete</Button>}
+                                })}>History</Button>
+                                {postCollection?.is_deletable && <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("trash")} />} onClick={() => app.openModal(
+                                    "Delete collection",
+                                    (modal) => <ActionModal
+                                        modalContent={modal}
+                                        text={postCollection.title ? `Delete collection '${postCollection.title}'` : `Delete 1 collection`}
+                                        actions={[
+                                            {
+                                                name: "Ok",
+                                                fn: async () => {
+                                                    const loadingModal = app.openLoadingModal();
+                                                    try {
+                                                        const config = await app.getAuthorization(location, navigate);
+                                                        const result = await http.post<DeletePostCollectionsResponse>("/delete-collections", {
+                                                            post_collection_pks: [postCollection.pk],
+                                                            inaccessible_post_mode: "skip"
+                                                        }, config);
+
+                                                        loadingModal.close();
+                                                        navigate({
+                                                            pathname: "/collections"
+                                                        });
+
+                                                        enqueueSnackbar({
+                                                            message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? 's' : ''}`,
+                                                            variant: "success"
+                                                        });
+                                                        return result.data;
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                        loadingModal.close();
+                                                        enqueueSnackbar({
+                                                            message: "Failed to delete collection",
+                                                            variant: "error"
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                        ]}
+                                    />,
+                                )}>Delete</Button>}
+                            </div>}
                     </div>
                     {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{postCollection && postCollection.title}</h2>}
                     {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{postCollection && postCollection.description}</p>}

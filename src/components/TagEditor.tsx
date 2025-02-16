@@ -1,4 +1,4 @@
-import { Autocomplete, Button, Chip, FormGroup, TextField } from "@mui/material";
+import { Autocomplete, Button, Chip, FormGroup, FormLabelProps, TextField, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { Tag } from "../Model";
 import http from "../http-common";
@@ -44,18 +44,21 @@ class UpsertTagResponse {
     }
 }
 
-export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label, onTagClick }: {
+export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label, onTagClick, color }: {
     setSelectedTags: (v: number[]) => void,
     setEnteredTags?: (v: string[]) => void,
     limit?: number,
     values?: (string | { label: string, pk: number })[],
     readOnly?: boolean,
     label?: string,
-    onTagClick?: (tag: (string | { label: string, pk: number })) => void
+    onTagClick?: (tag: (string | { label: string, pk: number })) => void,
+    color?: FormLabelProps["color"]
 }) {
     const [suggestedTags, setSuggestedTags] = useState<{ label: string, pk: number }[]>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
     const [value, setValue] = useState(values);
+
+    const theme = useTheme();
 
     let scheduledRequest: NodeJS.Timeout | null = null;
 
@@ -115,15 +118,16 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                     return <TextField
                         {...restParams}
                         InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>) }}
+                        InputLabelProps={readOnly ? { shrink: true } : undefined}
                         label={label ?? "Tags"}
-                        placeholder={value && value.length > 0 ? undefined : "Enter a tag and hit enter"}
+                        placeholder={(value && value.length > 0) || readOnly ? undefined : "Enter a tag and hit enter"}
                         sx={{
                             "& .MuiInputLabel-root.Mui-disabled": {
-                                color: "white",
+                                color: color ? theme.palette[color].main : "white",
                             },
                             "& .MuiInputBase-root.Mui-disabled": {
                                 "& > fieldset": {
-                                    borderColor: "rgba(0, 0, 0, 0.23)",
+                                    borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                                     color: "white",
                                 }
                             }

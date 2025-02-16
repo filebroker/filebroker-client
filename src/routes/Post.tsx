@@ -21,6 +21,7 @@ import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from '@mui/icons-material/Add';
+import { PostEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
 
 class PostProps {
     app: App;
@@ -346,7 +347,14 @@ function Post({ app }: PostProps) {
             <div id="post-information-container">
                 {isEditMode
                     ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                    : <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!post?.is_editable || !app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>}
+                    : post && <div className="button-row">
+                        <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!post?.is_editable || !app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>
+                        <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} hidden={!post?.is_editable || !app.isLoggedIn()} onClick={() => app.openModal("History", modal => <PostEditHistoryDialogue app={app} post={post} modal={modal} />, (result) => {
+                            if (result) {
+                                updatePost(result);
+                            }
+                        })}>History</Button>
+                    </div>}
                 {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{post && post.title}</h2>}
                 {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{post && post.description}</p>}
                 <div className="material-row-flex">

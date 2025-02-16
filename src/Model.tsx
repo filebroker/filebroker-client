@@ -1,5 +1,28 @@
 import { User } from "./App";
 
+export class UserPublic {
+    pk: number;
+    user_name: string;
+    avatar_url: string;
+    creation_timestamp: string;
+    display_name: string | null;
+
+    constructor(
+        pk: number,
+        user_name: string,
+        avatar_url: string,
+        creation_timestamp: string,
+        display_name: string | null
+    ) {
+        this.pk = pk;
+        this.user_name = user_name;
+        this.avatar_url = avatar_url;
+        this.creation_timestamp = creation_timestamp;
+        this.display_name = display_name;
+    }
+}
+
+
 export class Post {
     pk: number;
     data_url: string | null;
@@ -49,7 +72,9 @@ export class PostDetailed {
     source_url: string | null;
     title: string | null;
     creation_timestamp: string;
-    create_user: User;
+    edit_timestamp: string;
+    create_user: UserPublic;
+    edit_user: UserPublic;
     score: number;
     s3_object: S3Object;
     s3_object_metadata: S3ObjectMetadata;
@@ -70,7 +95,9 @@ export class PostDetailed {
         source_url: string | null,
         title: string | null,
         creation_timestamp: string,
-        create_user: User,
+        edit_timestamp: string,
+        create_user: UserPublic,
+        edit_user: UserPublic,
         score: number,
         s3_object: S3Object,
         s3_object_metadata: S3ObjectMetadata,
@@ -90,7 +117,9 @@ export class PostDetailed {
         this.source_url = source_url;
         this.title = title;
         this.creation_timestamp = creation_timestamp;
+        this.edit_timestamp = edit_timestamp;
         this.create_user = create_user;
+        this.edit_user = edit_user;
         this.score = score;
         this.s3_object = s3_object;
         this.s3_object_metadata = s3_object_metadata;
@@ -151,8 +180,10 @@ export class PostCollection {
 export class PostCollectionDetailed {
     pk: number;
     title: string;
-    create_user: User;
+    create_user: UserPublic;
+    edit_user: UserPublic;
     creation_timestamp: string;
+    edit_timestamp: string;
     is_public: boolean;
     public_edit: boolean;
     poster_object: S3Object | null;
@@ -167,7 +198,9 @@ export class PostCollectionDetailed {
         pk: number,
         title: string,
         create_user: User,
+        edit_user: User,
         creation_timestamp: string,
+        edit_timestamp: string,
         is_public: boolean,
         public_edit: boolean,
         poster_object: S3Object | null,
@@ -181,7 +214,9 @@ export class PostCollectionDetailed {
         this.pk = pk;
         this.title = title;
         this.create_user = create_user;
+        this.edit_user = edit_user;
         this.creation_timestamp = creation_timestamp;
+        this.edit_timestamp = edit_timestamp;
         this.is_public = is_public;
         this.public_edit = public_edit;
         this.poster_object = poster_object;

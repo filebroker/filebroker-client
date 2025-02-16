@@ -32,6 +32,7 @@ declare module 'react' {
 }
 
 export class User {
+    pk: number;
     user_name: string;
     email: string | null;
     avatar_url: string;
@@ -40,6 +41,7 @@ export class User {
     display_name: string | null;
 
     constructor(
+        pk: number,
         user_name: string,
         email: string | null,
         avatar_url: string,
@@ -47,6 +49,7 @@ export class User {
         email_confirmed: boolean,
         display_name: string | null
     ) {
+        this.pk = pk;
         this.user_name = user_name;
         this.email = email;
         this.avatar_url = avatar_url;

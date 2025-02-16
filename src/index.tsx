@@ -3,9 +3,9 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Modal from 'react-modal';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, styled, ThemeProvider } from '@mui/material/styles';
 import { closeSnackbar, SnackbarProvider } from 'notistack';
-import { IconButton, useMediaQuery } from '@mui/material';
+import { IconButton, TextField, TextFieldProps, TextFieldVariants, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 const root = ReactDOM.createRoot(
@@ -36,11 +36,47 @@ const MUI_THEME = createTheme({
     components: {
         MuiAutocomplete: {
             styleOverrides: {
-                
+
             }
         }
     }
 });
+
+const StyledReadOnlyTextField = styled(TextField)(({ theme, color }) => {
+    const themeColor = color ? theme.palette[color].main : "rgba(255, 255, 255, 0.42)";
+
+    return {
+        "& .MuiInputBase-input": {
+            cursor: "default", // Prevent pointer cursor
+        },
+        "& .MuiInput-underline:before": {
+            borderBottom: `1px solid ${themeColor}`, // Remove default underline
+        },
+        "& .MuiInput-underline:hover:before": {
+            borderBottom: `1px solid ${themeColor} !important`, // Prevent underline on hover
+        },
+        "& .MuiInput-underline:after": {
+            borderBottom: `1px solid ${themeColor}`, // Remove underline when focused
+        },
+    };
+});
+
+export const ReadOnlyTextField = (props: TextFieldProps) => {
+    return (
+        <StyledReadOnlyTextField
+            focused
+            {...props}
+            InputProps={{
+                ...props.InputProps,
+                readOnly: true
+            }}
+            InputLabelProps={{
+                ...props.InputLabelProps,
+                shrink: true,
+            }}
+        />
+    );
+}
 
 const DimensionAwareApp = () => {
     const matches = useMediaQuery('(min-width: 800px)');

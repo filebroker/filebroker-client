@@ -1,9 +1,9 @@
-import { Autocomplete, Chip, TextField } from "@mui/material";
+import { Autocomplete, Chip, FormLabelProps, TextField, useTheme } from "@mui/material";
 import { UserGroup } from "../Model";
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from "react";
 
-export function GroupSelector({ disabled = false, limit = 50, currentUserGroups, selectedUserGroups, setSelectedUserGroups, selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly, readOnly = false }: {
+export function GroupSelector({ disabled = false, limit = 50, currentUserGroups, selectedUserGroups, setSelectedUserGroups, selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly, readOnly = false, color }: {
     disabled?: boolean,
     limit?: number,
     currentUserGroups: UserGroup[],
@@ -11,9 +11,11 @@ export function GroupSelector({ disabled = false, limit = 50, currentUserGroups,
     setSelectedUserGroups: (v: UserGroup[]) => void,
     selectedUserGroupsReadOnly: number[],
     setSelectedUserGroupsReadOnly: (v: number[]) => void,
-    readOnly?: boolean
+    readOnly?: boolean,
+    color?: FormLabelProps["color"]
 }) {
     const [inputDisabled, setInputDisabled] = useState(false);
+    const theme = useTheme();
     return (
         <Autocomplete
             multiple
@@ -30,11 +32,11 @@ export function GroupSelector({ disabled = false, limit = 50, currentUserGroups,
                     label="Groups"
                     sx={{
                         "& .MuiInputLabel-root.Mui-disabled": {
-                            color: "white",
+                            color: color ? theme.palette[color].main : "white",
                         },
                         "& .MuiInputBase-root.Mui-disabled": {
                             "& > fieldset": {
-                                borderColor: "rgba(0, 0, 0, 0.23)",
+                                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                                 color: "white",
                             }
                         }
