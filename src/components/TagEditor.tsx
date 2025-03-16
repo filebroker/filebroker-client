@@ -57,6 +57,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
     const [suggestedTags, setSuggestedTags] = useState<{ label: string, pk: number }[]>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
     const [value, setValue] = useState(values);
+    const [textInputValue, setTextInputValue] = useState("");
 
     const theme = useTheme();
 
@@ -103,6 +104,11 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
         setValue(values);
     }, values);
 
+    // clear text input when toggling edit mode
+    useEffect(() => {
+        setTextInputValue("");
+    }, [readOnly]);
+
     return (
         <>
             <Autocomplete
@@ -111,6 +117,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                 disabled={inputDisabled || readOnly}
                 options={suggestedTags}
                 value={value}
+                inputValue={textInputValue}
                 readOnly={readOnly}
                 renderInput={params => {
                     const { InputProps, ...restParams } = params;
@@ -139,6 +146,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                     <Chip {...getTagProps({ index })} color="secondary" variant="outlined" label={typeof option === "string" ? option : option.label} disabled={false} onClick={onTagClick && readOnly ? () => onTagClick(option) : undefined}></Chip>
                 ))}
                 onInputChange={(_e, newVal) => {
+                    setTextInputValue(newVal);
                     if (scheduledRequest) {
                         clearTimeout(scheduledRequest);
                     }
