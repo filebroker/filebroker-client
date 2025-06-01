@@ -191,6 +191,7 @@ export const StyledAutocomplete = <
     label: string,
     color?: FormLabelProps["color"],
     variant?: TextFieldVariants,
+    placeholder?: string | undefined,
 }) => {
     const theme = useTheme();
     return (
