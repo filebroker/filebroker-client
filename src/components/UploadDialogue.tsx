@@ -91,7 +91,7 @@ class UploadResponse {
 }
 
 interface ProgressObserver {
-    setProgress: (progress: number) => void;
+    setProgress: (progress: number | undefined) => void;
     setStep: (step: number) => void;
 }
 
@@ -106,7 +106,7 @@ class ProgressSubject {
         this.observers = this.observers.filter(observer => observer !== observerToRemove);
     }
 
-    public setProgress(progress: number) {
+    public setProgress(progress: number | undefined) {
         this.observers.forEach(observer => observer.setProgress(progress));
     }
 
@@ -115,23 +115,21 @@ class ProgressSubject {
     }
 }
 
-function LinearProgressWithLabel(props: LinearProgressProps & { value: number }) {
+function LinearProgressWithLabel(props: LinearProgressProps & { value?: number | undefined }) {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: '100%', mr: 1 }}>
-                <LinearProgress variant="determinate" {...props} />
+                <LinearProgress variant={props.value === undefined ? "indeterminate" : "determinate"} {...props} />
             </Box>
             <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" color="text.secondary">{`${Math.round(
-                    props.value,
-                )}%`}</Typography>
+                <Typography variant="body2" color="text.secondary">{props.value === undefined ? "..." : `${Math.round(props.value)}%`}</Typography>
             </Box>
         </Box>
     );
 }
 
 function UploadProgress({ progressSubject, steps }: { progressSubject: ProgressSubject, steps: number }) {
-    const [progress, setProgress] = useState(0);
+    const [progress, setProgress] = useState<number | undefined>(0);
     const [step, setStep] = useState(0);
 
     const onProgressUpdate: ProgressObserver = {
@@ -349,10 +347,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
                     if (isUploadingFolder && fileList) {
                         let progressSubject = new ProgressSubject();
-                        let upgloadProgress = <UploadProgress progressSubject={progressSubject} steps={fileList.length}></UploadProgress>;
+                        let uploadProgress = <UploadProgress progressSubject={progressSubject} steps={fileList.length}></UploadProgress>;
                         const uploadProgressModal = app.openModal(
                             "Uploading",
-                            upgloadProgress,
+                            uploadProgress,
                             undefined,
                             false
                         );
@@ -374,7 +372,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                         "Filebroker-Upload-Size": file.size,
                                     },
                                     onUploadProgress: e => {
-                                        progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
+                                        progressSubject.setProgress(e.total ? Math.round((100 * e.loaded) / e.total) : undefined);
                                     },
                                 });
 
@@ -452,7 +450,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                         "Filebroker-Upload-Size": file.size,
                                     },
                                     onUploadProgress: e => {
-                                        progressSubject.setProgress(Math.round((100 * e.loaded) / e.total));
+                                        progressSubject.setProgress(e.total ? Math.round((100 * e.loaded) / e.total) : undefined);
                                     },
                                 });
 
