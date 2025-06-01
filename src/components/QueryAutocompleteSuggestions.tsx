@@ -1,13 +1,81 @@
-import { Combobox } from "@filebroker/react-widgets/lib/cjs";
-import { useState } from "react";
-import { AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion } from "../Model";
+import {Combobox} from "@filebroker/react-widgets/lib/cjs";
+import {useState} from "react";
+import {AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion} from "../Model";
 import http from "../http-common";
-import { replaceStringRange } from "../Util";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import {replaceStringRange} from "../Util";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import "./QueryAutocompleteSuggestions.css";
+import {Autocomplete} from "@mui/material";
+import {StyledTextField} from "../index";
 
 let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
+
+export function QueryAutocompleteTextField({ label, queryString, setQueryString, scope, disabled = false, placeholder = undefined }: {
+    label: string,
+    queryString: string,
+    setQueryString: (queryString: string) => void,
+    scope: string,
+    disabled?: boolean,
+    placeholder?: string,
+}) {
+    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
+
+    const handleQueryChange = (cursorPos: number, query: string) => {
+        setQueryAutocompleteSuggestions([]);
+        if (scheduledAnalyzeQueryRequest) {
+            clearTimeout(scheduledAnalyzeQueryRequest);
+        }
+        scheduledAnalyzeQueryRequest = setTimeout(async () => {
+            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query, scope));
+            setQueryAutocompleteSuggestions(response.data.suggestions);
+        }, 250);
+    }
+
+    return (
+        <Autocomplete
+            freeSolo
+            disabled={disabled}
+            renderInput={(params) => {
+                const { InputProps, inputProps, ...restParams } = params;
+                const { startAdornment, ...restInputProps } = InputProps;
+                return <StyledTextField
+                    {...restParams}
+                    label={label}
+                    inputProps={{ ...inputProps, maxLength: 1000 }}
+                    InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>) }}
+                />;
+            }}
+            options={queryAutocompleteSuggestions}
+            filterOptions={x => x}
+            getOptionLabel={(option) => {
+                if (typeof option === "string") {
+                    return option;
+                } else {
+                    return option.display;
+                }
+            }}
+            inputValue={queryString || ""}
+            onInputChange={(e, v) => {
+                setQueryString(v);
+                let inputElement = e.currentTarget as HTMLInputElement;
+                handleQueryChange(inputElement.selectionStart || v.length, v);
+            }}
+            value={queryString || ""}
+            onChange={(_e, val) => {
+                if (typeof val === "string") {
+                    return;
+                } else if (val) {
+                    let prevVal = queryString;
+                    let targetLocation = val.target_location;
+                    let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, val.text);
+                    setQueryString(newVal);
+                    setQueryAutocompleteSuggestions([]);
+                }
+            }}
+        />
+    );
+}
 
 export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryString, scope, autoFocus = false, disabled = false, placeholder = undefined }: {
     queryString: string,

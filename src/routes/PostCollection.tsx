@@ -45,10 +45,10 @@ export function PostCollection({ app }: { app: App }) {
 
     function updatePostCollection(postCollectionDetailed: PostCollectionDetailed) {
         setPostCollection(postCollectionDetailed);
-        setTags(postCollectionDetailed.tags.map(tag => {
-            return { label: tag.tag_name, pk: tag.pk };
+        setTags(postCollectionDetailed.tags.map(tagUsage => {
+            return { label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk };
         }));
-        setSelectedTags(postCollectionDetailed.tags.map(tag => tag.pk));
+        setSelectedTags(postCollectionDetailed.tags.map(tagUsage => tagUsage.tag.pk));
         setTitle(postCollectionDetailed.title || "");
         setDescription(postCollectionDetailed.description || "");
         setPublicCollection(postCollectionDetailed.is_public);
@@ -120,7 +120,7 @@ export function PostCollection({ app }: { app: App }) {
                 <div id="post-collection-information-container">
                     <div id="post-collection-button-row">
                         {isEditMode
-                            ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
+                            ? <div className="button-row"><Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button></div>
                             : postCollection && <div className="button-row">
                                 <Button hidden={!postCollection?.is_editable || !app.isLoggedIn()} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>
                                 <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} hidden={!postCollection?.is_editable || !app.isLoggedIn()} onClick={() => app.openModal("History", modal => <PostCollectionEditHistoryDialogue app={app} collection={postCollection} modal={modal} />, (result) => {
@@ -170,8 +170,8 @@ export function PostCollection({ app }: { app: App }) {
                                 )}>Delete</Button>}
                             </div>}
                     </div>
-                    {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{postCollection && postCollection.title}</h2>}
-                    {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{postCollection && postCollection.description}</p>}
+                    {isEditMode ? <TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField> : <h2 hidden={!(postCollection && postCollection.title)}>{postCollection && postCollection.title}</h2>}
+                    {isEditMode ? <TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField> : <p className="multiline-text" hidden={!(postCollection && postCollection.description)}>{postCollection && postCollection.description}</p>}
                     <div className="material-row-flex">
                         <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
                             if (typeof tag === "object" && "pk" in tag) {
@@ -194,7 +194,7 @@ export function PostCollection({ app }: { app: App }) {
                             readOnly={!isEditMode}
                         />
                     </div>
-                    <div className="material-row">
+                    <div className="button-row">
                         <Button color="secondary" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} hidden={!isEditMode} onClick={async () => {
                             let groupAccess: GroupAccessDefinition[] = [];
                             selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));

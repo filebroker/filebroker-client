@@ -86,7 +86,7 @@ export class PostDetailed {
     description: string | null;
     is_editable: boolean;
     is_deletable: boolean;
-    tags: Tag[];
+    tags: TagUsage[];
     group_access: PostGroupAccessDetailed[];
 
     constructor(
@@ -109,7 +109,7 @@ export class PostDetailed {
         description: string | null,
         is_editable: boolean,
         is_deletable: boolean,
-        tags: Tag[],
+        tags: TagUsage[],
         group_access: PostGroupAccessDetailed[]
     ) {
         this.pk = pk;
@@ -191,7 +191,7 @@ export class PostCollectionDetailed {
     description: string | null;
     is_editable: boolean;
     is_deletable: boolean;
-    tags: Tag[];
+    tags: TagUsage[];
     group_access: PostCollectionGroupAccessDetailed[];
 
     constructor(
@@ -208,7 +208,7 @@ export class PostCollectionDetailed {
         description: string | null,
         is_editable: boolean,
         is_deletable: boolean,
-        tags: Tag[],
+        tags: TagUsage[],
         group_access: PostCollectionGroupAccessDetailed[]
     ) {
         this.pk = pk;
@@ -350,15 +350,62 @@ export class Tag {
     pk: number;
     tag_name: string;
     creation_timestamp: string;
+    fk_create_user: number;
+    edit_timestamp: string;
+    fk_edit_user: number;
+    tag_category: string | null | undefined;
+    auto_match_condition_post: string | null | undefined;
+    auto_match_condition_collection: string | null | undefined;
 
     constructor(
         pk: number,
         tag_name: string,
-        creation_timestamp: string
+        creation_timestamp: string,
+        fk_create_user: number,
+        edit_timestamp: string,
+        fk_edit_user: number,
+        tag_category: string | null | undefined,
+        auto_match_condition_post: string | null | undefined,
+        auto_match_condition_collection: string | null | undefined
     ) {
         this.pk = pk;
         this.tag_name = tag_name;
         this.creation_timestamp = creation_timestamp;
+        this.fk_create_user = fk_create_user;
+        this.edit_timestamp = edit_timestamp;
+        this.fk_edit_user = fk_edit_user;
+        this.tag_category = tag_category;
+        this.auto_match_condition_post = auto_match_condition_post;
+        this.auto_match_condition_collection = auto_match_condition_collection;
+    }
+}
+
+export class TagCategory {
+    id: string;
+    label: string;
+    auto_match_condition_post: string | null | undefined;
+    auto_match_condition_collection: string | null | undefined;
+
+    constructor(
+        id: string,
+        label: string,
+        auto_match_condition_post: string | null | undefined,
+        auto_match_condition_collection: string | null | undefined
+    ) {
+        this.id = id;
+        this.label = label;
+        this.auto_match_condition_post = auto_match_condition_post;
+        this.auto_match_condition_collection = auto_match_condition_collection;
+    }
+}
+
+export class TagUsage {
+    tag: Tag;
+    auto_matched: boolean;
+
+    constructor(tag: Tag, auto_matched: boolean) {
+        this.tag = tag;
+        this.auto_matched = auto_matched;
     }
 }
 
@@ -372,17 +419,41 @@ export class TagEdge {
     }
 }
 
-export class TagJoined {
-    tag: Tag;
+export class TagDetailed {
+    pk: number;
+    tag_name: string;
+    creation_timestamp: string;
+    create_user: UserPublic;
+    edit_timestamp: string;
+    edit_user: UserPublic;
+    tag_category: TagCategory | null | undefined;
+    auto_match_condition_post: string | null | undefined;
+    auto_match_condition_collection: string | null | undefined;
     parents: Tag[];
     aliases: Tag[];
 
     constructor(
-        tag: Tag,
+        pk: number,
+        tag_name: string,
+        creation_timestamp: string,
+        create_user: UserPublic,
+        edit_timestamp: string,
+        edit_user: UserPublic,
+        tag_category: TagCategory | null | undefined,
+        auto_match_condition_post: string | null | undefined,
+        auto_match_condition_collection: string | null | undefined,
         parents: Tag[],
         aliases: Tag[]
     ) {
-        this.tag = tag;
+        this.pk = pk;
+        this.tag_name = tag_name;
+        this.creation_timestamp = creation_timestamp;
+        this.create_user = create_user;
+        this.edit_timestamp = edit_timestamp;
+        this.edit_user = edit_user;
+        this.tag_category = tag_category;
+        this.auto_match_condition_post = auto_match_condition_post;
+        this.auto_match_condition_collection = auto_match_condition_collection;
         this.parents = parents;
         this.aliases = aliases;
     }

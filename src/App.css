@@ -626,7 +626,6 @@ input {
 }
 
 .material-row-flex {
-    margin-top: 10px;
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -658,7 +657,7 @@ p {
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
+input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
   -webkit-text-fill-color: white;
   -webkit-box-shadow: 0 0 0 30px #161b22 inset;

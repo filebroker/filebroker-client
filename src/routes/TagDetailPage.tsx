@@ -1,24 +1,27 @@
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
 import App from "../App";
-import http, { getApiUrl, getPublicUrl } from "../http-common";
-import { useEffect, useState } from "react";
-import { Tag, TagEdge, TagJoined } from "../Model";
-import { Button, IconButton, ImageList, ImageListItem, ImageListItemBar, Paper } from "@mui/material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { regular, solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import http, {getApiUrl, getPublicUrl} from "../http-common";
+import React, {useEffect, useState} from "react";
+import {Tag, TagCategory, TagDetailed, TagEdge} from "../Model";
+import {Button, IconButton, ImageList, ImageListItem, ImageListItemBar, Paper,} from "@mui/material";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {regular, solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 
 import "./TagDetailPage.css";
-import { TagSelector } from "../components/TagEditor";
-import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
-import { enqueueSnackbar } from "notistack";
-import { PostCollectionQueryObject, PostQueryObject, SearchResult } from "../Search";
+import {TagSelector} from "../components/TagEditor";
+import {FontAwesomeSvgIcon} from "../components/FontAwesomeSvgIcon";
+import {enqueueSnackbar} from "notistack";
+import {PostCollectionQueryObject, PostQueryObject, SearchResult} from "../Search";
 import urlJoin from "url-join";
-import { LazyLoadImage } from "react-lazy-load-image-component";
-import { PaginatedGridViewItem } from "../components/PaginatedGridView";
-import { AccountTree } from "@mui/icons-material";
+import {LazyLoadImage} from "react-lazy-load-image-component";
+import {PaginatedGridViewItem} from "../components/PaginatedGridView";
+import {AccountTree} from "@mui/icons-material";
 import CytoscapeComponent from "react-cytoscapejs";
-import cytoscape, { ElementDefinition } from "cytoscape";
+import cytoscape, {ElementDefinition} from "cytoscape";
 import dagre from 'cytoscape-dagre';
+import {StyledAutocomplete} from "../index";
+import {TagEditHistoryDialogue} from "../components/PostEditHistoryDialogue";
+import {QueryAutocompleteTextField} from "../components/QueryAutocompleteSuggestions";
 
 cytoscape.use(dagre);
 
@@ -39,11 +42,22 @@ export function TagDetailPage({ app }: { app: App }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [tag, setTag] = useState<TagJoined | null>(null);
+    const [tagCategories, setTagCategories] = useState<TagCategory[]>([]);
+    useEffect(() => {
+        http.get<TagCategory[]>(`/get-tag-categories`).then(response => {
+            setTagCategories(response.data);
+        }).catch(e => console.error("Failed to load tag categories", e));
+    }, []);
+
+    const [tag, setTag] = useState<TagDetailed | null>(null);
     const [parentTags, setParentTags] = useState<{ label: string, pk: number }[]>([]);
     const [parentPks, setParentPks] = useState<number[]>([]);
     const [aliasTags, setAliasTags] = useState<{ label: string, pk: number }[]>([]);
     const [aliasPks, setAliasPks] = useState<number[]>([]);
+    const [tagCategoryInput, setTagCategoryInput] = useState<string>("");
+    const [tagCategory, setTagCategory] = useState<TagCategory | null>(null);
+    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState(tag?.auto_match_condition_post ?? "");
+    const [autoMatchConditionCollection, setAutoMatchConditionCollection] = useState(tag?.auto_match_condition_collection ?? "");
 
     const [posts, setPosts] = useState<PostQueryObject[]>([]);
     const [collections, setCollections] = useState<PostCollectionQueryObject[]>([]);
@@ -53,19 +67,22 @@ export function TagDetailPage({ app }: { app: App }) {
 
     const [editMode, setEditMode] = useState(false);
 
-    const updateTag = (tag: TagJoined | null) => {
+    const updateTag = (tag: TagDetailed | null) => {
         setTag(tag);
         setParentTags(tag?.parents?.map(p => ({ label: p.tag_name, pk: p.pk })) ?? []);
         setParentPks(tag?.parents?.map(p => p.pk) ?? []);
         setAliasTags(tag?.aliases?.map(a => ({ label: a.tag_name, pk: a.pk })) ?? []);
         setAliasPks(tag?.aliases?.map(a => a.pk) ?? []);
+        setTagCategory(tag?.tag_category ?? null);
+        setAutoMatchConditionPost(tag?.auto_match_condition_post ?? "");
+        setAutoMatchConditionCollection(tag?.auto_match_condition_collection ?? "");
     };
 
     const loadTag = async () => {
         updateTag(null);
         const loadingModal = app.openLoadingModal();
         try {
-            const response = await http.get<TagJoined>(`/get-tag/${id}`);
+            const response = await http.get<TagDetailed>(`/get-tag/${id}`);
             updateTag(response.data);
         } catch (e: any) {
             console.error("Failed to load tag", e);
@@ -87,7 +104,7 @@ export function TagDetailPage({ app }: { app: App }) {
         if (tag) {
             try {
                 const config = await app.getAuthorization(location, navigate, false);
-                const response = await http.get<SearchResult>(`/search?query=${encodeURIComponent(`\`${tag.tag.tag_name}\` %limit(5)`)}`, config);
+                const response = await http.get<SearchResult>(`/search?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`, config);
                 setPosts(response.data.posts || []);
             } catch (e: any) {
                 console.error("Failed to load posts", e);
@@ -98,7 +115,7 @@ export function TagDetailPage({ app }: { app: App }) {
         if (tag) {
             try {
                 const config = await app.getAuthorization(location, navigate, false);
-                const response = await http.get<SearchResult>(`/search/collection?query=${encodeURIComponent(`\`${tag.tag.tag_name}\` %limit(5)`)}`, config);
+                const response = await http.get<SearchResult>(`/search/collection?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`, config);
                 setCollections(response.data.collections || []);
             } catch (e: any) {
                 console.error("Failed to load collections", e);
@@ -134,7 +151,7 @@ export function TagDetailPage({ app }: { app: App }) {
                                 <div className="form-paper-content-top-btn-row">
                                     <IconButton hidden={ancestors.length === 0 && descendants.length === 0} onClick={() => {
                                         const handled: number[] = [];
-                                        const elements: ElementDefinition[] = [{ data: { id: tag.tag.pk.toString(), label: tag.tag.tag_name }, selectable: false }];
+                                        const elements: ElementDefinition[] = [{ data: { id: tag.pk.toString(), label: tag.tag_name }, selectable: false }];
                                         ancestors.forEach(a => {
                                             if (!handled.includes(a.tag.pk)) {
                                                 handled.push(a.tag.pk);
@@ -183,7 +200,7 @@ export function TagDetailPage({ app }: { app: App }) {
                                         </div>);
                                     }}><AccountTree /></IconButton>
                                 </div>
-                                <h1>{tag.tag.tag_name}</h1>
+                                <h1>{tag.tag_name}</h1>
                                 <TagSelector readOnly={!editMode} values={parentTags} setSelectedTags={setParentPks} limit={25} label="Parents" onTagClick={(tag) => {
                                     if (typeof tag === "object" && "pk" in tag) {
                                         navigate("/tag/" + tag.pk);
@@ -194,21 +211,62 @@ export function TagDetailPage({ app }: { app: App }) {
                                         navigate("/tag/" + tag.pk);
                                     }
                                 }} />
+                                <div className="material-row-flex">
+                                    <StyledAutocomplete
+                                        id="tag-category-select"
+                                        label="Category"
+                                        options={tagCategories}
+                                        value={tagCategory}
+                                        onChange={(_event: any, newValue: TagCategory | null) => setTagCategory(newValue)}
+                                        inputValue={tagCategoryInput}
+                                        onInputChange={(_event: any, newInputValue: string) => setTagCategoryInput(newInputValue)}
+                                        readOnly={!editMode}
+                                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                                    />
+                                </div>
+                                {app.getUser()?.is_admin && <div className="material-row-flex">
+                                    <QueryAutocompleteTextField
+                                        queryString={autoMatchConditionPost}
+                                        setQueryString={v => setAutoMatchConditionPost(v)}
+                                        label="Auto Match Condition Post"
+                                        scope="tag_auto_match_post"
+                                        disabled={!editMode}
+                                    />
+                                </div>}
+                                {app.getUser()?.is_admin && <div className="material-row-flex">
+                                    <QueryAutocompleteTextField
+                                        queryString={autoMatchConditionCollection}
+                                        setQueryString={v => setAutoMatchConditionCollection(v)}
+                                        label="Auto Match Condition Collection"
+                                        scope="tag_auto_match_collection"
+                                        disabled={!editMode}
+                                    />
+                                </div>}
                                 <div className={"form-paper-button-row" + (editMode ? " form-paper-button--expanded" : "")}>
                                     {editMode
                                         ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                                        : <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>}
+                                        : <div className="button-row">
+                                            <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>
+                                            <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} hidden={!app.isLoggedIn()} onClick={() => app.openModal("History", modal => <TagEditHistoryDialogue app={app} tag={tag} modal={modal} />, (result) => {
+                                                if (result) {
+                                                    updateTag(result);
+                                                }
+                                            })}>History</Button>
+                                        </div>}
                                     <Button color="secondary" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} hidden={!editMode} onClick={async () => {
                                         const loadingModal = app.openLoadingModal();
                                         try {
                                             let config = await app.getAuthorization(location, navigate);
-                                            let response = await http.post<TagJoined>(`/update-tag/${id}`, new UpdateTagRequest(
+                                            let response = await http.post<TagDetailed>(`/update-tag/${id}`, new UpdateTagRequest(
                                                 null,
                                                 parentPks,
                                                 null,
                                                 null,
                                                 aliasPks,
-                                                null
+                                                null,
+                                                tagCategory?.id ?? "",
+                                                app.getUser()?.is_admin ? autoMatchConditionPost : null,
+                                                app.getUser()?.is_admin ? autoMatchConditionCollection : null
                                             ), config);
                                             updateTag(response.data);
                                             enqueueSnackbar({
@@ -216,17 +274,22 @@ export function TagDetailPage({ app }: { app: App }) {
                                                 variant: "success"
                                             });
                                         } catch (e: any) {
-                                            console.error("Failed to update tag", e);
-                                            if (e.response?.status === 401) {
-                                                enqueueSnackbar({
-                                                    message: "Your credentials have expired, try refreshing the page.",
-                                                    variant: "error"
-                                                });
+                                            let compilation_errors = e.response?.data?.compilation_errors;
+                                            if (compilation_errors) {
+                                                app.openModal("Error", <div>Failed to compile auto match condition: {compilation_errors[0]?.msg ?? "Unexpected Error"}</div>);
                                             } else {
-                                                enqueueSnackbar({
-                                                    message: "An error occurred editing your tag, please try again",
-                                                    variant: "error"
-                                                });
+                                                console.error("Failed to update tag", e);
+                                                if (e.response?.status === 401) {
+                                                    enqueueSnackbar({
+                                                        message: "Your credentials have expired, try refreshing the page.",
+                                                        variant: "error"
+                                                    });
+                                                } else {
+                                                    enqueueSnackbar({
+                                                        message: "An error occurred editing your tag, please try again",
+                                                        variant: "error"
+                                                    });
+                                                }
                                             }
                                         } finally {
                                             loadingModal.close();
@@ -239,8 +302,8 @@ export function TagDetailPage({ app }: { app: App }) {
                         }
                     </Paper>
                 </div>
-                {tag && posts.length > 0 && <PreviewGrid title="Posts" items={posts} searchLink={`/posts?query=${encodeURIComponent(`\`${tag.tag.tag_name}\``)}`} onItemClickPath={(item) => `/post/${item.pk}`} />}
-                {tag && collections.length > 0 && <PreviewGrid title="Collections" items={collections} searchLink={`/collections?query=${encodeURIComponent(`\`${tag.tag.tag_name}\``)}`} onItemClickPath={(item) => `/collection/${item.pk}`} />}
+                {tag && posts.length > 0 && <PreviewGrid title="Posts" items={posts} searchLink={`/posts?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`} onItemClickPath={(item) => `/post/${item.pk}`} />}
+                {tag && collections.length > 0 && <PreviewGrid title="Collections" items={collections} searchLink={`/collections?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`} onItemClickPath={(item) => `/collection/${item.pk}`} />}
             </div>
         </div>
     );
@@ -298,20 +361,26 @@ function PreviewGrid({ items, title, searchLink, onItemClickPath }: { items: Pag
 }
 
 class UpdateTagRequest {
-    added_parent_pks: number[] | null;
-    parent_pks_overwrite: number[] | null;
-    removed_parent_pks: number[] | null;
-    added_alias_pks: number[] | null;
-    alias_pks_overwrite: number[] | null;
-    removed_alias_pks: number[] | null;
+    added_parent_pks: number[] | null | undefined;
+    parent_pks_overwrite: number[] | null | undefined;
+    removed_parent_pks: number[] | null | undefined;
+    added_alias_pks: number[] | null | undefined;
+    alias_pks_overwrite: number[] | null | undefined;
+    removed_alias_pks: number[] | null | undefined;
+    tag_category: string | null | undefined;
+    auto_match_condition_post: string | null | undefined;
+    auto_match_condition_collection: string | null | undefined;
 
     constructor(
-        added_parent_pks: number[] | null,
-        parent_pks_overwrite: number[] | null,
-        removed_parent_pks: number[] | null,
-        added_alias_pks: number[] | null,
-        alias_pks_overwrite: number[] | null,
-        removed_alias_pks: number[] | null
+        added_parent_pks: number[] | null | undefined,
+        parent_pks_overwrite: number[] | null | undefined,
+        removed_parent_pks: number[] | null | undefined,
+        added_alias_pks: number[] | null | undefined,
+        alias_pks_overwrite: number[] | null | undefined,
+        removed_alias_pks: number[] | null | undefined,
+        tag_category: string | null | undefined,
+        auto_match_condition_post: string | null | undefined,
+        auto_match_condition_collection: string | null | undefined
     ) {
         this.added_parent_pks = added_parent_pks;
         this.parent_pks_overwrite = parent_pks_overwrite;
@@ -319,5 +388,8 @@ class UpdateTagRequest {
         this.added_alias_pks = added_alias_pks;
         this.alias_pks_overwrite = alias_pks_overwrite;
         this.removed_alias_pks = removed_alias_pks;
+        this.tag_category = tag_category;
+        this.auto_match_condition_post = auto_match_condition_post;
+        this.auto_match_condition_collection = auto_match_condition_collection;
     }
 }

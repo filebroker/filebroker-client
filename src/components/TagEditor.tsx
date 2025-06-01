@@ -1,9 +1,29 @@
-import { Autocomplete, Button, Chip, FormGroup, FormLabelProps, TextField, useTheme } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import { Tag } from "../Model";
+import {
+    Autocomplete,
+    Button,
+    Chip,
+    FormGroup,
+    FormLabelProps,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    useTheme
+} from "@mui/material";
+import React, {useEffect, useRef, useState} from "react";
+import {Tag, TagCategory, TagDetailed} from "../Model";
 import http from "../http-common";
-import App, { ModalContent } from "../App";
-import { useLocation, useNavigate } from "react-router-dom";
+import App, {ModalContent} from "../App";
+import {useLocation, useNavigate} from "react-router-dom";
+import {FontAwesomeSvgIcon} from "./FontAwesomeSvgIcon";
+import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import {ReadOnlyTextField, StyledAutocomplete} from "../index";
+import {QueryAutocompleteTextField} from "./QueryAutocompleteSuggestions";
+import {enqueueSnackbar} from "notistack";
 
 class FindTagResponse {
     exact_match: Tag | null;
@@ -22,25 +42,34 @@ class UpsertTagRequest {
     tag_name: string;
     parent_pks: number[] | null;
     alias_pks: number[] | null;
+    tag_category: string | null;
+    auto_match_condition_post: string | null;
+    auto_match_condition_collection: string | null;
 
     constructor(
         tag_name: string,
         parent_pks: number[] | null,
-        alias_pks: number[] | null
+        alias_pks: number[] | null,
+        tag_category: string | null,
+        auto_match_condition_post: string | null,
+        auto_match_condition_collection: string | null
     ) {
         this.tag_name = tag_name;
         this.parent_pks = parent_pks;
         this.alias_pks = alias_pks;
+        this.tag_category = tag_category;
+        this.auto_match_condition_post = auto_match_condition_post;
+        this.auto_match_condition_collection = auto_match_condition_collection;
     }
 }
 
 class UpsertTagResponse {
     inserted: boolean;
-    tag_pk: number;
+    tag_detailed: TagDetailed;
 
-    constructor(inserted: boolean, tag_pk: number) {
+    constructor(inserted: boolean, tag_detailed: TagDetailed) {
         this.inserted = inserted;
-        this.tag_pk = tag_pk;
+        this.tag_detailed = tag_detailed;
     }
 }
 
@@ -205,21 +234,50 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
     const [tagName, setTagName] = useState("");
     const [parentPks, setParentPks] = useState<number[]>([]);
     const [aliasPks, setAliasPks] = useState<number[]>([]);
+    const [tagCategoryInput, setTagCategoryInput] = useState<string>("");
+    const [tagCategory, setTagCategory] = useState<TagCategory | null>(null);
+    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState("");
+    const [autoMatchConditionCollection, setAutoMatchConditionCollection] = useState("");
+
+    const [tagCategories, setTagCategories] = useState<TagCategory[]>([]);
+    useEffect(() => {
+        http.get<TagCategory[]>(`/get-tag-categories`).then(response => {
+            setTagCategories(response.data);
+        }).catch(e => console.error("Failed to load tag categories", e));
+    }, []);
 
     return (
-        <div id="TagEditor" style={{ minWidth: "250px", padding: "5px" }}>
+        <div id="TagEditor" style={{ minWidth: "400px", padding: "5px" }}>
             <form className="modal-form" onSubmit={async e => {
                 e.preventDefault();
 
                 const loadingModal = app.openLoadingModal();
                 try {
                     let config = await app.getAuthorization(location, navigate);
-                    let response = await http.post<UpsertTagResponse>("/upsert-tag", new UpsertTagRequest(tagName, parentPks, aliasPks), config);
+                    let response = await http.post<UpsertTagResponse>(
+                        "/upsert-tag",
+                        new UpsertTagRequest(
+                            tagName,
+                            parentPks,
+                            aliasPks,
+                            tagCategory?.id ?? "",
+                            app.getUser()?.is_admin ? autoMatchConditionPost : null,
+                            app.getUser()?.is_admin ? autoMatchConditionCollection : null
+                        ),
+                        config
+                    );
                     loadingModal.close();
                     modal.close(response.data);
+                    enqueueSnackbar({
+                        message: response.data.inserted ? "Tag created" : "Tag updated",
+                        variant: "success"
+                    });
                 } catch (e: any) {
                     loadingModal.close();
-                    if (e.response?.status === 401) {
+                    let compilation_errors = e.response?.data?.compilation_errors;
+                    if (compilation_errors) {
+                        app.openModal("Error", <div>Failed to compile auto match condition: {compilation_errors[0]?.msg ?? "Unexpected Error"}</div>);
+                    } else if (e.response?.status === 401) {
                         app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                     } else {
                         app.openModal("Error", <p>An error occurred saving the tag.</p>);
@@ -231,8 +289,236 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
                     <TextField inputProps={{ maxLength: 50 }} variant="outlined" value={tagName} onChange={e => setTagName(e.currentTarget.value)} label="Tag Name" required />
                     <TagSelector setSelectedTags={setParentPks} limit={25} label="Parents" />
                     <TagSelector setSelectedTags={setAliasPks} limit={25} label="Aliases" />
+                    <StyledAutocomplete
+                        id="tag-category-select"
+                        label="Category"
+                        options={tagCategories}
+                        value={tagCategory}
+                        onChange={(_event: any, newValue: TagCategory | null) => setTagCategory(newValue)}
+                        inputValue={tagCategoryInput}
+                        onInputChange={(_event: any, newInputValue: string) => setTagCategoryInput(newInputValue)}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                    />
+                    {app.getUser()?.is_admin && <div className="material-row-flex">
+                        <QueryAutocompleteTextField
+                            queryString={autoMatchConditionPost}
+                            setQueryString={v => setAutoMatchConditionPost(v)}
+                            label="Auto Match Condition Post"
+                            scope="tag_auto_match_post"
+                        />
+                    </div>}
+                    {app.getUser()?.is_admin && <div className="material-row-flex">
+                        <QueryAutocompleteTextField
+                            queryString={autoMatchConditionCollection}
+                            setQueryString={v => setAutoMatchConditionCollection(v)}
+                            label="Auto Match Condition Collection"
+                            scope="tag_auto_match_collection"
+                        />
+                    </div>}
 
                     <div className="modal-form-submit-btn"><Button color="secondary" type="submit" disabled={tagName.length === 0}>Create</Button></div>
+                </FormGroup>
+            </form>
+        </div>
+    );
+}
+
+export function TagCategoryList({app, modal}: { app: App, modal: ModalContent }) {
+    const [tagCategories, setTagCategories] = useState<TagCategory[]>([]);
+
+    const loadCategories = () => {
+        const loadingModal = app.openLoadingModal();
+        http.get<TagCategory[]>(`/get-tag-categories`).then(response => {
+            loadingModal.close();
+            setTagCategories(response.data);
+        }).catch(e => {
+            loadingModal.close();
+            modal.close();
+            app.openModal("Error", <p>An error occurred loading the tag categories.</p>);
+        })
+    };
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    return (
+        <div id="TagCategoryList" style={{minWidth: "400px", padding: "5px"}}>
+            <TableContainer component={Paper}>
+                <Table sx={{minWidth: 500}}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Label</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {tagCategories.map(tagCategory => (
+                            <TableRow key={tagCategory.id}
+                                      sx={{cursor: "pointer", '&:last-child td, &:last-child th': {border: 0}}} hover
+                                      onClick={() => {
+                                          app.openModal(
+                                              "Edit Tag Category",
+                                              categoryEditModal => <TagCategoryEditor app={app}
+                                                                                      modal={categoryEditModal}
+                                                                                      tagCategory={tagCategory}/>,
+                                              (result) => {
+                                                  if (result) {
+                                                      loadCategories();
+                                                  }
+                                              }
+                                          );
+                                      }}>
+                                <TableCell>{tagCategory.id}</TableCell>
+                                <TableCell component="th" scope="row">{tagCategory.label}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <div className="button-row">
+                <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("add")}/>}
+                        disabled={!app.isLoggedIn()} onClick={e => {
+                    e.preventDefault();
+                    app.openModal(
+                        "Create Tag Category",
+                        createCategoryModal => <TagCategoryCreator app={app}
+                                                                   modal={createCategoryModal}></TagCategoryCreator>,
+                        (result) => {
+                            if (result) {
+                                loadCategories();
+                            }
+                        });
+                }}>Create</Button>
+            </div>
+        </div>
+    );
+}
+
+export function TagCategoryCreator({ app, modal }: { app: App, modal: ModalContent }) {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [id, setId] = useState("");
+    const [label, setLabel] = useState("");
+    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState("");
+    const [autoMatchConditionCollection, setAutoMatchConditionCollection] = useState("");
+
+    return (
+        <div id="TagCategoryCreator" style={{ minWidth: "400px", padding: "5px" }}>
+            <form className="modal-form" onSubmit={async e => {
+                e.preventDefault();
+
+                const loadingModal = app.openLoadingModal();
+                try {
+                    let config = await app.getAuthorization(location, navigate);
+                    let response = await http.post<UpsertTagResponse>("/create-tag-category", {
+                        id: id,
+                        label: label,
+                        auto_match_condition_post: autoMatchConditionPost,
+                        auto_match_condition_collection: autoMatchConditionCollection
+                    }, config);
+                    loadingModal.close();
+                    modal.close(response.data);
+                } catch (e: any) {
+                    loadingModal.close();
+                    let compilation_errors = e.response?.data?.compilation_errors;
+                    if (compilation_errors) {
+                        app.openModal("Error", <div>Failed to compile auto match condition: {compilation_errors[0]?.msg ?? "Unexpected Error"}</div>);
+                    } else if (e.response?.status === 401) {
+                        app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                    } else if (e.response?.status === 403) {
+                        app.openModal("Error", <p>Only admin users have permission to create tag categories.</p>);
+                    } else {
+                        app.openModal("Error", <p>An error occurred saving the tag category.</p>);
+                    }
+                }
+            }}>
+                <FormGroup className="form-container">
+                    <TextField inputProps={{ maxLength: 255 }} variant="outlined" value={id} onChange={e => setId(e.currentTarget.value)} label="ID" required />
+                    <TextField inputProps={{ maxLength: 255 }} variant="outlined" value={label} onChange={e => setLabel(e.currentTarget.value)} label="Label" required />
+                    <QueryAutocompleteTextField
+                        queryString={autoMatchConditionPost}
+                        setQueryString={v => setAutoMatchConditionPost(v)}
+                        scope="tag_auto_match_post"
+                        label="Auto Match Condition Post"
+                    />
+                    <QueryAutocompleteTextField
+                        queryString={autoMatchConditionCollection}
+                        setQueryString={v => setAutoMatchConditionCollection(v)}
+                        scope="tag_auto_match_collection"
+                        label="Auto Match Condition Collection"
+                    />
+
+                    <div className="modal-form-submit-btn"><Button color="secondary" type="submit" disabled={id.length === 0 || label.length === 0}>Create</Button></div>
+                </FormGroup>
+            </form>
+        </div>
+    );
+}
+
+export function TagCategoryEditor({app, modal, tagCategory}: {
+    app: App,
+    modal: ModalContent,
+    tagCategory: TagCategory
+}) {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [label, setLabel] = useState(tagCategory.label);
+    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState(tagCategory.auto_match_condition_post || "");
+    const [autoMatchConditionCollection, setAutoMatchConditionCollection] = useState(tagCategory.auto_match_condition_collection || "");
+
+    return (
+        <div id="TagCategoryCreator" style={{minWidth: "400px", padding: "5px"}}>
+            <form className="modal-form" onSubmit={async e => {
+                e.preventDefault();
+
+                const loadingModal = app.openLoadingModal();
+                try {
+                    let config = await app.getAuthorization(location, navigate);
+                    let response = await http.post<UpsertTagResponse>("/update-tag-category", {
+                        id: tagCategory.id,
+                        label: label,
+                        auto_match_condition_post: autoMatchConditionPost,
+                        auto_match_condition_collection: autoMatchConditionCollection
+                    }, config);
+                    loadingModal.close();
+                    modal.close(response.data);
+                } catch (e: any) {
+                    loadingModal.close();
+                    let compilation_errors = e.response?.data?.compilation_errors;
+                    if (compilation_errors) {
+                        app.openModal("Error", <div>Failed to compile auto match condition: {compilation_errors[0]?.msg ?? "Unexpected Error"}</div>);
+                    } else if (e.response?.status === 401) {
+                        app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                    } else if (e.response?.status === 403) {
+                        app.openModal("Error", <p>Only admin users have permission to update tag categories.</p>);
+                    } else {
+                        app.openModal("Error", <p>An error occurred saving the tag category.</p>);
+                    }
+                }
+            }}>
+                <FormGroup className="form-container">
+                    <ReadOnlyTextField variant="standard" value={tagCategory.id} label="ID"/>
+                    <TextField inputProps={{maxLength: 255}} variant="outlined" value={label}
+                               onChange={e => setLabel(e.currentTarget.value)} label="Label" required/>
+                    <QueryAutocompleteTextField
+                        queryString={autoMatchConditionPost || ""}
+                        setQueryString={v => setAutoMatchConditionPost(v)}
+                        scope="tag_auto_match_post"
+                        label="Auto Match Condition Post"
+                    />
+                    <QueryAutocompleteTextField
+                        queryString={autoMatchConditionCollection}
+                        setQueryString={v => setAutoMatchConditionCollection(v)}
+                        scope="tag_auto_match_collection"
+                        label="Auto Match Condition Collection"
+                    />
+
+                    <div className="modal-form-submit-btn">
+                        <Button color="secondary" type="submit" disabled={label.length === 0}>Update</Button>
+                    </div>
                 </FormGroup>
             </form>
         </div>

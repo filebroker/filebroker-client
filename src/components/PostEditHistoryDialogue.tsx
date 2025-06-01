@@ -1,20 +1,31 @@
-import { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import http from "../http-common";
-import { Button, CircularProgress, Pagination, Paper, TextField } from "@mui/material";
-import App, { ModalContent } from "../App";
-import { useLocation, useNavigate } from "react-router";
+import {Button, CircularProgress, Pagination, Paper} from "@mui/material";
+import App, {ModalContent} from "../App";
+import {useLocation, useNavigate} from "react-router";
 
 import "./PostEditHistoryDialogue.css";
-import { PostCollectionDetailed, PostCollectionGroupAccessDetailed, PostDetailed, PostGroupAccessDetailed, Tag, UserGroup, UserPublic } from "../Model";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { ReadOnlyTextField } from "..";
-import { TagSelector } from "./TagEditor";
+import {
+    PostCollectionDetailed,
+    PostCollectionGroupAccessDetailed,
+    PostDetailed,
+    PostGroupAccessDetailed,
+    Tag,
+    TagCategory,
+    TagDetailed,
+    TagUsage,
+    UserGroup,
+    UserPublic
+} from "../Model";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import {ReadOnlyTextField, StyledAutocomplete} from "..";
+import {TagSelector} from "./TagEditor";
 import VisibilitySelect from "./VisibilitySelect";
-import { GroupSelector } from "./GroupEditor";
-import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
-import { ActionModal } from "./ActionModal";
-import { enqueueSnackbar } from "notistack";
+import {GroupSelector} from "./GroupEditor";
+import {FontAwesomeSvgIcon} from "./FontAwesomeSvgIcon";
+import {ActionModal} from "./ActionModal";
+import {enqueueSnackbar} from "notistack";
 
 export interface PostEditHistoryResponse {
     edit_timestamp: string;
@@ -53,7 +64,7 @@ interface CommonEditHistorySnapshot {
     description_changed: boolean;
     tags_changed: boolean;
     group_access_changed: boolean;
-    tags: Tag[],
+    tags: TagUsage[],
     group_access: GroupAccess[],
 }
 
@@ -76,7 +87,7 @@ export interface PostEditHistorySnapshot {
     description_changed: boolean;
     tags_changed: boolean;
     group_access_changed: boolean;
-    tags: Tag[],
+    tags: TagUsage[],
     group_access: PostGroupAccessDetailed[],
 }
 
@@ -117,7 +128,7 @@ export interface PostCollectionEditHistorySnapshot {
     poster_object_key_changed: boolean;
     tags_changed: boolean;
     group_access_changed: boolean;
-    tags: Tag[],
+    tags: TagUsage[],
     group_access: PostCollectionGroupAccessDetailed[],
 }
 
@@ -156,13 +167,86 @@ export function PostCollectionEditHistoryDialogue({ app, collection, modal }: { 
     />
 }
 
+interface TagEditHistorySnapshot {
+    pk: number;
+    fk_tag: number;
+    edit_user: UserPublic;
+    edit_timestamp: string;
+    tag_category: TagCategory | null | undefined;
+    tag_category_changed: boolean;
+    parents_changed: boolean;
+    aliases_changed: boolean;
+    parents: Tag[];
+    aliases: Tag[];
+}
+
+export function TagEditHistoryDialogue({app, tag, modal}: {
+    app: App,
+    tag: TagDetailed,
+    modal?: ModalContent | undefined
+}) {
+    return (
+        <InternalEditHistoryDialogue<TagDetailed, TagEditHistorySnapshot>
+            app={app}
+            history_object={tag}
+            modal={modal}
+            get_history_endpoint="get-tag-edit-history"
+            object_name="tag"
+            rewind_history_endpoint="rewind-tag-history-snapshot"
+            render_object_values={tagDetailed => <Paper elevation={2} className="snapshot-values-container">
+                <TagSelector readOnly values={tagDetailed.parents.map(parent => ({pk: parent.pk, label: parent.tag_name}))} setSelectedTags={() => {}} limit={25} label="Parents"/>
+                <TagSelector readOnly values={tagDetailed.aliases.map(alias => ({pk: alias.pk, label: alias.tag_name}))} setSelectedTags={() => {}} limit={25} label="Aliases"/>
+                <StyledAutocomplete
+                    id="tag-category-select"
+                    label="Category"
+                    options={[tagDetailed.tag_category]}
+                    value={tagDetailed.tag_category}
+                    onChange={() => {}}
+                    onInputChange={() => {}}
+                    readOnly
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                />
+            </Paper>}
+            render_snapshot_values={snapshot => <Paper elevation={2} className="snapshot-values-container">
+                <TagSelector
+                    readOnly
+                    values={snapshot.parents.map(parent => ({ pk: parent.pk, label: parent.tag_name }))}
+                    setSelectedTags={() => {}}
+                    limit={25}
+                    label="Parents"
+                    color={snapshot.parents_changed ? "info" : undefined}
+                />
+                <TagSelector
+                    readOnly
+                    values={snapshot.aliases.map(alias => ({ pk: alias.pk, label: alias.tag_name }))}
+                    setSelectedTags={() => {}}
+                    limit={25}
+                    label="Aliases"
+                    color={snapshot.aliases_changed ? "info" : undefined}
+                />
+                <StyledAutocomplete
+                    id="tag-category-select"
+                    label="Category"
+                    options={[snapshot.tag_category]}
+                    value={snapshot.tag_category}
+                    onChange={() => {}}
+                    onInputChange={() => {}}
+                    readOnly
+                    color={snapshot.tag_category_changed ? "info" : undefined}
+                    isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                />
+            </Paper>}
+        />
+    );
+}
+
 interface HistoryObject {
     pk: number;
     edit_user: UserPublic;
     edit_timestamp: string;
     title: string | null | undefined;
     description: string | null | undefined;
-    tags: Tag[];
+    tags: TagUsage[];
     is_public: boolean;
     public_edit: boolean;
     group_access: GroupAccess[];
@@ -175,11 +259,115 @@ interface GroupAccess {
     granted_group: UserGroup;
 }
 
-function EditHistoryDialogue({ app, history_object, modal, get_history_endpoint, object_name, rewind_history_endpoint }: { app: App, history_object: HistoryObject, modal?: ModalContent | undefined, get_history_endpoint: string, object_name: string, rewind_history_endpoint: string }) {
+function EditHistoryDialogue({app, history_object, modal, get_history_endpoint, object_name, rewind_history_endpoint}: {
+    app: App,
+    history_object: HistoryObject,
+    modal?: ModalContent | undefined,
+    get_history_endpoint: string,
+    object_name: string,
+    rewind_history_endpoint: string
+}) {
+    return (
+        <InternalEditHistoryDialogue<HistoryObject, CommonEditHistorySnapshot>
+            app={app}
+            history_object={history_object}
+            modal={modal}
+            get_history_endpoint={get_history_endpoint}
+            object_name={object_name}
+            rewind_history_endpoint={rewind_history_endpoint}
+            render_object_values={history_object => <Paper elevation={2} className="snapshot-values-container">
+                <ReadOnlyTextField label="Title" value={history_object.title ?? ""} variant="standard"/>
+                <ReadOnlyTextField label="Description" value={history_object.description ?? ""} variant="standard"
+                                   multiline maxRows={5}/>
+                <TagSelector
+                    values={history_object.tags.map(tagUsage => ({label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk}))}
+                    readOnly setSelectedTags={() => {}}/>
+                <div className="material-row-flex">
+                    <VisibilitySelect isPublic={history_object.is_public} isPublicEdit={history_object.public_edit}
+                                      readOnly={true} setPublic={() => {}} setPublicEdit={() => {}}/>
+                    <GroupSelector
+                        currentUserGroups={[]}
+                        selectedUserGroups={history_object.group_access.map((groupAccess) => groupAccess.granted_group)}
+                        selectedUserGroupsReadOnly={history_object.group_access.filter((groupAccess) => !groupAccess.write).map((groupAccess) => groupAccess.granted_group.pk)}
+                        readOnly
+                        setSelectedUserGroups={() => {
+                        }}
+                        setSelectedUserGroupsReadOnly={() => {
+                        }}
+                    />
+                </div>
+            </Paper>}
+            render_snapshot_values={snapshot => <Paper elevation={2} className="snapshot-values-container">
+                <ReadOnlyTextField label="Title" value={snapshot.title ?? ""} variant="standard"
+                                   color={snapshot.title_changed ? "info" : undefined}/>
+                <ReadOnlyTextField label="Description" value={snapshot.description ?? ""} variant="standard"
+                                   color={snapshot.description_changed ? "info" : undefined} multiline maxRows={5}/>
+                <TagSelector
+                    values={snapshot.tags.map(tagUsage => ({label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk}))}
+                    readOnly setSelectedTags={() => {
+                }} color={snapshot.tags_changed ? "info" : undefined}/>
+                <div className="material-row-flex">
+                    <VisibilitySelect isPublic={snapshot.is_public} isPublicEdit={snapshot.public_edit} readOnly={true}
+                                      setPublic={() => {
+                                      }} setPublicEdit={() => {
+                    }} color={snapshot.public_changed || snapshot.public_edit_changed ? "info" : undefined}/>
+                    <GroupSelector
+                        currentUserGroups={[]}
+                        selectedUserGroups={snapshot.group_access.map((groupAccess) => groupAccess.granted_group)}
+                        selectedUserGroupsReadOnly={snapshot.group_access.filter((groupAccess) => !groupAccess.write).map((groupAccess) => groupAccess.granted_group.pk)}
+                        readOnly
+                        setSelectedUserGroups={() => {
+                        }}
+                        setSelectedUserGroupsReadOnly={() => {
+                        }}
+                        color={snapshot.group_access_changed ? "info" : undefined}
+                    />
+                </div>
+            </Paper>}
+        />
+    );
+}
+
+interface InternalEditHistoryResponse<S extends {
+    pk: number;
+    edit_user: UserPublic;
+    edit_timestamp: string;
+}> {
+    total_snapshot_count: number;
+    snapshots: S[];
+}
+
+function InternalEditHistoryDialogue<O extends {
+    pk: number;
+    edit_user: UserPublic;
+    edit_timestamp: string;
+}, S extends {
+    pk: number;
+    edit_user: UserPublic;
+    edit_timestamp: string;
+}>({
+       app,
+       history_object,
+       modal,
+       get_history_endpoint,
+       object_name,
+       rewind_history_endpoint,
+       render_object_values,
+       render_snapshot_values
+   }: {
+    app: App,
+    history_object: O,
+    modal?: ModalContent | undefined,
+    get_history_endpoint: string,
+    object_name: string,
+    rewind_history_endpoint: string,
+    render_object_values: (history_object: O) => React.ReactNode,
+    render_snapshot_values: (snapshot: S) => React.ReactNode,
+}) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [snapshots, setSnapshots] = useState<CommonEditHistorySnapshot[]>([]);
+    const [snapshots, setSnapshots] = useState<S[]>([]);
     const [page, setPage] = useState<number>(0);
     const [pageCount, setPageCount] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -189,7 +377,7 @@ function EditHistoryDialogue({ app, history_object, modal, get_history_endpoint,
         search.set("page", page.toString());
         search.set("limit", "10");
         setLoading(true);
-        app.getAuthorization(location, navigate).then((config) => http.get<CommonEditHistoryResponse>(`${get_history_endpoint}/${history_object.pk}?${search}`, config))
+        app.getAuthorization(location, navigate).then((config) => http.get<InternalEditHistoryResponse<S>>(`${get_history_endpoint}/${history_object.pk}?${search}`, config))
             .then(response => {
                 setSnapshots(response.data.snapshots);
                 setPageCount(Math.ceil(response.data.total_snapshot_count / 10));
@@ -207,90 +395,69 @@ function EditHistoryDialogue({ app, history_object, modal, get_history_endpoint,
             <Paper elevation={1} className="snapshot-container">
                 <div className="snapshot-container-top-row">
                     <div className="snapshot-container-update-info">
-                        <div><FontAwesomeIcon icon={solid("user")} /> {history_object.edit_user.display_name ?? history_object.edit_user.user_name}</div>
-                        <div><FontAwesomeIcon icon={solid("clock")} /> {new Date(history_object.edit_timestamp).toLocaleString()}</div>
+                        <div><FontAwesomeIcon
+                            icon={solid("user")}/> {history_object.edit_user.display_name ?? history_object.edit_user.user_name}
+                        </div>
+                        <div><FontAwesomeIcon
+                            icon={solid("clock")}/> {new Date(history_object.edit_timestamp).toLocaleString()}</div>
                     </div>
                 </div>
-                <Paper elevation={2} className="snapshot-values-container">
-                    <ReadOnlyTextField label="Title" value={history_object.title ?? ""} variant="standard" />
-                    <ReadOnlyTextField label="Description" value={history_object.description ?? ""} variant="standard" multiline maxRows={5} />
-                    <TagSelector values={history_object.tags.map(tag => ({ label: tag.tag_name, pk: tag.pk }))} readOnly setSelectedTags={() => { }} />
-                    <div className="material-row-flex">
-                        <VisibilitySelect isPublic={history_object.is_public} isPublicEdit={history_object.public_edit} readOnly={true} setPublic={() => { }} setPublicEdit={() => { }} />
-                        <GroupSelector
-                            currentUserGroups={[]}
-                            selectedUserGroups={history_object.group_access.map((groupAccess) => groupAccess.granted_group)}
-                            selectedUserGroupsReadOnly={history_object.group_access.filter((groupAccess) => !groupAccess.write).map((groupAccess) => groupAccess.granted_group.pk)}
-                            readOnly
-                            setSelectedUserGroups={() => { }}
-                            setSelectedUserGroupsReadOnly={() => { }}
-                        />
-                    </div>
-                </Paper>
+                {render_object_values(history_object)}
             </Paper>
             {loading || snapshots.length === 0
-                ? <div className="full-loading-container">{loading ? <CircularProgress size={40} color='primary' /> : <h3>No history</h3>}</div>
+                ? <div className="full-loading-container">{loading ? <CircularProgress size={40} color='primary'/> :
+                    <h3>No history</h3>}</div>
                 : <div className="edit-history-snapshots">
                     {snapshots.map(snapshot => (
                         <Paper key={snapshot.pk} elevation={1} className="snapshot-container">
                             <div className="snapshot-container-top-row">
                                 <div className="snapshot-container-update-info">
-                                    <div><FontAwesomeIcon icon={solid("user")} /> {snapshot.edit_user.display_name ?? snapshot.edit_user.user_name}</div>
-                                    <div><FontAwesomeIcon icon={solid("clock")} /> {new Date(snapshot.edit_timestamp).toLocaleString()}</div>
+                                    <div><FontAwesomeIcon
+                                        icon={solid("user")}/> {snapshot.edit_user.display_name ?? snapshot.edit_user.user_name}
+                                    </div>
+                                    <div><FontAwesomeIcon
+                                        icon={solid("clock")}/> {new Date(snapshot.edit_timestamp).toLocaleString()}
+                                    </div>
                                 </div>
                                 <div className="snapshot-container-rewind-button-container">
-                                    <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} onClick={() => app.openModal(
-                                        `Rewind ${object_name}`,
-                                        (modalContent) => <ActionModal
-                                            modalContent={modalContent}
-                                            text={`Rewind ${object_name} to this snapshot?`}
-                                            actions={[
-                                                {
-                                                    name: "Ok",
-                                                    fn: async () => {
-                                                        const loadingModal = app.openLoadingModal();
-                                                        try {
-                                                            const config = await app.getAuthorization(location, navigate);
-                                                            const response = await http.post<PostDetailed>(`${rewind_history_endpoint}/${snapshot.pk}`, {}, config);
+                                    <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit"
+                                                                           icon={solid("clock-rotate-left")}/>}
+                                            onClick={() => app.openModal(
+                                                `Rewind ${object_name}`,
+                                                (modalContent) => <ActionModal
+                                                    modalContent={modalContent}
+                                                    text={`Rewind ${object_name} to this snapshot?`}
+                                                    actions={[
+                                                        {
+                                                            name: "Ok",
+                                                            fn: async () => {
+                                                                const loadingModal = app.openLoadingModal();
+                                                                try {
+                                                                    const config = await app.getAuthorization(location, navigate);
+                                                                    const response = await http.post<PostDetailed>(`${rewind_history_endpoint}/${snapshot.pk}`, {}, config);
 
-                                                            enqueueSnackbar("History rewound", { variant: "success" });
+                                                                    enqueueSnackbar("History rewound", {variant: "success"});
 
-                                                            return response.data;
-                                                        } catch (e) {
-                                                            console.error("Failed to rewind history:", e);
-                                                            enqueueSnackbar("Failed to rewind history", { variant: "error" });
-                                                        } finally {
-                                                            loadingModal.close();
+                                                                    return response.data;
+                                                                } catch (e) {
+                                                                    console.error("Failed to rewind history:", e);
+                                                                    enqueueSnackbar("Failed to rewind history", {variant: "error"});
+                                                                } finally {
+                                                                    loadingModal.close();
+                                                                }
+                                                            },
                                                         }
-                                                    },
+                                                    ]}
+                                                />,
+                                                (ret) => {
+                                                    if (ret) {
+                                                        modal?.close(ret);
+                                                    }
                                                 }
-                                            ]}
-                                        />,
-                                        (ret) => {
-                                            if (ret) {
-                                                modal?.close(ret);
-                                            }
-                                        }
-                                    )}>Rewind</Button>
+                                            )}>Rewind</Button>
                                 </div>
                             </div>
-                            <Paper elevation={2} className="snapshot-values-container">
-                                <ReadOnlyTextField label="Title" value={snapshot.title ?? ""} variant="standard" color={snapshot.title_changed ? "info" : undefined} />
-                                <ReadOnlyTextField label="Description" value={snapshot.description ?? ""} variant="standard" color={snapshot.description_changed ? "info" : undefined} multiline maxRows={5} />
-                                <TagSelector values={snapshot.tags.map(tag => ({ label: tag.tag_name, pk: tag.pk }))} readOnly setSelectedTags={() => { }} color={snapshot.tags_changed ? "info" : undefined} />
-                                <div className="material-row-flex">
-                                    <VisibilitySelect isPublic={snapshot.is_public} isPublicEdit={snapshot.public_edit} readOnly={true} setPublic={() => { }} setPublicEdit={() => { }} color={snapshot.public_changed || snapshot.public_edit_changed ? "info" : undefined} />
-                                    <GroupSelector
-                                        currentUserGroups={[]}
-                                        selectedUserGroups={snapshot.group_access.map((groupAccess) => groupAccess.granted_group)}
-                                        selectedUserGroupsReadOnly={snapshot.group_access.filter((groupAccess) => !groupAccess.write).map((groupAccess) => groupAccess.granted_group.pk)}
-                                        readOnly
-                                        setSelectedUserGroups={() => { }}
-                                        setSelectedUserGroupsReadOnly={() => { }}
-                                        color={snapshot.group_access_changed ? "info" : undefined}
-                                    />
-                                </div>
-                            </Paper>
+                            {render_snapshot_values(snapshot)}
                         </Paper>
                     ))}
                 </div>

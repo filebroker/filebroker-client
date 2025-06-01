@@ -7,7 +7,7 @@ import "./TagGlossary.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { Button, InputAdornment, Pagination, TextField, useMediaQuery } from "@mui/material";
-import { TagCreator } from "../components/TagEditor";
+import {TagCategoryList, TagCreator} from "../components/TagEditor";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { Link } from "react-router-dom";
 
@@ -87,14 +87,20 @@ export function TagGlossary({ app }: { app: App }) {
             <div id="tag-glossary-container">
                 <div id="tag-glossary-action-row">
                     <TextField label="Filter" value={filter} onChange={(e) => setFilter(e.currentTarget.value)} InputProps={{ startAdornment: <InputAdornment position="start"><FontAwesomeIcon icon={solid("filter")} /></InputAdornment> }}/>
-                    <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("add")} />} disabled={!app.isLoggedIn()} onClick={e => {
-                        e.preventDefault();
-                        app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>, (result) => {
-                            if (result) {
-                                loadTags();
-                            }
-                        });
-                    }}>Create</Button>
+                    <div className="button-row">
+                        <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("list")} />} onClick={e => {
+                            e.preventDefault();
+                            app.openModal("Tag Categories", modal => <TagCategoryList app={app} modal={modal} />);
+                        }} hidden={!(app.getUser()?.is_admin)}>Categories</Button>
+                        <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("add")} />} disabled={!app.isLoggedIn()} onClick={e => {
+                            e.preventDefault();
+                            app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>, (result) => {
+                                if (result) {
+                                    loadTags();
+                                }
+                            });
+                        }}>Create</Button>
+                    </div>
                 </div>
                 {loading
                     ? <div className="loading-container"><FontAwesomeIcon icon={solid("circle-notch")} spin size="6x" /></div>

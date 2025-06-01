@@ -94,10 +94,10 @@ function Post({ app }: PostProps) {
 
     function updatePost(postDetailed: PostDetailed | null) {
         setPost(postDetailed);
-        setTags(postDetailed?.tags?.map(tag => {
-            return { label: tag.tag_name, pk: tag.pk };
+        setTags(postDetailed?.tags?.map(tagUsage => {
+            return { label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk };
         }) ?? []);
-        setSelectedTags(postDetailed?.tags?.map(tag => tag.pk) ?? []);
+        setSelectedTags(postDetailed?.tags?.map(tagUsage => tagUsage.tag.pk) ?? []);
         setTitle(postDetailed?.title || "");
         setDescription(postDetailed?.description || "");
         setPublicPost(postDetailed?.is_public || false);
@@ -346,7 +346,7 @@ function Post({ app }: PostProps) {
             </div>
             <div id="post-information-container">
                 {isEditMode
-                    ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
+                    ? <div className="button-row"><Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button></div>
                     : post && <div className="button-row">
                         <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!post?.is_editable || !app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>
                         <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} hidden={!post?.is_editable || !app.isLoggedIn()} onClick={() => app.openModal("History", modal => <PostEditHistoryDialogue app={app} post={post} modal={modal} />, (result) => {
@@ -355,8 +355,8 @@ function Post({ app }: PostProps) {
                             }
                         })}>History</Button>
                     </div>}
-                {isEditMode ? <div className="material-row"><TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField></div> : <h2>{post && post.title}</h2>}
-                {isEditMode ? <div className="material-row"><TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField></div> : <p className="multiline-text">{post && post.description}</p>}
+                {isEditMode ? <TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField> : <h2 hidden={!(post && post.title)}>{post && post.title}</h2>}
+                {isEditMode ? <TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField> : <p className="multiline-text" hidden={!(post && post.description)}>{post && post.description}</p>}
                 <div className="material-row-flex">
                     <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
                         if (typeof tag === "object" && "pk" in tag) {
@@ -379,7 +379,7 @@ function Post({ app }: PostProps) {
                         readOnly={!isEditMode}
                     />
                 </div>
-                <div className="material-row">
+                <div className="button-row">
                     <Button color="secondary" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} hidden={!isEditMode} onClick={async () => {
                         let groupAccess: GroupAccessDefinition[] = [];
                         selectedUserGroups.forEach(group => groupAccess.push(new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))));

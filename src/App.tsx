@@ -39,6 +39,8 @@ export class User {
     creation_timestamp: string;
     email_confirmed: boolean;
     display_name: string | null;
+    is_admin: boolean;
+    is_banned: boolean;
 
     constructor(
         pk: number,
@@ -47,7 +49,9 @@ export class User {
         avatar_url: string,
         creation_timestamp: string,
         email_confirmed: boolean,
-        display_name: string | null
+        display_name: string | null,
+        is_admin: boolean,
+        is_banned: boolean
     ) {
         this.pk = pk;
         this.user_name = user_name;
@@ -56,6 +60,8 @@ export class User {
         this.creation_timestamp = creation_timestamp;
         this.email_confirmed = email_confirmed;
         this.display_name = display_name;
+        this.is_admin = is_admin;
+        this.is_banned = is_banned;
     }
 }
 
@@ -316,6 +322,10 @@ export class App extends React.Component<{ isDesktop: boolean }, {
 
     isLoggedIn(): boolean {
         return this.state.user != null;
+    }
+
+    getUser(): User | null {
+        return this.state.user;
     }
 
     async getAuthorization(location: Location, navigate: NavigateFunction, require: boolean = true): Promise<{ headers: { authorization: string } } | undefined> {
