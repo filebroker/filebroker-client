@@ -18,7 +18,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {getIconForTagCategory, Tag, TagCategory, TagDetailed} from "../Model";
 import http from "../http-common";
 import App, {ModalContent} from "../App";
-import {useLocation, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {FontAwesomeSvgIcon} from "./FontAwesomeSvgIcon";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import {ReadOnlyTextField, StyledAutocomplete} from "../index";
@@ -182,8 +182,8 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                         disabled={false}
                         onClick={onTagClick && readOnly ? () => onTagClick(option) : undefined}
                         icon={typeof option === "string" || !(option.tag_category) ? undefined : getIconForTagCategory(option.tag_category)}
-                        component="a"
-                        href={"/tag/" + option.pk}
+                        component={Link}
+                        to={`/tag/${option.pk}`}
                         clickable
                     />
                 ) : (
