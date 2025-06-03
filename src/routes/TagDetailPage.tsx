@@ -2,8 +2,17 @@ import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
 import App from "../App";
 import http, {getApiUrl, getPublicUrl} from "../http-common";
 import React, {useEffect, useState} from "react";
-import {Tag, TagCategory, TagDetailed, TagEdge} from "../Model";
-import {Button, IconButton, ImageList, ImageListItem, ImageListItemBar, Paper,} from "@mui/material";
+import {getIconForTagCategory, Tag, TagCategory, TagDetailed, TagEdge} from "../Model";
+import {
+    Button,
+    IconButton,
+    ImageList,
+    ImageListItem,
+    ImageListItemBar,
+    ListItem,
+    ListItemIcon, ListItemText,
+    Paper,
+} from "@mui/material";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {regular, solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 
@@ -50,9 +59,9 @@ export function TagDetailPage({ app }: { app: App }) {
     }, []);
 
     const [tag, setTag] = useState<TagDetailed | null>(null);
-    const [parentTags, setParentTags] = useState<{ label: string, pk: number }[]>([]);
+    const [parentTags, setParentTags] = useState<Tag[]>([]);
     const [parentPks, setParentPks] = useState<number[]>([]);
-    const [aliasTags, setAliasTags] = useState<{ label: string, pk: number }[]>([]);
+    const [aliasTags, setAliasTags] = useState<Tag[]>([]);
     const [aliasPks, setAliasPks] = useState<number[]>([]);
     const [tagCategoryInput, setTagCategoryInput] = useState<string>("");
     const [tagCategory, setTagCategory] = useState<TagCategory | null>(null);
@@ -69,9 +78,9 @@ export function TagDetailPage({ app }: { app: App }) {
 
     const updateTag = (tag: TagDetailed | null) => {
         setTag(tag);
-        setParentTags(tag?.parents?.map(p => ({ label: p.tag_name, pk: p.pk })) ?? []);
+        setParentTags(tag?.parents ?? []);
         setParentPks(tag?.parents?.map(p => p.pk) ?? []);
-        setAliasTags(tag?.aliases?.map(a => ({ label: a.tag_name, pk: a.pk })) ?? []);
+        setAliasTags(tag?.aliases ?? []);
         setAliasPks(tag?.aliases?.map(a => a.pk) ?? []);
         setTagCategory(tag?.tag_category ?? null);
         setAutoMatchConditionPost(tag?.auto_match_condition_post ?? "");
@@ -201,16 +210,8 @@ export function TagDetailPage({ app }: { app: App }) {
                                     }}><AccountTree /></IconButton>
                                 </div>
                                 <h1>{tag.tag_name}</h1>
-                                <TagSelector readOnly={!editMode} values={parentTags} setSelectedTags={setParentPks} limit={25} label="Parents" onTagClick={(tag) => {
-                                    if (typeof tag === "object" && "pk" in tag) {
-                                        navigate("/tag/" + tag.pk);
-                                    }
-                                }} />
-                                <TagSelector readOnly={!editMode} values={aliasTags} setSelectedTags={setAliasPks} limit={25} label="Aliases" onTagClick={(tag) => {
-                                    if (typeof tag === "object" && "pk" in tag) {
-                                        navigate("/tag/" + tag.pk);
-                                    }
-                                }} />
+                                <TagSelector readOnly={!editMode} values={parentTags} setSelectedTags={setParentPks} limit={25} label="Parents" enableTagLink />
+                                <TagSelector readOnly={!editMode} values={aliasTags} setSelectedTags={setAliasPks} limit={25} label="Aliases" enableTagLink />
                                 <div className="material-row-flex">
                                     <StyledAutocomplete
                                         id="tag-category-select"
@@ -222,6 +223,14 @@ export function TagDetailPage({ app }: { app: App }) {
                                         onInputChange={(_event: any, newInputValue: string) => setTagCategoryInput(newInputValue)}
                                         readOnly={!editMode}
                                         isOptionEqualToValue={(option, value) => option.id === value.id}
+                                        renderOption={(props, option) => (
+                                            <ListItem {...props}>
+                                                <ListItemIcon>
+                                                    {getIconForTagCategory(option.id)}
+                                                </ListItemIcon>
+                                                <ListItemText primary={option.label} />
+                                            </ListItem>
+                                        )}
                                     />
                                 </div>
                                 {app.getUser()?.is_admin && <div className="material-row-flex">

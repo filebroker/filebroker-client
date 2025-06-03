@@ -3,7 +3,7 @@ import {
     Button,
     Chip,
     FormGroup,
-    FormLabelProps,
+    FormLabelProps, ListItem, ListItemIcon, ListItemText,
     Paper,
     Table,
     TableBody,
@@ -15,7 +15,7 @@ import {
     useTheme
 } from "@mui/material";
 import React, {useEffect, useRef, useState} from "react";
-import {Tag, TagCategory, TagDetailed} from "../Model";
+import {getIconForTagCategory, Tag, TagCategory, TagDetailed} from "../Model";
 import http from "../http-common";
 import App, {ModalContent} from "../App";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -73,17 +73,18 @@ class UpsertTagResponse {
     }
 }
 
-export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label, onTagClick, color }: {
+export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, values = [], readOnly = false, label, onTagClick, color, enableTagLink }: {
     setSelectedTags: (v: number[]) => void,
     setEnteredTags?: (v: string[]) => void,
     limit?: number,
-    values?: (string | { label: string, pk: number })[],
+    values?: (string | Tag)[],
     readOnly?: boolean,
     label?: string,
-    onTagClick?: (tag: (string | { label: string, pk: number })) => void,
-    color?: FormLabelProps["color"]
+    onTagClick?: (tag: (string | Tag)) => void,
+    color?: FormLabelProps["color"],
+    enableTagLink?: boolean,
 }) {
-    const [suggestedTags, setSuggestedTags] = useState<{ label: string, pk: number }[]>([]);
+    const [suggestedTags, setSuggestedTags] = useState<Tag[]>([]);
     const [inputDisabled, setInputDisabled] = useState(false);
     const [value, setValue] = useState(values);
     const [textInputValue, setTextInputValue] = useState("");
@@ -92,7 +93,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
 
     let scheduledRequest: NodeJS.Timeout | null = null;
 
-    function tagArrayEquals(a1: (string | { label: string, pk: number })[], a2: (string | { label: string, pk: number })[]) {
+    function tagArrayEquals(a1: (string | Tag)[], a2: (string | Tag)[]) {
         if (a1.length !== a2.length) return false;
         for (let i = 0; i < a1.length; i++) {
             let v1 = a1[i];
@@ -119,8 +120,8 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
     }
 
     type MaybeCleanUpFn = void | (() => void);
-    function useTagArrayEffect(cb: () => MaybeCleanUpFn, deps: (string | { label: string, pk: number })[]) {
-        const ref = useRef<(string | { label: string, pk: number })[]>(deps);
+    function useTagArrayEffect(cb: () => MaybeCleanUpFn, deps: (string | Tag)[]) {
+        const ref = useRef<(string | Tag)[]>(deps);
 
         if (!tagArrayEquals(deps, ref.current)) {
             ref.current = deps;
@@ -145,6 +146,7 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                 freeSolo={setEnteredTags !== undefined}
                 disabled={inputDisabled || readOnly}
                 options={suggestedTags}
+                getOptionLabel={(option) => typeof option === "string" ? option : option.tag_name}
                 value={value}
                 inputValue={textInputValue}
                 readOnly={readOnly}
@@ -171,8 +173,29 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                     />;
                 }}
                 filterOptions={x => x}
-                renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
-                    <Chip {...getTagProps({ index })} color="secondary" variant="outlined" label={typeof option === "string" ? option : option.label} disabled={false} onClick={onTagClick && readOnly ? () => onTagClick(option) : undefined}></Chip>
+                renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => enableTagLink && readOnly && !(typeof option === "string") ? (
+                    <Chip
+                        {...getTagProps({index})}
+                        color="secondary"
+                        variant="outlined"
+                        label={typeof option === "string" ? option : option.tag_name}
+                        disabled={false}
+                        onClick={onTagClick && readOnly ? () => onTagClick(option) : undefined}
+                        icon={typeof option === "string" || !(option.tag_category) ? undefined : getIconForTagCategory(option.tag_category)}
+                        component="a"
+                        href={"/tag/" + option.pk}
+                        clickable
+                    />
+                ) : (
+                    <Chip
+                        {...getTagProps({index})}
+                        color="secondary"
+                        variant="outlined"
+                        label={typeof option === "string" ? option : option.tag_name}
+                        disabled={false}
+                        onClick={onTagClick && readOnly ? () => onTagClick(option) : undefined}
+                        icon={typeof option === "string" || !(option.tag_category) ? undefined : getIconForTagCategory(option.tag_category)}
+                    />
                 ))}
                 onInputChange={(_e, newVal) => {
                     setTextInputValue(newVal);
@@ -190,10 +213,10 @@ export function TagSelector({ setSelectedTags, setEnteredTags, limit = 100, valu
                             const findTagResponse = response.data;
                             let newSuggestions = [];
                             if (findTagResponse.exact_match) {
-                                newSuggestions.push({ label: findTagResponse.exact_match.tag_name, pk: findTagResponse.exact_match.pk });
+                                newSuggestions.push(findTagResponse.exact_match);
                             }
 
-                            findTagResponse.suggestions.forEach(suggestion => newSuggestions.push({ label: suggestion.tag_name, pk: suggestion.pk }));
+                            findTagResponse.suggestions.forEach(suggestion => newSuggestions.push(suggestion));
 
                             setSuggestedTags(newSuggestions);
                         }, 250);
@@ -287,8 +310,8 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
             }}>
                 <FormGroup className="form-container">
                     <TextField inputProps={{ maxLength: 50 }} variant="outlined" value={tagName} onChange={e => setTagName(e.currentTarget.value)} label="Tag Name" required />
-                    <TagSelector setSelectedTags={setParentPks} limit={25} label="Parents" />
-                    <TagSelector setSelectedTags={setAliasPks} limit={25} label="Aliases" />
+                    <TagSelector setSelectedTags={setParentPks} limit={25} label="Parents" enableTagLink />
+                    <TagSelector setSelectedTags={setAliasPks} limit={25} label="Aliases" enableTagLink />
                     <StyledAutocomplete
                         id="tag-category-select"
                         label="Category"
@@ -298,6 +321,14 @@ export function TagCreator({ app, modal }: { app: App, modal: ModalContent }) {
                         inputValue={tagCategoryInput}
                         onInputChange={(_event: any, newInputValue: string) => setTagCategoryInput(newInputValue)}
                         isOptionEqualToValue={(option, value) => option.id === value.id}
+                        renderOption={(props, option) => (
+                            <ListItem {...props}>
+                                <ListItemIcon>
+                                    {getIconForTagCategory(option.id)}
+                                </ListItemIcon>
+                                <ListItemText primary={option.label} />
+                            </ListItem>
+                        )}
                     />
                     {app.getUser()?.is_admin && <div className="material-row-flex">
                         <QueryAutocompleteTextField

@@ -1,27 +1,26 @@
-import React, { ReactElement, useRef } from "react";
-import { useEffect, useState } from "react";
-import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
+import React, {ReactElement, useEffect, useRef, useState} from "react";
+import {Link, Location, useLocation, useNavigate, useParams} from "react-router-dom";
 import videojs from "video.js";
 import App from "../App";
-import http, { getApiUrl } from "../http-common";
+import http, {getApiUrl} from "../http-common";
 import VideoJS from "../components/VideoJS";
 import "./Post.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { regular, solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { DeletePostsResponse, GroupAccessDefinition, PostDetailed, UserGroup } from "../Model";
-import { Button, ButtonGroup, FormControlLabel, IconButton, Switch, TextField } from "@mui/material";
-import { TagCreator, TagSelector } from "../components/TagEditor";
-import { GroupSelector } from "../components/GroupEditor";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {regular, solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import {DeletePostsResponse, GroupAccessDefinition, PostDetailed, sortTagUsages, Tag, UserGroup} from "../Model";
+import {Button, ButtonGroup, FormControlLabel, IconButton, Switch, TextField} from "@mui/material";
+import {TagCreator, TagSelector} from "../components/TagEditor";
+import {GroupSelector} from "../components/GroupEditor";
 import urlJoin from "url-join";
-import { MusicPlayer } from "../components/MusicPlayer";
-import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
-import { useSnackbar } from "notistack";
-import { ActionModal } from "../components/ActionModal";
-import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
-import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import {MusicPlayer} from "../components/MusicPlayer";
+import {AddToCollectionDialogue} from "../components/AddToCollectionDialogue";
+import {useSnackbar} from "notistack";
+import {ActionModal} from "../components/ActionModal";
+import {FileMetadataDisplay} from "../components/FileMetadataDisplay";
+import {FontAwesomeSvgIcon} from "../components/FontAwesomeSvgIcon";
 import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from '@mui/icons-material/Add';
-import { PostEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
+import {PostEditHistoryDialogue} from "../components/PostEditHistoryDialogue";
 
 class PostProps {
     app: App;
@@ -42,7 +41,7 @@ function Post({ app }: PostProps) {
     const isInitialMount = useRef(true);
 
     const [isEditMode, setEditMode] = useState(false);
-    const [tags, setTags] = useState<(string | { label: string, pk: number })[]>([]);
+    const [tags, setTags] = useState<(string | Tag)[]>([]);
     const [enteredTags, setEnteredTags] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [title, setTitle] = useState("");
@@ -94,9 +93,7 @@ function Post({ app }: PostProps) {
 
     function updatePost(postDetailed: PostDetailed | null) {
         setPost(postDetailed);
-        setTags(postDetailed?.tags?.map(tagUsage => {
-            return { label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk };
-        }) ?? []);
+        setTags(postDetailed?.tags?.sort(sortTagUsages).map(tagUsage => tagUsage.tag) ?? []);
         setSelectedTags(postDetailed?.tags?.map(tagUsage => tagUsage.tag.pk) ?? []);
         setTitle(postDetailed?.title || "");
         setDescription(postDetailed?.description || "");
@@ -358,11 +355,7 @@ function Post({ app }: PostProps) {
                 {isEditMode ? <TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField> : <h2 hidden={!(post && post.title)}>{post && post.title}</h2>}
                 {isEditMode ? <TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField> : <p className="multiline-text" hidden={!(post && post.description)}>{post && post.description}</p>}
                 <div className="material-row-flex">
-                    <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
-                        if (typeof tag === "object" && "pk" in tag) {
-                            navigate("/tag/" + tag.pk);
-                        }
-                    }} />
+                    <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} enableTagLink />
                     {isEditMode && <IconButton size="medium" sx={{ alignSelf: "center" }} onClick={e => {
                         e.preventDefault();
                         app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);

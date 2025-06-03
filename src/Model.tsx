@@ -1,4 +1,6 @@
 import { User } from "./App";
+import {ReactElement} from "react";
+import {Album, Face, Palette, Save, TheaterComedy} from "@mui/icons-material";
 
 export class UserPublic {
     pk: number;
@@ -396,6 +398,30 @@ export class TagCategory {
         this.label = label;
         this.auto_match_condition_post = auto_match_condition_post;
         this.auto_match_condition_collection = auto_match_condition_collection;
+    }
+}
+
+export function sortTagUsages(a: TagUsage, b: TagUsage): number {
+    if (!a.tag.tag_category && !b.tag.tag_category) return a.tag.tag_name.localeCompare(b.tag.tag_name);
+    if (!a.tag.tag_category) return 1;
+    if (!b.tag.tag_category) return -1;
+    return a.tag.tag_category.localeCompare(b.tag.tag_category) || a.tag.tag_name.localeCompare(b.tag.tag_name);
+}
+
+export function getIconForTagCategory(tagCategory: string): ReactElement | undefined {
+    switch (tagCategory) {
+        case "album":
+            return <Album/>;
+        case "artist":
+            return <Palette/>;
+        case "character":
+            return <Face/>;
+        case "genre":
+            return <TheaterComedy/>;
+        case "type":
+            return <Save/>;
+        default:
+            return undefined;
     }
 }
 

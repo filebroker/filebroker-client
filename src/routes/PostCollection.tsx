@@ -1,7 +1,13 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../App";
 import { useEffect, useState } from "react";
-import { DeletePostCollectionsResponse, GroupAccessDefinition, PostCollectionDetailed, UserGroup } from "../Model";
+import {
+    DeletePostCollectionsResponse,
+    GroupAccessDefinition,
+    PostCollectionDetailed,
+    sortTagUsages, Tag,
+    UserGroup
+} from "../Model";
 import http from "../http-common";
 import { regular, solid } from "@fortawesome/fontawesome-svg-core/import.macro";
 import "./PostCollection.css";
@@ -32,7 +38,7 @@ export function PostCollection({ app }: { app: App }) {
     const [collectionPosts, setCollectionPosts] = useState<PostCollectionItemQueryObject[]>([]);
 
     const [isEditMode, setEditMode] = useState(false);
-    const [tags, setTags] = useState<(string | { label: string, pk: number })[]>([]);
+    const [tags, setTags] = useState<(string | Tag)[]>([]);
     const [enteredTags, setEnteredTags] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [title, setTitle] = useState("");
@@ -45,9 +51,7 @@ export function PostCollection({ app }: { app: App }) {
 
     function updatePostCollection(postCollectionDetailed: PostCollectionDetailed) {
         setPostCollection(postCollectionDetailed);
-        setTags(postCollectionDetailed.tags.map(tagUsage => {
-            return { label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk };
-        }));
+        setTags(postCollectionDetailed.tags.sort(sortTagUsages).map(tagUsage => tagUsage.tag));
         setSelectedTags(postCollectionDetailed.tags.map(tagUsage => tagUsage.tag.pk));
         setTitle(postCollectionDetailed.title || "");
         setDescription(postCollectionDetailed.description || "");
@@ -173,11 +177,7 @@ export function PostCollection({ app }: { app: App }) {
                     {isEditMode ? <TextField label="Title" variant="outlined" value={title} fullWidth onChange={e => setTitle(e.target.value)} inputProps={{ maxLength: 300 }}></TextField> : <h2 hidden={!(postCollection && postCollection.title)}>{postCollection && postCollection.title}</h2>}
                     {isEditMode ? <TextField label="Description" variant="outlined" value={description} fullWidth multiline onChange={e => setDescription(e.target.value)} inputProps={{ maxLength: 30000 }}></TextField> : <p className="multiline-text" hidden={!(postCollection && postCollection.description)}>{postCollection && postCollection.description}</p>}
                     <div className="material-row-flex">
-                        <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} onTagClick={(tag) => {
-                            if (typeof tag === "object" && "pk" in tag) {
-                                navigate("/tag/" + tag.pk);
-                            }
-                        }} />
+                        <TagSelector setSelectedTags={setSelectedTags} setEnteredTags={setEnteredTags} values={tags} readOnly={!isEditMode} enableTagLink />
                         {isEditMode && <IconButton size="medium" sx={{ alignSelf: "center" }} onClick={e => {
                             e.preventDefault();
                             app.openModal("Create Tag", createTagModal => <TagCreator app={app} modal={createTagModal}></TagCreator>);

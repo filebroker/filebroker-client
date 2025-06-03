@@ -194,8 +194,8 @@ export function TagEditHistoryDialogue({app, tag, modal}: {
             object_name="tag"
             rewind_history_endpoint="rewind-tag-history-snapshot"
             render_object_values={tagDetailed => <Paper elevation={2} className="snapshot-values-container">
-                <TagSelector readOnly values={tagDetailed.parents.map(parent => ({pk: parent.pk, label: parent.tag_name}))} setSelectedTags={() => {}} limit={25} label="Parents"/>
-                <TagSelector readOnly values={tagDetailed.aliases.map(alias => ({pk: alias.pk, label: alias.tag_name}))} setSelectedTags={() => {}} limit={25} label="Aliases"/>
+                <TagSelector readOnly values={tagDetailed.parents} setSelectedTags={() => {}} limit={25} label="Parents" enableTagLink/>
+                <TagSelector readOnly values={tagDetailed.aliases} setSelectedTags={() => {}} limit={25} label="Aliases" enableTagLink/>
                 <StyledAutocomplete
                     id="tag-category-select"
                     label="Category"
@@ -210,19 +210,21 @@ export function TagEditHistoryDialogue({app, tag, modal}: {
             render_snapshot_values={snapshot => <Paper elevation={2} className="snapshot-values-container">
                 <TagSelector
                     readOnly
-                    values={snapshot.parents.map(parent => ({ pk: parent.pk, label: parent.tag_name }))}
+                    values={snapshot.parents}
                     setSelectedTags={() => {}}
                     limit={25}
                     label="Parents"
                     color={snapshot.parents_changed ? "info" : undefined}
+                    enableTagLink
                 />
                 <TagSelector
                     readOnly
-                    values={snapshot.aliases.map(alias => ({ pk: alias.pk, label: alias.tag_name }))}
+                    values={snapshot.aliases}
                     setSelectedTags={() => {}}
                     limit={25}
                     label="Aliases"
                     color={snapshot.aliases_changed ? "info" : undefined}
+                    enableTagLink
                 />
                 <StyledAutocomplete
                     id="tag-category-select"
@@ -280,8 +282,8 @@ function EditHistoryDialogue({app, history_object, modal, get_history_endpoint, 
                 <ReadOnlyTextField label="Description" value={history_object.description ?? ""} variant="standard"
                                    multiline maxRows={5}/>
                 <TagSelector
-                    values={history_object.tags.map(tagUsage => ({label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk}))}
-                    readOnly setSelectedTags={() => {}}/>
+                    values={history_object.tags.map(tagUsage => tagUsage.tag)}
+                    readOnly setSelectedTags={() => {}} enableTagLink/>
                 <div className="material-row-flex">
                     <VisibilitySelect isPublic={history_object.is_public} isPublicEdit={history_object.public_edit}
                                       readOnly={true} setPublic={() => {}} setPublicEdit={() => {}}/>
@@ -303,9 +305,9 @@ function EditHistoryDialogue({app, history_object, modal, get_history_endpoint, 
                 <ReadOnlyTextField label="Description" value={snapshot.description ?? ""} variant="standard"
                                    color={snapshot.description_changed ? "info" : undefined} multiline maxRows={5}/>
                 <TagSelector
-                    values={snapshot.tags.map(tagUsage => ({label: tagUsage.tag.tag_name, pk: tagUsage.tag.pk}))}
+                    values={snapshot.tags.map(tagUsage => tagUsage.tag)}
                     readOnly setSelectedTags={() => {
-                }} color={snapshot.tags_changed ? "info" : undefined}/>
+                }} color={snapshot.tags_changed ? "info" : undefined} enableTagLink/>
                 <div className="material-row-flex">
                     <VisibilitySelect isPublic={snapshot.is_public} isPublicEdit={snapshot.public_edit} readOnly={true}
                                       setPublic={() => {
