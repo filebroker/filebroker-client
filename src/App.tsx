@@ -17,7 +17,7 @@ import { EmailConfirmation } from './routes/EmailConfirmation';
 import PostCollectionSearch from './routes/PostCollectionSearch';
 import { PostCollection } from './routes/PostCollection';
 import { QueryAutocompleteSuggestionCombobox } from './components/QueryAutocompleteSuggestions';
-import { CircularProgress, IconButton, Modal, Paper } from '@mui/material';
+import { Box, CircularProgress, Grow, IconButton, Modal, Paper } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import NavbarCollapse from 'react-bootstrap/esm/NavbarCollapse';
@@ -64,6 +64,8 @@ export class User {
         this.is_banned = is_banned;
     }
 }
+
+const MODAL_TRANSITION_TIMEOUT = 200;
 
 export class ModalContent {
     title: string;
@@ -181,6 +183,17 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
+            height: preventStretch || this.isDesktop() ? 'fit-content' : '100dvh',
+            width: preventStretch || this.isDesktop() ? 'fit-content' : '100dvw',
+            maxHeight: '100vh',
+            maxWidth: '100vw',
+            minWidth: preventStretch ? 'fit-content' : '250px',
+            display: "flex",
+            outline: "none",
+            overflowX: "auto" as "auto",
+            overflowY: "auto" as "auto",
+        });
+        const paperStyle = (preventStretch: boolean) => ({
             p: "32px",
             height: preventStretch || this.isDesktop() ? 'fit-content' : '100dvh',
             width: preventStretch || this.isDesktop() ? 'fit-content' : '100dvw',
@@ -189,9 +202,9 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             minWidth: preventStretch ? 'fit-content' : '250px',
             display: "flex",
             outline: "none",
+            overflowX: "auto" as "auto",
+            overflowY: "auto" as "auto",
             boxShadow: "0 0 20px rgba(0, 0, 0, 0.8)",
-            overflowX: "auto",
-            overflowY: "auto"
         });
 
         return (
@@ -246,17 +259,33 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                 }
                             }}
                         >
-                            <Paper elevation={0} sx={modalStyle(modal.preventStretch)}>
-                                {(modal.allowClose || modal.title) && <div className="modal-title-row">
-                                    {modal.allowClose && <IconButton className='modal-close-btn' size='large' hidden={!modal.allowClose} disabled={!modal.allowClose} onClick={() => this.closeModal(modal)}>
-                                        <CloseIcon fontSize='inherit' />
-                                    </IconButton>}
-                                    <span id="modal-title">{modal.title}</span>
-                                </div>}
-                                <div className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`} style={{ maxHeight: this.isDesktop() ? "80vh" : "100dvh", maxWidth: this.isDesktop() ? "80vw" : "100dvh", overflow: "auto", width: "100%", flex: "1 1 auto", display: "flex" }}>
-                                    {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
-                                </div>
-                            </Paper>
+                            <Box sx={modalStyle(modal.preventStretch)}>
+                                <Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
+                                    <Paper elevation={0} sx={paperStyle(modal.preventStretch)}>
+                                        {(modal.allowClose || modal.title) && <div className="modal-title-row">
+                                            {modal.allowClose && <IconButton className='modal-close-btn' size='large'
+                                                                             hidden={!modal.allowClose}
+                                                                             disabled={!modal.allowClose}
+                                                                             onClick={() => this.closeModal(modal)}>
+                                                <CloseIcon fontSize='inherit'/>
+                                            </IconButton>}
+                                            <span id="modal-title">{modal.title}</span>
+                                        </div>}
+                                        <div
+                                            className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`}
+                                            style={{
+                                                maxHeight: this.isDesktop() ? "80vh" : "100dvh",
+                                                maxWidth: this.isDesktop() ? "80vw" : "100dvh",
+                                                overflow: "auto",
+                                                width: "100%",
+                                                flex: "1 1 auto",
+                                                display: "flex"
+                                            }}>
+                                            {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
+                                        </div>
+                                    </Paper>
+                                </Grow>
+                            </Box>
                         </Modal>
                     )}
                 </div>
@@ -410,27 +439,34 @@ export class App extends React.Component<{ isDesktop: boolean }, {
         }
 
         modal.closed = true;
-        this.setState(state => {
-            const currLen = state.modalStack.length;
-            const removeIndex = state.modalStack.indexOf(modal);
-            if (removeIndex < 0) {
+        setTimeout(() => {
+            this.setState(state => {
+                const currLen = state.modalStack.length;
+                const removeIndex = state.modalStack.indexOf(modal);
+                if (removeIndex < 0) {
+                    return {
+                        modalStack: state.modalStack
+                    };
+                }
+
+                let newModalStack;
+                if (removeIndex === currLen - 1) {
+                    newModalStack = state.modalStack.slice(0, currLen - 1);
+                } else if (removeIndex === 0) {
+                    newModalStack = state.modalStack.slice(1);
+                } else {
+                    newModalStack = state.modalStack.slice(0, removeIndex)
+                        .concat(state.modalStack.slice(removeIndex + 1));
+                }
+
                 return {
-                    modalStack: state.modalStack
+                    modalStack: newModalStack
                 };
-            }
-
-            let newModalStack;
-            if (removeIndex === currLen - 1) {
-                newModalStack = state.modalStack.slice(0, currLen - 1);
-            } else if (removeIndex === 0) {
-                newModalStack = state.modalStack.slice(1);
-            } else {
-                newModalStack = state.modalStack.slice(0, removeIndex)
-                    .concat(state.modalStack.slice(removeIndex + 1));
-            }
-
+            });
+        }, MODAL_TRANSITION_TIMEOUT);
+        this.setState(state => {
             return {
-                modalStack: newModalStack
+                modalStack: state.modalStack
             };
         });
     }
