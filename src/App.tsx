@@ -178,21 +178,6 @@ export class App extends React.Component<{ isDesktop: boolean }, {
 
     render(): React.ReactNode {
         const pathName = window.location.pathname;
-        const modalStyle = (preventStretch: boolean) => ({
-            position: 'absolute' as 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            height: preventStretch || this.isDesktop() ? 'fit-content' : '100dvh',
-            width: preventStretch || this.isDesktop() ? 'fit-content' : '100dvw',
-            maxHeight: '100vh',
-            maxWidth: '100vw',
-            minWidth: preventStretch ? 'fit-content' : '250px',
-            display: "flex",
-            outline: "none",
-            overflowX: "auto" as "auto",
-            overflowY: "auto" as "auto",
-        });
         const paperStyle = (preventStretch: boolean) => ({
             p: "32px",
             height: preventStretch || this.isDesktop() ? 'fit-content' : '100dvh',
@@ -204,7 +189,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             outline: "none",
             overflowX: "auto" as "auto",
             overflowY: "auto" as "auto",
-            boxShadow: "0 0 20px rgba(0, 0, 0, 0.8)",
+            boxShadow: "0px 4px 20px 4px rgba(0, 0, 0, 0.8)",
         });
 
         return (
@@ -259,7 +244,13 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                 }
                             }}
                         >
-                            <Box sx={modalStyle(modal.preventStretch)}>
+                            <Box sx={{
+                                position: 'absolute' as 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                display: "flex",
+                            }}>
                                 <Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
                                     <Paper elevation={0} sx={paperStyle(modal.preventStretch)}>
                                         {(modal.allowClose || modal.title) && <div className="modal-title-row">
