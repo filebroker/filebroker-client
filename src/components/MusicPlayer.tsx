@@ -6,6 +6,8 @@ import useSound from "use-sound";
 import "./MusicPlayer.css";
 import urlJoin from "url-join";
 import { getPublicUrl } from "../http-common";
+import AutoMarquee from "./AutoMarquee";
+import { useMediaQuery } from "@mui/material";
 
 // @ts-ignore
 const jsmediatags = window.jsmediatags;
@@ -191,6 +193,8 @@ export function MusicPlayer({ src }: { src: string }) {
         ? pictureBlobUrl
         : urlJoin(getPublicUrl(), "logo512.png");
 
+    const isSongMetadataColumn = !useMediaQuery('(min-width: 600px)');
+
     return (
         <div id="MusicPlayer">
             <div id="song-bg-image" style={{
@@ -202,11 +206,19 @@ export function MusicPlayer({ src }: { src: string }) {
                     src={cover}
                 />
                 <div className="song-metadata">
-                    <h3 className="song-title">{title}</h3>
-                    <div className="song-metadata-container">
-                        <div><span className="song-sub-title">{album}</span></div>
-                        <div><span className="song-sub-title">{artist}</span></div>
-                    </div>
+                    <h3 className="song-title"><AutoMarquee>{title}</AutoMarquee></h3>
+                    {/* If album + artist metadata shown as single column, apply AutoMarquee to whole column, else to each column individually */}
+                    {isSongMetadataColumn
+                        ? <AutoMarquee>
+                            <div className="song-metadata-container">
+                                <div><span className="song-sub-title">{album}</span></div>
+                                <div><span className="song-sub-title">{artist}</span></div>
+                            </div>
+                        </AutoMarquee>
+                        : <div className="song-metadata-container">
+                            <div><AutoMarquee><span className="song-sub-title">{album}</span></AutoMarquee></div>
+                            <div><AutoMarquee><span className="song-sub-title">{artist}</span></AutoMarquee></div>
+                        </div>}
                 </div>
                 <div className="song-info-container">
                     <input

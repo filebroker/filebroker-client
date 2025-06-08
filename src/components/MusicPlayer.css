@@ -28,7 +28,7 @@
         height: calc(100vw - 36px);
         width: calc(100vw - 36px);
     }
-    
+
     #song-bg-image {
         height: calc(100vw - 36px);
         width: calc(100vw - 36px);
@@ -49,15 +49,21 @@
         height: 60vh;
         width: 60vh;
     }
-    
+
     #song-bg-image {
         height: 60vh;
         width: 60vh;
     }
 
     .song-cover {
-        width: 30vh;
-        height: 30vh;
+        width: 25vh;
+        height: 25vh;
+    }
+}
+
+@media all and (orientation: landscape) and (max-height: 700px) {
+    .song-cover {
+        display: none;
     }
 }
 
