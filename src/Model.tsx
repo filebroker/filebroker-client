@@ -1,6 +1,6 @@
 import { User } from "./App";
-import {ReactElement} from "react";
-import {Album, Face, Palette, Save, TheaterComedy} from "@mui/icons-material";
+import { ReactElement } from "react";
+import { Album, Face, LocalMovies, Palette, Save, TheaterComedy } from "@mui/icons-material";
 
 export class UserPublic {
     pk: number;
@@ -418,6 +418,8 @@ export function getIconForTagCategory(tagCategory: string): ReactElement | undef
             return <Face/>;
         case "genre":
             return <TheaterComedy/>;
+        case "series":
+            return <LocalMovies/>;
         case "type":
             return <Save/>;
         default:
