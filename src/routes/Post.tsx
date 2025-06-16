@@ -2,7 +2,7 @@ import React, {ReactElement, useEffect, useRef, useState} from "react";
 import {Link, Location, useLocation, useNavigate, useParams} from "react-router-dom";
 import videojs from "video.js";
 import App from "../App";
-import http, {getApiUrl} from "../http-common";
+import http, {getApiUrl, getPublicUrl} from "../http-common";
 import VideoJS from "../components/VideoJS";
 import "./Post.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -198,9 +198,24 @@ function Post({ app }: PostProps) {
         if (post.s3_object != null) {
             let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
-                return <img className="image-post" src={dataUrl} alt={`Image of post ${post.pk}`}></img>;
+                return <img className="image-post" src={post.s3_object_presigned_url || dataUrl} alt={`Image of post ${post.pk}`}/>;
             } else if (post.s3_object.mime_type.startsWith("audio")) {
-                return <MusicPlayer src={dataUrl} />
+                let thumbnailUrl;
+                if (post.thumbnail_url) {
+                    thumbnailUrl = post.thumbnail_url;
+                } else if (post.s3_object?.thumbnail_object_key) {
+                    thumbnailUrl = urlJoin(getApiUrl(), "get-object", post.s3_object.thumbnail_object_key);
+                } else {
+                    thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
+                }
+                return <MusicPlayer
+                    src={post.s3_object_presigned_url || dataUrl}
+                    metaSrc={dataUrl}
+                    metaTitle={post.s3_object_metadata.title}
+                    metaAlbum={post.s3_object_metadata.album}
+                    metaArtist={post.s3_object_metadata.artist}
+                    coverUrl={post.thumbnail_url || thumbnailUrl}
+                />
             } else if (post.s3_object.mime_type.startsWith("video")) {
                 let videoType = post.s3_object.mime_type;
                 let sources = [{
@@ -209,11 +224,25 @@ function Post({ app }: PostProps) {
                     type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type
                 }];
 
+                if (post.s3_object_presigned_url) {
+                    sources.splice(0, 0, {
+                        src: post.s3_object_presigned_url,
+                        // attempt to play mvk as webm
+                        type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type
+                    })
+                }
+
                 if (hlsEnabled && post.s3_object.hls_master_playlist) {
                     sources.splice(0, 0, {
                         src: urlJoin(getApiUrl(), "get-object", post.s3_object.hls_master_playlist),
                         type: "application/vnd.apple.mpegurl"
                     });
+                    if (post.s3_object_presigned_url) {
+                        sources.splice(0, 0, {
+                            src: urlJoin(getApiUrl(), "get-presigned-hls-playlist", post.s3_object.hls_master_playlist),
+                            type: "application/vnd.apple.mpegurl"
+                        });
+                    }
                 }
 
                 const videoJsOptions = {

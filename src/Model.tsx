@@ -81,6 +81,7 @@ export class PostDetailed {
     s3_object: S3Object;
     s3_object_metadata: S3ObjectMetadata;
     thumbnail_url: string | null;
+    s3_object_presigned_url: string | null;
     prev_post: PostWindowObject | null;
     next_post: PostWindowObject | null;
     is_public: boolean;
@@ -104,6 +105,7 @@ export class PostDetailed {
         s3_object: S3Object,
         s3_object_metadata: S3ObjectMetadata,
         thumbnail_url: string | null,
+        s3_object_presigned_url: string | null,
         prev_post: PostWindowObject | null,
         next_post: PostWindowObject | null,
         is_public: boolean,
@@ -126,6 +128,7 @@ export class PostDetailed {
         this.s3_object = s3_object;
         this.s3_object_metadata = s3_object_metadata;
         this.thumbnail_url = thumbnail_url;
+        this.s3_object_presigned_url = s3_object_presigned_url;
         this.prev_post = prev_post;
         this.next_post = next_post;
         this.is_public = is_public;
@@ -304,6 +307,7 @@ export class Broker {
     fk_owner: number;
     creation_timestamp: string;
     hls_enabled: boolean;
+    enable_presigned_get: boolean;
 
     constructor(
         pk: number,
@@ -317,6 +321,7 @@ export class Broker {
         fk_owner: number,
         creation_timestamp: string,
         hls_enabled: boolean,
+        enable_presigned_get: boolean = true
     ) {
         this.pk = pk;
         this.name = name;
@@ -329,6 +334,7 @@ export class Broker {
         this.fk_owner = fk_owner;
         this.creation_timestamp = creation_timestamp;
         this.hls_enabled = hls_enabled;
+        this.enable_presigned_get = enable_presigned_get;
     }
 }
 

@@ -27,7 +27,14 @@ interface ID3Tag {
     }
 }
 
-export function MusicPlayer({ src }: { src: string }) {
+export function MusicPlayer({ src, metaSrc = src, metaTitle, metaAlbum, metaArtist, coverUrl }: {
+    src: string,
+    metaSrc?: string,
+    metaTitle?: string | undefined,
+    metaAlbum?: string | undefined,
+    metaArtist?: string | undefined,
+    coverUrl?: string | undefined
+}) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(100);
     const [muted, setMuted] = useState(false);
@@ -42,9 +49,9 @@ export function MusicPlayer({ src }: { src: string }) {
         // enable HTML5 streaming and avoid web audio API memory leak issues (howler issue #914)
         html5: true
     });
-    const [title, setTitle] = useState("");
-    const [album, setAlbum] = useState("");
-    const [artist, setArtist] = useState("");
+    const [title, setTitle] = useState(metaTitle ?? "");
+    const [album, setAlbum] = useState(metaAlbum ?? "");
+    const [artist, setArtist] = useState(metaArtist ?? "");
     const [pictureBlobUrl, setPictureBlobUrl] = useState("");
     const pictureBlobUrlRef = useRef("");
 
@@ -137,33 +144,42 @@ export function MusicPlayer({ src }: { src: string }) {
     }, [sound]);
 
     useEffect(() => {
-        setTitle("");
-        setAlbum("");
-        setArtist("");
+        setTitle(metaTitle ?? "");
+        setAlbum(metaAlbum ?? "");
+        setArtist(metaArtist ?? "");
         setPictureBlobUrl("");
-        jsmediatags.read(src, {
+
+        jsmediatags.read(metaSrc, {
             onSuccess: function (tag: ID3Tag) {
-                setTitle(tag.tags.title);
-                setAlbum(tag.tags.album);
-                setArtist(tag.tags.artist);
-                const pictureFormat = tag.tags.picture.format;
-
-                const pictureData = tag.tags.picture.data;
-                let pictureByteString = "";
-                for (let i = 0; i < pictureData.length; i++) {
-                    pictureByteString += String.fromCharCode(pictureData[i]);
+                if (!title) {
+                    setTitle(tag.tags.title);
                 }
-
-                const ab = new ArrayBuffer(pictureByteString.length);
-                const ia = new Uint8Array(ab);
-                for (var i = 0; i < pictureByteString.length; i++) {
-                    ia[i] = pictureByteString.charCodeAt(i);
+                if (!album) {
+                    setAlbum(tag.tags.album);
                 }
+                if (!artist) {
+                    setArtist(tag.tags.artist);
+                }
+                if (tag.tags.picture) {
+                    const pictureFormat = tag.tags.picture.format;
 
-                const blob = new Blob([ab], { type: pictureFormat });
-                const blobUrl = URL.createObjectURL(blob);
-                pictureBlobUrlRef.current = blobUrl;
-                setPictureBlobUrl(blobUrl);
+                    const pictureData = tag.tags.picture.data;
+                    let pictureByteString = "";
+                    for (let i = 0; i < pictureData.length; i++) {
+                        pictureByteString += String.fromCharCode(pictureData[i]);
+                    }
+
+                    const ab = new ArrayBuffer(pictureByteString.length);
+                    const ia = new Uint8Array(ab);
+                    for (var i = 0; i < pictureByteString.length; i++) {
+                        ia[i] = pictureByteString.charCodeAt(i);
+                    }
+
+                    const blob = new Blob([ab], { type: pictureFormat });
+                    const blobUrl = URL.createObjectURL(blob);
+                    pictureBlobUrlRef.current = blobUrl;
+                    setPictureBlobUrl(blobUrl);
+                }
             },
             onError: function (error: any) {
                 console.error("Error reading tag: " + error);
@@ -175,7 +191,7 @@ export function MusicPlayer({ src }: { src: string }) {
                 URL.revokeObjectURL(pictureBlobUrlRef.current);
             }
         }
-    }, [src]);
+    }, [src, metaSrc]);
 
     const onPlayPause = () => {
         if (isPlaying) {
@@ -191,7 +207,7 @@ export function MusicPlayer({ src }: { src: string }) {
 
     const cover = pictureBlobUrl
         ? pictureBlobUrl
-        : urlJoin(getPublicUrl(), "logo512.png");
+        : coverUrl ? coverUrl : urlJoin(getPublicUrl(), "logo512.png");
 
     const isSongMetadataColumn = !useMediaQuery('(min-width: 600px)');
 

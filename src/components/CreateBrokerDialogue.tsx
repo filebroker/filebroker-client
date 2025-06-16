@@ -7,6 +7,7 @@ import App, { ModalContent } from "../App";
 import http from "../http-common";
 import { Box, Button, Checkbox, FormControlLabel, FormGroup, Tab, Tabs, TextField } from "@mui/material";
 import { TabPanel, a11yProps } from "./TabPanel";
+import { enqueueSnackbar } from "notistack";
 
 class CreateBrokerDialogueProps {
     app: App;
@@ -26,6 +27,7 @@ class CreateBrokerRequest {
     secret_key: string;
     is_aws_region: boolean;
     remove_duplicate_files: boolean;
+    enable_presigned_get: boolean;
 
     constructor(
         name: string,
@@ -34,7 +36,8 @@ class CreateBrokerRequest {
         access_key: string,
         secret_key: string,
         is_aws_region: boolean,
-        remove_duplicate_files: boolean
+        remove_duplicate_files: boolean,
+        enable_presigned_get: boolean = true
     ) {
         this.name = name;
         this.bucket = bucket;
@@ -43,6 +46,7 @@ class CreateBrokerRequest {
         this.secret_key = secret_key;
         this.is_aws_region = is_aws_region;
         this.remove_duplicate_files = remove_duplicate_files;
+        this.enable_presigned_get = enable_presigned_get;
     }
 }
 
@@ -58,6 +62,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
     const [removeDuplicateFiles, setRemoveDuplicateFiles] = useState(true);
     const [isAwsRegion, setAwsRegion] = useState(true);
     const [submitDisabled, setSubmitDisabled] = useState(false);
+    const [enablePresignedGet, setEnablePresignedGet] = useState(true);
 
     return (
         <form className="modal-form" onSubmit={async e => {
@@ -66,8 +71,12 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
 
             try {
                 let config = await app.getAuthorization(location, navigate);
-                let response = await http.post("/create-broker", new CreateBrokerRequest(name, bucket, endpoint, accessKey, secretKey, isAwsRegion, removeDuplicateFiles), config);
+                let response = await http.post("/create-broker", new CreateBrokerRequest(name, bucket, endpoint, accessKey, secretKey, isAwsRegion, removeDuplicateFiles, enablePresignedGet), config);
                 modal.close(response.data);
+                enqueueSnackbar({
+                    message: "Broker created successfully",
+                    variant: "success",
+                });
             } catch (e: any) {
                 if (e.response && e.response.status === 400) {
                     app.openModal("Error", <p>The provided S3 config is invalid, make sure the endpoint is reachable, the bucket and region are valid and the provided credentials have access to the bucket.</p>);
@@ -139,6 +148,11 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                     <div className="flex-row">
                         <FormControlLabel control={<Checkbox checked={removeDuplicateFiles} onChange={(e) => setRemoveDuplicateFiles(e.currentTarget.checked)} />} label="Merge Duplicate Files" />
                         <FontAwesomeIcon icon={solid("circle-info")} data-tip="With this option enabled, duplicate files uploads that generate the same file hash will be removed and new posts will reference the existing file instead."></FontAwesomeIcon>
+                        <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
+                    </div>
+                    <div className="flex-row">
+                        <FormControlLabel control={<Checkbox checked={enablePresignedGet} onChange={(e) => setEnablePresignedGet(e.currentTarget.checked)} />} label="Enable Presigned Get" />
+                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="With this option enabled, clients can stream content from the bucket directly using a presigned get URL, rather than through the filebroker server. Requires CORS permissions adding the filebroker domain as allowed origin for your bucket."></FontAwesomeIcon>
                         <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
                     </div>
                 </FormGroup>
