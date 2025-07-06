@@ -10,6 +10,8 @@ import {
     PostCollectionGroupAccessDetailed,
     PostDetailed,
     PostGroupAccessDetailed,
+    sortTags,
+    sortTagUsages,
     Tag,
     TagCategory,
     TagDetailed,
@@ -194,8 +196,8 @@ export function TagEditHistoryDialogue({app, tag, modal}: {
             object_name="tag"
             rewind_history_endpoint="rewind-tag-history-snapshot"
             render_object_values={tagDetailed => <Paper elevation={2} className="snapshot-values-container">
-                <TagSelector readOnly values={tagDetailed.parents} setSelectedTags={() => {}} limit={25} label="Parents" enableTagLink/>
-                <TagSelector readOnly values={tagDetailed.aliases} setSelectedTags={() => {}} limit={25} label="Aliases" enableTagLink/>
+                <TagSelector readOnly values={tagDetailed.parents.sort(sortTags)} setSelectedTags={() => {}} limit={25} label="Parents" enableTagLink/>
+                <TagSelector readOnly values={tagDetailed.aliases.sort(sortTags)} setSelectedTags={() => {}} limit={25} label="Aliases" enableTagLink/>
                 <StyledAutocomplete
                     id="tag-category-select"
                     label="Category"
@@ -210,7 +212,7 @@ export function TagEditHistoryDialogue({app, tag, modal}: {
             render_snapshot_values={snapshot => <Paper elevation={2} className="snapshot-values-container">
                 <TagSelector
                     readOnly
-                    values={snapshot.parents}
+                    values={snapshot.parents.sort(sortTags)}
                     setSelectedTags={() => {}}
                     limit={25}
                     label="Parents"
@@ -219,7 +221,7 @@ export function TagEditHistoryDialogue({app, tag, modal}: {
                 />
                 <TagSelector
                     readOnly
-                    values={snapshot.aliases}
+                    values={snapshot.aliases.sort(sortTags)}
                     setSelectedTags={() => {}}
                     limit={25}
                     label="Aliases"
@@ -282,7 +284,7 @@ function EditHistoryDialogue({app, history_object, modal, get_history_endpoint, 
                 <ReadOnlyTextField label="Description" value={history_object.description ?? ""} variant="standard"
                                    multiline maxRows={5}/>
                 <TagSelector
-                    values={history_object.tags.map(tagUsage => tagUsage.tag)}
+                    values={history_object.tags.sort(sortTagUsages).map(tagUsage => tagUsage.tag)}
                     readOnly setSelectedTags={() => {}} enableTagLink/>
                 <div className="material-row-flex">
                     <VisibilitySelect isPublic={history_object.is_public} isPublicEdit={history_object.public_edit}
@@ -305,7 +307,7 @@ function EditHistoryDialogue({app, history_object, modal, get_history_endpoint, 
                 <ReadOnlyTextField label="Description" value={snapshot.description ?? ""} variant="standard"
                                    color={snapshot.description_changed ? "info" : undefined} multiline maxRows={5}/>
                 <TagSelector
-                    values={snapshot.tags.map(tagUsage => tagUsage.tag)}
+                    values={snapshot.tags.sort(sortTagUsages).map(tagUsage => tagUsage.tag)}
                     readOnly setSelectedTags={() => {
                 }} color={snapshot.tags_changed ? "info" : undefined} enableTagLink/>
                 <div className="material-row-flex">

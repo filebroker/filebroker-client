@@ -407,11 +407,15 @@ export class TagCategory {
     }
 }
 
+export function sortTags(a: Tag, b: Tag): number {
+    if (!a.tag_category && !b.tag_category) return a.tag_name.localeCompare(b.tag_name);
+    if (!a.tag_category) return 1;
+    if (!b.tag_category) return -1;
+    return a.tag_category.localeCompare(b.tag_category) || a.tag_name.localeCompare(b.tag_name);
+}
+
 export function sortTagUsages(a: TagUsage, b: TagUsage): number {
-    if (!a.tag.tag_category && !b.tag.tag_category) return a.tag.tag_name.localeCompare(b.tag.tag_name);
-    if (!a.tag.tag_category) return 1;
-    if (!b.tag.tag_category) return -1;
-    return a.tag.tag_category.localeCompare(b.tag.tag_category) || a.tag.tag_name.localeCompare(b.tag.tag_name);
+    return sortTags(a.tag, b.tag);
 }
 
 export function getIconForTagCategory(tagCategory: string): ReactElement | undefined {
