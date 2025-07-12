@@ -25,7 +25,15 @@ export const VideoJS = (props: any) => {
         } else {
             const player = playerRef.current;
 
+            const currentTime = player.currentTime();
+            const paused = player.paused();
             player.src(options.sources);
+            player.one('canplay', () => {
+                player.currentTime(currentTime);
+                if (paused) {
+                    player.pause();
+                }
+            });
         }
     }, [options, videoRef]);
 

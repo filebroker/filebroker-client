@@ -128,6 +128,13 @@ export function MusicPlayer({ src, metaSrc = src, metaTitle, metaAlbum, metaArti
 
     useEffect(() => {
         setDuration();
+        // if src changes, creating a new sound, this means a presigned URL was refreshed, restore position and play state
+        if (+seconds > 0) {
+            sound?.seek(+seconds);
+        }
+        if (isPlaying && !sound?.playing()) {
+            play();
+        }
         const interval = setInterval(() => {
             if (sound) {
                 let seek = sound.seek();

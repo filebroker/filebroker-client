@@ -136,6 +136,10 @@ function Post({ app }: PostProps) {
             isInitialMount.current = false;
             return;
         }
+        reloadPostData();
+    }, [isEditMode]);
+
+    const reloadPostData = (cb?: ((post: PostDetailed) => void)) => {
         const fetch = async () => {
             try {
                 let config = await app.getAuthorization(location, navigate, false);
@@ -148,6 +152,7 @@ function Post({ app }: PostProps) {
                     result.data.next_post = post.next_post;
                 }
                 updatePost(result.data);
+                return result.data;
             } catch (e: any) {
                 if (e.response?.status === 403) {
                     app.openModal("Error", <p>This post is unavailable.</p>);
@@ -163,10 +168,17 @@ function Post({ app }: PostProps) {
         setSelectedUserGroups([]);
         setSelectedUserGroupsReadOnly([]);
         const modal = app.openLoadingModal();
-        fetch().then(() => modal.close()).catch(() => modal.close());
-    }, [isEditMode]);
+        fetch()
+            .then((post) => { modal.close(); return post; })
+            .catch(() => modal.close())
+            .then((post) => { if (post) cb?.(post) });
+    };
 
     useEffect(() => {
+        updateMediaComponent();
+    }, [post?.s3_object?.object_key, hlsEnabled]);
+
+    const updateMediaComponent = () => {
         if (post) {
             setMediaComponent(
                 <div id="post-container-media-container">
@@ -178,7 +190,23 @@ function Post({ app }: PostProps) {
         } else {
             setMediaComponent(null);
         }
-    }, [post?.s3_object?.object_key, hlsEnabled])
+    };
+
+    // refresh post data every 4 hours to keep fresh presigned URLs for long lived tabs
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const currPresignedUrl = post?.s3_object_presigned_url;
+            console.log("Reloading post data");
+            reloadPostData((post) => {
+                if (currPresignedUrl !== post?.s3_object_presigned_url) {
+                    console.log("Presigned url changed, reloading media component");
+                    updateMediaComponent();
+                }
+            });
+        }, 14400000);
+
+        return () => clearInterval(interval);
+    }, [post]);
 
     const playerRef = React.useRef(null);
     const handlePlayerReady = (player: any) => {
