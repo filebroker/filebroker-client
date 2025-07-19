@@ -74,7 +74,11 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                         name: "Delete collection",
                         icon: solid("trash"),
                         color: "red",
+                        disabled: !app.isLoggedIn(),
                         enableForItemAsync: async (collection) => {
+                            if (!app.isLoggedIn()) {
+                                return false;
+                            }
                             const config = await app.getAuthorization(location, navigate, false);
                             let result = await http.get<PostCollectionDetailed>(`/get-collection/${collection.pk}`, config);
                             return result.data.is_deletable;

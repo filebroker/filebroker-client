@@ -269,6 +269,7 @@ export function PostCollection({ app }: { app: App }) {
                     {
                         name: "Add to collection",
                         icon: solid("square-plus"),
+                        disabled: !app.isLoggedIn(),
                         fn: (items, cb) => app.openModal(
                             "Add to collection",
                             (modal) => <AddToCollectionDialogue app={app} postPks={items.map((item) => item.source.post.pk)} modal={modal} />,
@@ -280,6 +281,7 @@ export function PostCollection({ app }: { app: App }) {
                         icon: solid("trash"),
                         color: "red",
                         enableForItem: () => postCollection?.is_editable ?? false,
+                        disabled: !app.isLoggedIn(),
                         fn: (items, cb) => app.openModal(
                             "Remove from collection",
                             (modal) => <ActionModal

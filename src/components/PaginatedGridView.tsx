@@ -40,6 +40,7 @@ export interface GridItemAction {
     fn: (items: TransformedPaginatedGridViewItem[], cb?: (result: any) => void) => void;
     disallowMultiSelect?: boolean;
     allowExecuteForAll?: boolean;
+    disabled?: boolean;
 }
 
 export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryParamsOnItemClick, pagePath, fullCount, pageCount, gridItemActions = undefined, isDesktop = true }: {
@@ -189,7 +190,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                                                 setItemMenuOpenPk(null);
                                                 action.fn([item]);
                                             }}
-                                            disabled={(action.enableForItem && !action.enableForItem(item)) || (action.enableForItemAsync && !enabledGridActionsAsync[item.pk]?.includes(action.name))}
+                                            disabled={action.disabled || (action.enableForItem && !action.enableForItem(item)) || (action.enableForItemAsync && !enabledGridActionsAsync[item.pk]?.includes(action.name))}
                                         >
                                             <ListItemIcon color={action.color ?? "white"} sx={{
                                                 color: action.color ?? "white"
@@ -247,7 +248,7 @@ export function PaginatedGridView({ itemsProperty, onItemClickPath, stripQueryPa
                         : <IconButton color='primary' size='medium' onClick={() => setSelectionMode(true)}><SelectAllIcon /></IconButton>
                     }
                     {gridItemActions?.filter((action) => !action.disallowMultiSelect).map((action) =>
-                        <IconButton key={'selection_action_' + action.name} color='primary' size='medium' disabled={!(action.allowExecuteForAll || selectedItems.length > 0)} onClick={() => action.fn(selectedItems, (result) => {
+                        <IconButton key={'selection_action_' + action.name} color='primary' size='medium' disabled={action.disabled || !(action.allowExecuteForAll || selectedItems.length > 0)} onClick={() => action.fn(selectedItems, (result) => {
                             if (result) {
                                 setSelectionMode(false);
                                 setSelectedItems([]);

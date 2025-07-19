@@ -303,7 +303,7 @@ function Post({ app }: PostProps) {
         let dataUrl = getApiUrl() + "get-object/" + post.s3_object?.object_key;
         postContainerButtonGroup = <ButtonGroup size={useLargeControls ? "large" : "medium"} orientation={mediaWidth && mediaWidth < 350 ? "vertical" : "horizontal"}>
             <Button href={dataUrl} target="_blank" rel="noreferrer"><FontAwesomeSvgIcon fontSize="inherit" icon={solid("download")} /></Button>
-            <Button onClick={() => app.openModal("Add to collection", (addToCollectionModal) => <AddToCollectionDialogue app={app} postPks={[post.pk]} modal={addToCollectionModal} />)}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("plus")} /></Button>
+            {app.isLoggedIn() && <Button onClick={() => app.openModal("Add to collection", (addToCollectionModal) => <AddToCollectionDialogue app={app} postPks={[post.pk]} modal={addToCollectionModal} />)}><FontAwesomeSvgIcon fontSize="inherit" icon={solid("plus")} /></Button>}
             {post.is_deletable && <Button onClick={() => app.openModal(
                 "Delete post",
                 (modal) => <ActionModal

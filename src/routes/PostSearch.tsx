@@ -79,6 +79,7 @@ function PostSearch({ app }: PostSearchProps) {
                         name: "Add to collection",
                         icon: solid("square-plus"),
                         allowExecuteForAll: new URLSearchParams(search).get("query") !== null && fullCount != null && fullCount <= 10000,
+                        disabled: !app.isLoggedIn(),
                         fn: (items, cb) => {
                             if (items && items.length > 0) {
                                 app.openModal("Add to collection", (modal) => <AddToCollectionDialogue app={app} postPks={items.map(item => item.pk)} modal={modal} />, (result) => cb?.(result));
@@ -102,7 +103,11 @@ function PostSearch({ app }: PostSearchProps) {
                         name: "Delete post",
                         icon: solid("trash"),
                         color: "red",
+                        disabled: !app.isLoggedIn(),
                         enableForItemAsync: async (post) => {
+                            if (!app.isLoggedIn()) {
+                                return false;
+                            }
                             const config = await app.getAuthorization(location, navigate, false);
                             let searchParams = new URLSearchParams(search);
                             searchParams.set("exclude_window", "true");
