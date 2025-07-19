@@ -321,6 +321,20 @@ export class App extends React.Component<{ isDesktop: boolean }, {
         }
     }
 
+    private _lastPath: string | undefined;
+
+    componentDidUpdate(): void {
+        // Check if the pathname has changed
+        const currentPath = window.location.pathname;
+        if (this._lastPath && this._lastPath !== currentPath) {
+            // Clear all modals when navigation occurs
+            if (this.state.modalStack.length > 0) {
+                this.setState({ modalStack: [] });
+            }
+        }
+        this._lastPath = currentPath;
+    }
+
     handleLogin(loginResponse: LoginResponse | null) {
         let loginExpiry;
         if (loginResponse) {
