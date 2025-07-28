@@ -37,7 +37,7 @@ export default function NavBar({ app }: { app: App }) {
     return (
         <StyledAppBar position="fixed">
             <Toolbar disableGutters>
-                <Box sx={{ flex: 1, display: app.isDesktop() ? "none" : "flex", justifyContent: "space-between", alignContent: "center", alignItems: "center", marginLeft: "25px", marginRight: "25px" }}>
+                <Box sx={{ flex: 1, display: app.isDesktop() ? "none" : "flex", justifyContent: "space-between", alignContent: "center", alignItems: "center", marginLeft: "10px", marginRight: "10px" }}>
                     <IconButton
                         size="large"
                         aria-label="mobile navigation menu"
