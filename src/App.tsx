@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Location, NavigateFunction, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import React from 'react';
+import { BrowserRouter, Location, NavigateFunction, Route, Routes } from "react-router-dom";
 import "@filebroker/react-widgets/lib/styles.css";
 import './App.css';
 import http from "./http-common";
@@ -10,20 +10,15 @@ import Register from './routes/Register';
 import Post from './routes/Post';
 import Home from './routes/Home';
 import { AxiosResponse } from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { solid } from '@fortawesome/fontawesome-svg-core/import.macro';
-import UploadDialogue from './components/UploadDialogue';
 import { EmailConfirmation } from './routes/EmailConfirmation';
 import PostCollectionSearch from './routes/PostCollectionSearch';
 import { PostCollection } from './routes/PostCollection';
-import { QueryAutocompleteSuggestionCombobox } from './components/QueryAutocompleteSuggestions';
 import { Box, CircularProgress, Grow, IconButton, Modal, Paper } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Container, Nav, Navbar } from 'react-bootstrap';
-import NavbarCollapse from 'react-bootstrap/esm/NavbarCollapse';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { TagGlossary } from './routes/TagGlossary';
 import { TagDetailPage } from './routes/TagDetailPage';
+import NavBar from "./components/NavBar";
 
 declare module 'react' {
     interface CSSProperties {
@@ -92,67 +87,6 @@ export class ModalContent {
     }
 }
 
-export function PostQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
-    const location = useLocation();
-    const search = location.search;
-    const navigate = useNavigate();
-    const pathName = location.pathname;
-
-    let searchParams = new URLSearchParams(search);
-    let queryParam: string = searchParams.get("query") ?? "";
-    const [queryString, setQueryString] = useState(queryParam);
-
-    useEffect(() => {
-        setQueryString(queryParam);
-    }, [location]);
-
-    if (hideOnHome && pathName === "/") {
-        return null;
-    }
-
-    let searchSite = "/posts";
-    if (pathName === "/collections") {
-        searchSite = pathName;
-    } else if (pathName.startsWith("/collection/")) {
-        searchSite = pathName.split("/").filter((part) => part.length > 0).slice(0, 2).join("/");
-    }
-
-    let scope = "post";
-    let placeholder = "Search Post";
-    if (pathName.startsWith("/collection/")) {
-        scope = "collection_item";
-        const collectionId = pathName.split("/")[2];
-        scope += `_${collectionId}`;
-        placeholder = "Search Within Collection";
-    } else if (pathName.startsWith("/collections")) {
-        scope = "collection";
-        placeholder = "Search Collection";
-    }
-
-    return (
-        <form className="search-form" onSubmit={e => {
-            e.preventDefault();
-            let searchParams = new URLSearchParams();
-            searchParams.set("query", queryString);
-            navigate({ pathname: searchSite, search: searchParams.toString() });
-            document.getElementById("App")?.focus();
-
-            // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
-            // retrieve it via id and blur
-            if (hideOnHome) {
-                document.querySelectorAll("[id^=rw_][id$=_input]").forEach(el => {
-                    if (el instanceof HTMLElement) {
-                        el.blur();
-                    }
-                });
-            }
-        }}>
-            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} scope={scope} autoFocus={!hideOnHome} placeholder={placeholder} />
-            <button className="search-button" type="submit"><FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon></button>
-        </form>
-    );
-}
-
 export class App extends React.Component<{ isDesktop: boolean }, {
     jwt: string | null;
     user: User | null;
@@ -177,7 +111,6 @@ export class App extends React.Component<{ isDesktop: boolean }, {
     }
 
     render(): React.ReactNode {
-        const pathName = window.location.pathname;
         const paperStyle = (preventStretch: boolean) => ({
             p: "32px",
             height: preventStretch || this.isDesktop() ? 'fit-content' : '100dvh',
@@ -195,43 +128,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
                 <div id="App">
-                    <Navbar expand={this.isDesktop()} fixed='top' collapseOnSelect variant='dark'>
-                        <Container style={{ margin: "0", width: "100%", flex: "1 auto", maxWidth: "none" }}>
-                            <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-                            <NavbarCollapse style={this.isDesktop() ? {
-                                justifyContent: "flex-start",
-                                marginLeft: "25px"
-                            } : {}}>
-                                <Nav>
-                                    <Nav.Link eventKey={0} active={pathName === "/"} className="nav-el" as={NavLink} to="/">Home</Nav.Link>
-                                    <Nav.Link eventKey={1} active={pathName.startsWith("/post")} className="nav-el" as={NavLink} to="/posts">Posts</Nav.Link>
-                                    <Nav.Link eventKey={2} active={pathName.startsWith("/collection")} className="nav-el" as={NavLink} to="/collections">Collections</Nav.Link>
-                                </Nav>
-                            </NavbarCollapse>
-
-                            <div id="search-bar" style={{ position: this.isDesktop() ? "relative" : "absolute", width: this.isDesktop() ? "100%" : "calc(100vw - 68px)", right: this.isDesktop() ? "auto" : "12px", top: this.isDesktop() ? "auto" : "13px", "--search-bar-width": this.isDesktop() ? "25vw" : "calc(100vw - 68px - 27px - 24px)" }}>
-                                <PostQueryInput hideOnHome></PostQueryInput>
-                            </div>
-                            <NavbarCollapse style={this.isDesktop() ? {
-                                justifyContent: "flex-end",
-                                marginRight: "25px",
-                            } : {}}>
-                                <Nav>
-                                    <Nav.Item><button className="nav-el nav-el-right" disabled={!this.isLoggedIn()} style={{ textAlign: "left", fontSize: "var(--bs-nav-link-font-size)", fontWeight: "500" }} onClick={(e) => {
-                                        e.stopPropagation();
-                                        e.preventDefault();
-                                        if (this.state.user == null) {
-                                            this.openModal("Error", <p>Must be logged in</p>);
-                                        } else {
-                                            this.openModal("Upload", uploadModal => <UploadDialogue app={this} modal={uploadModal}></UploadDialogue>);
-                                        }
-                                    }}><FontAwesomeIcon icon={solid("cloud-arrow-up")} /> Upload</button></Nav.Item>
-                                    <Nav.Link eventKey={5} active className="nav-el" as={NavLink} to="/tags">Tags</Nav.Link>
-                                    <Nav.Link eventKey={6} active className="nav-el nav-el-right" as={NavLink} to={this.state.user == null ? "/login" : "/profile"}>{this.state.user == null ? "Log In" : (this.state.user.display_name ?? this.state.user.user_name)}</Nav.Link>
-                                </Nav>
-                            </NavbarCollapse>
-                        </Container>
-                    </Navbar>
+                    <NavBar app={this} />
                     {this.state.modalStack.map((modal, idx) =>
                         <Modal
                             open={true}

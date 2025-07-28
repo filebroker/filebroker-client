@@ -22,7 +22,7 @@ import {Link, useLocation, useNavigate} from "react-router-dom";
 import {FontAwesomeSvgIcon} from "./FontAwesomeSvgIcon";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import {ReadOnlyTextField, StyledAutocomplete} from "../index";
-import {QueryAutocompleteTextField} from "./QueryAutocompleteSuggestions";
+import {QueryAutocompleteTextField} from "./QueryInput";
 import {enqueueSnackbar} from "notistack";
 
 class FindTagResponse {

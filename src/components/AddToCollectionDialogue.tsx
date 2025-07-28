@@ -6,7 +6,7 @@ import urlJoin from "url-join";
 import http, { getApiUrl } from "../http-common";
 import { ActionModal } from "./ActionModal";
 import "./AddToCollectionDialogue.css";
-import { QueryAutocompleteSuggestionSearchBox } from "./QueryAutocompleteSuggestions";
+import { QueryAutocompleteSuggestionSearchBox } from "./QueryInput";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";

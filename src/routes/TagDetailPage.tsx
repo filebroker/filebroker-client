@@ -30,7 +30,7 @@ import cytoscape, {ElementDefinition} from "cytoscape";
 import dagre from 'cytoscape-dagre';
 import {StyledAutocomplete} from "../index";
 import {TagEditHistoryDialogue} from "../components/PostEditHistoryDialogue";
-import {QueryAutocompleteTextField} from "../components/QueryAutocompleteSuggestions";
+import {QueryAutocompleteTextField} from "../components/QueryInput";
 
 cytoscape.use(dagre);
 
