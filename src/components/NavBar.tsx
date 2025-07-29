@@ -37,7 +37,7 @@ export default function NavBar({ app }: { app: App }) {
     return (
         <StyledAppBar position="fixed">
             <Toolbar disableGutters>
-                <Box sx={{ flex: 1, display: app.isDesktop() ? "none" : "flex", justifyContent: "space-between", alignContent: "center", alignItems: "center", marginLeft: "10px", marginRight: "10px" }}>
+                <Box sx={{ flex: "1", display: app.isDesktop() ? "none" : "flex", justifyContent: "space-between", alignContent: "center", alignItems: "center", marginLeft: "10px", marginRight: "10px" }}>
                     <IconButton
                         size="large"
                         aria-label="mobile navigation menu"
@@ -88,22 +88,22 @@ export default function NavBar({ app }: { app: App }) {
                     >
                         <MenuIcon/>
                     </IconButton>
-                    <Box sx={{ flex: "1 0 auto", display: "flex", justifyContent: "center", width: "10vw" }}>
+                    <Box sx={{ flex: "1", display: "flex", justifyContent: "center" }}>
                         <GlobalQueryInput hideOnHome />
                     </Box>
                 </Box>
                 <Box sx={{ flex: 1, display: app.isDesktop() ? "flex" : "none", justifyContent: "space-between", alignContent: "center", alignItems: "center", marginLeft: "25px", marginRight: "25px" }}>
-                    <Box sx={{ flex: "1 0 auto", display: "flex", alignItems: "center" }}>
+                    <Box sx={{ flex: "1", display: "flex", alignItems: "center" }}>
                         <NavLinkButton component={Link} to={"/"}>
                             <img src={urlJoin(getPublicUrl(), "logo192.png")} alt="Logo" height="48"/>
                         </NavLinkButton>
                         <NavLinkButton component={Link} to={"/posts"}>Posts</NavLinkButton>
                         <NavLinkButton component={Link} to={"/collections"}>Collections</NavLinkButton>
                     </Box>
-                    <Box sx={{ flex: "1 0 auto", display: "flex", justifyContent: "center", width: "10vw" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", width: "calc(25vw - 50px)" }}>
                         <GlobalQueryInput hideOnHome />
                     </Box>
-                    <Box sx={{ flex: "1 0 auto", display: "flex", justifyContent: "flex-end" }}>
+                    <Box sx={{ flex: "1", display: "flex", justifyContent: "flex-end" }}>
                         <NavLinkButton variant="text" disabled={!app.isLoggedIn()} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("cloud-arrow-up")} />} onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
