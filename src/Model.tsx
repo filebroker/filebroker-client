@@ -5,22 +5,22 @@ import { Album, Face, LocalMovies, Palette, Save, SportsEsports, TheaterComedy }
 export class UserPublic {
     pk: number;
     user_name: string;
-    avatar_url: string;
     creation_timestamp: string;
     display_name: string | null;
+    avatar_object_key: string | null;
 
     constructor(
         pk: number,
         user_name: string,
-        avatar_url: string,
         creation_timestamp: string,
-        display_name: string | null
+        display_name: string | null,
+        avatar_object_key: string | null
     ) {
         this.pk = pk;
         this.user_name = user_name;
-        this.avatar_url = avatar_url;
         this.creation_timestamp = creation_timestamp;
         this.display_name = display_name;
+        this.avatar_object_key = avatar_object_key;
     }
 }
 
@@ -308,6 +308,7 @@ export class Broker {
     creation_timestamp: string;
     hls_enabled: boolean;
     enable_presigned_get: boolean;
+    is_system_bucket: boolean;
 
     constructor(
         pk: number,
@@ -321,7 +322,8 @@ export class Broker {
         fk_owner: number,
         creation_timestamp: string,
         hls_enabled: boolean,
-        enable_presigned_get: boolean = true
+        enable_presigned_get: boolean = true,
+        is_system_bucket: boolean = false,
     ) {
         this.pk = pk;
         this.name = name;
@@ -335,6 +337,7 @@ export class Broker {
         this.creation_timestamp = creation_timestamp;
         this.hls_enabled = hls_enabled;
         this.enable_presigned_get = enable_presigned_get;
+        this.is_system_bucket = is_system_bucket;
     }
 }
 

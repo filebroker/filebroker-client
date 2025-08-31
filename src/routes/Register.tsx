@@ -15,7 +15,6 @@ export class UserRegistration {
     user_name: string;
     password: string;
     email: string | null;
-    avatar_url: string | null;
     captcha_token: string | null;
 
     constructor(
@@ -23,14 +22,12 @@ export class UserRegistration {
         userName: string,
         password: string,
         email: string | null,
-        avatar_url: string | null,
         captcha_token: string | null
     ) {
         this.display_name = display_name;
         this.user_name = userName;
         this.password = password;
         this.email = email;
-        this.avatar_url = avatar_url;
         this.captcha_token = captcha_token;
     }
 }
@@ -68,7 +65,7 @@ function Register({ app }: RegisterProps) {
     async function register() {
         const modal = app.openLoadingModal();
         try {
-            let response = await http.post<LoginResponse>("/register", new UserRegistration(displayName, userName, password, email, null, captchaToken), { withCredentials: true });
+            let response = await http.post<LoginResponse>("/register", new UserRegistration(displayName, userName, password, email, captchaToken), { withCredentials: true });
             setLoginDisabled(false);
             app.handleLogin(response.data);
             navigate("/profile");

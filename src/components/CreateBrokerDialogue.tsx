@@ -28,6 +28,7 @@ class CreateBrokerRequest {
     is_aws_region: boolean;
     remove_duplicate_files: boolean;
     enable_presigned_get: boolean;
+    is_system_bucket: boolean;
 
     constructor(
         name: string,
@@ -37,7 +38,8 @@ class CreateBrokerRequest {
         secret_key: string,
         is_aws_region: boolean,
         remove_duplicate_files: boolean,
-        enable_presigned_get: boolean = true
+        enable_presigned_get: boolean = true,
+        is_system_bucket: boolean = false,
     ) {
         this.name = name;
         this.bucket = bucket;
@@ -47,6 +49,7 @@ class CreateBrokerRequest {
         this.is_aws_region = is_aws_region;
         this.remove_duplicate_files = remove_duplicate_files;
         this.enable_presigned_get = enable_presigned_get;
+        this.is_system_bucket = is_system_bucket;
     }
 }
 
@@ -63,6 +66,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
     const [isAwsRegion, setAwsRegion] = useState(true);
     const [submitDisabled, setSubmitDisabled] = useState(false);
     const [enablePresignedGet, setEnablePresignedGet] = useState(true);
+    const [isSystemBucket, setIsSystemBucket] = useState(false);
 
     return (
         <form className="modal-form" onSubmit={async e => {
@@ -71,7 +75,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
 
             try {
                 let config = await app.getAuthorization(location, navigate);
-                let response = await http.post("/create-broker", new CreateBrokerRequest(name, bucket, endpoint, accessKey, secretKey, isAwsRegion, removeDuplicateFiles, enablePresignedGet), config);
+                let response = await http.post("/create-broker", new CreateBrokerRequest(name, bucket, endpoint, accessKey, secretKey, isAwsRegion, removeDuplicateFiles, enablePresignedGet, isSystemBucket), config);
                 modal.close(response.data);
                 enqueueSnackbar({
                     message: "Broker created successfully",
@@ -154,6 +158,11 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                         <FormControlLabel control={<Checkbox checked={enablePresignedGet} onChange={(e) => setEnablePresignedGet(e.currentTarget.checked)} />} label="Enable Presigned Get" />
                         <FontAwesomeIcon icon={solid("circle-info")} data-tip="With this option enabled, clients can stream content from the bucket directly using a presigned get URL, rather than through the filebroker server. Requires CORS permissions adding the filebroker domain as allowed origin for your bucket."></FontAwesomeIcon>
                         <ReactTooltip effect="solid" type="info" place="right"></ReactTooltip>
+                    </div>
+                    <div className="flex-row" hidden={app.getUser()?.is_admin !== true}>
+                        <FormControlLabel control={<Checkbox checked={isSystemBucket} onChange={(e) => setIsSystemBucket(e.currentTarget.checked)} />} label="Set System Bucket" />
+                        <FontAwesomeIcon icon={solid("circle-info")} data-tip="Set this bucket as the system bucket, which will be used for storing system data such as user avatars." />
+                        <ReactTooltip effect="solid" type="info" place="right" />
                     </div>
                 </FormGroup>
             </TabPanel>

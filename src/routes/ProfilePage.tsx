@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import App, { ModalContent, User } from "../App";
-import http from "../http-common";
+import http, {getApiUrl} from "../http-common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { Button, Paper, TextField } from "@mui/material";
+import {Avatar, Button, Paper, TextField} from "@mui/material";
 import { emailRegex } from "./Register";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
 import { LoginResponse } from "./Login";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import {ReadOnlyTextField, StyledTextField} from "../index";
+import {PostPicker} from "../components/PostPicker";
+import {AvatarCropper} from "../components/AvatarCropper";
+import urlJoin from "url-join";
 
 class ProfilePageProps {
     app: App;
@@ -25,16 +29,13 @@ class ProfilePageProps {
 class UpdateUserRequest {
     display_name: string | null;
     email: string | null;
-    avatar_url: string | null;
 
     constructor(
         display_name: string | null,
         email: string | null,
-        avatar_url: string | null
     ) {
         this.display_name = display_name;
         this.email = email;
-        this.avatar_url = avatar_url;
     }
 }
 
@@ -85,38 +86,48 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
     let profileContent;
     if (user != null) {
         profileContent = <>
-            <h1>Profile</h1>
-            <TextField
+            <Button onClick={() => app.openModal("Select Avatar", (modal) => <PostPicker app={app} constriction={"@type ~= \"image/%\""} onPostSelect={(post) => {
+                app.openModal(
+                    "Avatar Cropper",
+                    (avatarCropperModal) => <AvatarCropper sourceObjectKey={post.s3_object.object_key} modal={avatarCropperModal} app={app} />,
+                    (result) => {
+                        if (result) {
+                            modal.close(result);
+                            setUser(result);
+                        }
+                    },
+                    true,
+                    true,
+                    false,
+                    true
+                );
+            }} /> )}>
+                <Avatar sx={{ width: 100, height: 100 }} src={user.avatar_object_key ? urlJoin(getApiUrl(), "get-object", user.avatar_object_key) : undefined}>
+                    {!user.avatar_object_key && (user.display_name ?? user.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
+                </Avatar>
+            </Button>
+            <ReadOnlyTextField
                 label="User Name"
                 variant="standard"
                 value={userName}
-                InputProps={{
-                    readOnly: true,
-                }}
                 fullWidth
             />
-            <TextField
+            <StyledTextField
                 label="Display Name"
                 variant="outlined"
                 value={displayName}
-                disabled={!editMode && !displayName}
-                InputProps={{
-                    readOnly: !editMode,
-                }}
+                disabled={!editMode}
                 fullWidth
                 onChange={e => setDisplayName(e.currentTarget.value)}
                 inputProps={{ maxLength: 32 }}
             />
-            <TextField
+            <StyledTextField
                 label="Email"
                 variant="outlined"
                 value={email}
-                disabled={!editMode && !email}
+                disabled={!editMode}
                 error={emailInvalid}
                 type="email"
-                InputProps={{
-                    readOnly: !editMode,
-                }}
                 fullWidth
                 onChange={e => setEmail(e.currentTarget.value)}
             />
@@ -156,7 +167,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                                 const modal = app.openLoadingModal();
                                 try {
                                     let config = await app.getAuthorization(location, navigate);
-                                    let response = await http.post<User>("edit-user", new UpdateUserRequest(displayName, email, null), config);
+                                    let response = await http.post<User>("edit-user", new UpdateUserRequest(displayName, email), config);
                                     setUser(response.data);
                                     setEditMode(false);
                                     modal.close();

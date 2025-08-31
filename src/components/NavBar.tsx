@@ -1,10 +1,10 @@
-import {AppBar, Box, Button, IconButton, List, ListItem, styled, Toolbar} from "@mui/material";
+import {AppBar, Avatar, Box, Button, IconButton, List, ListItem, styled, Toolbar} from "@mui/material";
 import React from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import {GlobalQueryInput} from "./QueryInput";
 import {Link} from "react-router-dom";
 import urlJoin from "url-join";
-import {getPublicUrl} from "../http-common";
+import {getApiUrl, getPublicUrl} from "../http-common";
 import App from "../App";
 import UploadDialogue from "./UploadDialogue";
 import {FontAwesomeSvgIcon} from "./FontAwesomeSvgIcon";
@@ -32,6 +32,27 @@ const NavLinkButton = styled(Button)({
         color: '#2a52be'
     }
 }) as typeof Button;
+
+const NavLinkOutlinedButton = styled(Button)({
+    fontSize: "inherit",
+    fontWeight: "inherit",
+    fontFamily: "inherit",
+    color: "inherit",
+    textTransform: "inherit",
+    textDecoration: "inherit",
+}) as typeof Button;
+
+const NavLinkIconButton = styled(IconButton)({
+    fontSize: "inherit",
+    fontWeight: "inherit",
+    fontFamily: "inherit",
+    color: "inherit",
+    textTransform: "inherit",
+    textDecoration: "inherit",
+    '&:hover': {
+        color: '#2a52be'
+    }
+}) as typeof IconButton;
 
 export default function NavBar({ app }: { app: App }) {
     return (
@@ -75,13 +96,14 @@ export default function NavBar({ app }: { app: App }) {
                                     <NavLinkButton component={Link} to="/tags" onClick={() => modal.close()}>Tags</NavLinkButton>
                                 </ListItem>
                                 <ListItem sx={{display: "flex", width: "fit-content"}}>
-                                    <NavLinkButton
-                                        component={Link}
-                                        to={app.isLoggedIn() ? "/profile" : "/login"}
-                                        onClick={() => modal.close()}
-                                    >
-                                        {app.isLoggedIn() ? (app.getUser()?.display_name ?? app.getUser()?.user_name) : "Log In"}
-                                    </NavLinkButton>
+                                    {app.isLoggedIn()
+                                        ? <NavLinkIconButton component={Link} to={"/profile"}>
+                                            <Avatar sx={{ width: 48, height: 48 }} src={app.getUser()?.avatar_object_key ? urlJoin(getApiUrl(), "get-object", app.getUser()!.avatar_object_key!) : undefined}>
+                                                {!(app.getUser()?.avatar_object_key) && (app.getUser()!.display_name ?? app.getUser()!.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
+                                            </Avatar>
+                                        </NavLinkIconButton>
+                                        : <NavLinkOutlinedButton component={Link} to={"/login"} variant="contained" color="secondary">Log In</NavLinkOutlinedButton>
+                                    }
                                 </ListItem>
                             </List>)}
                         color="inherit"
@@ -114,7 +136,14 @@ export default function NavBar({ app }: { app: App }) {
                             }
                         }}>Upload</NavLinkButton>
                         <NavLinkButton component={Link} to="/tags">Tags</NavLinkButton>
-                        <NavLinkButton component={Link} to={app.isLoggedIn() ? "/profile" : "/login"}>{app.isLoggedIn() ? (app.getUser()?.display_name ?? app.getUser()?.user_name) : "Log In"}</NavLinkButton>
+                        {app.isLoggedIn()
+                            ? <NavLinkIconButton component={Link} to={"/profile"}>
+                                <Avatar sx={{ width: 40, height: 40 }} src={app.getUser()?.avatar_object_key ? urlJoin(getApiUrl(), "get-object", app.getUser()!.avatar_object_key!) : undefined}>
+                                    {!(app.getUser()?.avatar_object_key) && (app.getUser()!.display_name ?? app.getUser()!.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
+                                </Avatar>
+                            </NavLinkIconButton>
+                            : <NavLinkOutlinedButton component={Link} to={"/login"} variant="contained" color="secondary">Log In</NavLinkOutlinedButton>
+                        }
                     </Box>
                 </Box>
             </Toolbar>

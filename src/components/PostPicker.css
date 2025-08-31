@@ -1,0 +1,13 @@
+#PostPicker {
+    display: flex;
+    width: 100%;
+    min-width: 50vw;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.post_button:hover img {
+    transform: scale(1.5);
+}

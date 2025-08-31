@@ -46,7 +46,7 @@ const MUI_THEME = createTheme({
             main: "#ffffff"
         },
         secondary: {
-            main: "#42a5f5"
+            main: "#3399ff"
         }
     },
     components: {

@@ -30,33 +30,33 @@ export class User {
     pk: number;
     user_name: string;
     email: string | null;
-    avatar_url: string;
     creation_timestamp: string;
     email_confirmed: boolean;
     display_name: string | null;
     is_admin: boolean;
     is_banned: boolean;
+    avatar_object_key: string | null;
 
     constructor(
         pk: number,
         user_name: string,
         email: string | null,
-        avatar_url: string,
         creation_timestamp: string,
         email_confirmed: boolean,
         display_name: string | null,
         is_admin: boolean,
-        is_banned: boolean
+        is_banned: boolean,
+        avatar_object_key: string | null
     ) {
         this.pk = pk;
         this.user_name = user_name;
         this.email = email;
-        this.avatar_url = avatar_url;
         this.creation_timestamp = creation_timestamp;
         this.email_confirmed = email_confirmed;
         this.display_name = display_name;
         this.is_admin = is_admin;
         this.is_banned = is_banned;
+        this.avatar_object_key = avatar_object_key;
     }
 }
 
@@ -71,8 +71,18 @@ export class ModalContent {
     disableFocus: boolean = false;
     app: App;
     closed: boolean = false;
+    disableTransition: boolean = false;
 
-    constructor(title: string, content: JSX.Element | ((modal: ModalContent) => JSX.Element), app: App, closeCallback: ((result: any) => void) | undefined, allowClose: boolean, preventStretch: boolean, disableFocus: boolean) {
+    constructor(
+        title: string,
+        content: JSX.Element | ((modal: ModalContent) => JSX.Element),
+        app: App,
+        closeCallback: ((result: any) => void) | undefined = undefined,
+        allowClose: boolean,
+        preventStretch: boolean = false,
+        disableFocus: boolean = false,
+        disableTransition: boolean = false,
+    ) {
         this.title = title;
         this.content = content;
         this.closeCallback = closeCallback;
@@ -80,6 +90,7 @@ export class ModalContent {
         this.disableFocus = disableFocus;
         this.preventStretch = preventStretch;
         this.app = app;
+        this.disableTransition = disableTransition;
     }
 
     close(result: any = undefined) {
@@ -124,6 +135,29 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             overflowY: "auto" as "auto",
             boxShadow: "0px 4px 20px 4px rgba(0, 0, 0, 0.8)",
         });
+        const modalPaper = (modal: ModalContent) => <Paper elevation={0} sx={paperStyle(modal.preventStretch)}>
+            {(modal.allowClose || modal.title) && <div className="modal-title-row">
+                {modal.allowClose && <IconButton className='modal-close-btn' size='large'
+                                                 hidden={!modal.allowClose}
+                                                 disabled={!modal.allowClose}
+                                                 onClick={() => this.closeModal(modal)}>
+                    <CloseIcon fontSize='inherit'/>
+                </IconButton>}
+                <span id="modal-title">{modal.title}</span>
+            </div>}
+            <div
+                className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`}
+                style={{
+                    maxHeight: this.isDesktop() ? "80vh" : "100dvh",
+                    maxWidth: this.isDesktop() ? "80vw" : "100dvh",
+                    overflow: "auto",
+                    width: "100%",
+                    flex: "1 1 auto",
+                    display: "flex"
+                }}>
+                {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
+            </div>
+        </Paper>;
 
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
@@ -148,31 +182,11 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                                 transform: 'translate(-50%, -50%)',
                                 display: "flex",
                             }}>
-                                <Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
-                                    <Paper elevation={0} sx={paperStyle(modal.preventStretch)}>
-                                        {(modal.allowClose || modal.title) && <div className="modal-title-row">
-                                            {modal.allowClose && <IconButton className='modal-close-btn' size='large'
-                                                                             hidden={!modal.allowClose}
-                                                                             disabled={!modal.allowClose}
-                                                                             onClick={() => this.closeModal(modal)}>
-                                                <CloseIcon fontSize='inherit'/>
-                                            </IconButton>}
-                                            <span id="modal-title">{modal.title}</span>
-                                        </div>}
-                                        <div
-                                            className={`modal-content${(modal.allowClose || modal.title) ? " modal-content-with-title-row" : ""}`}
-                                            style={{
-                                                maxHeight: this.isDesktop() ? "80vh" : "100dvh",
-                                                maxWidth: this.isDesktop() ? "80vw" : "100dvh",
-                                                overflow: "auto",
-                                                width: "100%",
-                                                flex: "1 1 auto",
-                                                display: "flex"
-                                            }}>
-                                            {React.isValidElement(modal.content) ? modal.content : (modal.content as unknown as ((modal: ModalContent) => JSX.Element))(modal)}
-                                        </div>
-                                    </Paper>
-                                </Grow>
+                                {modal.disableTransition
+                                    ? (modalPaper(modal))
+                                    : (<Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
+                                        {modalPaper(modal)}
+                                    </Grow>)}
                             </Box>
                         </Modal>
                     )}
@@ -259,6 +273,12 @@ export class App extends React.Component<{ isDesktop: boolean }, {
         return this.state.user;
     }
 
+    updateUserData(user: User) {
+        this.setState({
+            user: user
+        });
+    }
+
     async getAuthorization(location: Location, navigate: NavigateFunction, require: boolean = true): Promise<{ headers: { authorization: string } } | undefined> {
         if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
@@ -310,8 +330,9 @@ export class App extends React.Component<{ isDesktop: boolean }, {
         allowClose: boolean = true,
         preventStretch: boolean = false,
         disableFocus: boolean = false,
+        disableTransition: boolean = false,
     ): ModalContent {
-        const modal = new ModalContent(title, modalElement, this, closeCallback, allowClose, preventStretch, disableFocus);
+        const modal = new ModalContent(title, modalElement, this, closeCallback, allowClose, preventStretch, disableFocus, disableTransition);
         this.setState(state => {
             const newModalStack = state.modalStack.concat(modal);
             return {
@@ -365,7 +386,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                     modalStack: newModalStack
                 };
             });
-        }, MODAL_TRANSITION_TIMEOUT);
+        }, modal.disableTransition ? 0 : MODAL_TRANSITION_TIMEOUT);
         this.setState(state => {
             return {
                 modalStack: state.modalStack

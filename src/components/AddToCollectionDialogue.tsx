@@ -6,7 +6,7 @@ import urlJoin from "url-join";
 import http, { getApiUrl } from "../http-common";
 import { ActionModal } from "./ActionModal";
 import "./AddToCollectionDialogue.css";
-import { QueryAutocompleteSuggestionSearchBox } from "./QueryInput";
+import { QueryAutocompleteSearchBox } from "./QueryInput";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
@@ -32,7 +32,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
         search.set("limit", "15");
 
         setQueryLoading(true);
-        performSearchQuery("/collection?" + search, app, location, navigate, modal).then(searchResult => {
+        performSearchQuery("/collection?" + search, app, location, navigate).then(searchResult => {
             setPageCount(searchResult.pages);
             setSelectableCollections(searchResult.collections ?? []);
         }).catch((e) => console.error(e)).finally(() => setQueryLoading(false));
@@ -62,7 +62,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                 <p>Add {postQuery ? "all found" : postPks.length} posts to collection:</p>
             </div>
             <div id="add-to-collection-search-box">
-                <QueryAutocompleteSuggestionSearchBox queryString={searchQuery} setQueryString={setSearchQuery} scope="collection" onSubmit={() => executeSearch()} isLoading={queryLoading} />
+                <QueryAutocompleteSearchBox queryString={searchQuery} setQueryString={setSearchQuery} scope="collection" onSubmit={() => executeSearch()} isLoading={queryLoading} />
             </div>
             <div id="add-to-collection-list">
                 <List sx={{ width: "100%", minHeight: "300px", overflow: 'auto', flex: "1 1 auto" }}>

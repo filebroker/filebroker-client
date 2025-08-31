@@ -14,7 +14,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
 
-export function GlobalQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
+export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boolean, autoFocus?: boolean }) {
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
@@ -73,6 +73,7 @@ export function GlobalQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
                 queryString={queryString}
                 setQueryString={setQueryString}
                 scope={scope}
+                autoFocus={autoFocus}
                 renderInput={(params) => {
                     const { InputProps, inputProps, ...restParams } = params;
                     const { startAdornment, ...restInputProps } = InputProps;
@@ -81,6 +82,7 @@ export function GlobalQueryInput({ hideOnHome }: { hideOnHome?: boolean }) {
                         fullWidth
                         size="small"
                         placeholder={placeholder}
+                        autoFocus={autoFocus}
                         inputProps={{ ...inputProps, maxLength: 1000 }}
                         InputProps={{
                             ...restInputProps,
@@ -125,11 +127,12 @@ export function QueryAutocompleteTextField({ label, queryString, setQueryString,
     );
 }
 
-export function QueryAutocomplete({ queryString, setQueryString, scope, disabled = false, renderInput }: {
+export function QueryAutocomplete({ queryString, setQueryString, scope, disabled = false, autoFocus, renderInput }: {
     queryString: string,
     setQueryString: (queryString: string) => void,
     scope: string,
     disabled?: boolean,
+    autoFocus?: boolean,
     renderInput: (params: AutocompleteRenderInputParams) => React.ReactNode,
 }) {
     const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
@@ -148,6 +151,7 @@ export function QueryAutocomplete({ queryString, setQueryString, scope, disabled
     return (
         <Autocomplete
             freeSolo
+            autoFocus={autoFocus}
             disabled={disabled}
             renderInput={renderInput}
             fullWidth
@@ -226,21 +230,47 @@ export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryStrin
     );
 }
 
-export function QueryAutocompleteSuggestionSearchBox({ queryString, setQueryString, scope, autoFocus = false, onSubmit, isLoading = false }: {
+export function QueryAutocompleteSearchBox({ queryString, setQueryString, scope, autoFocus = false, onSubmit, isLoading = false, placeholder = "Search" }: {
     queryString: string,
     setQueryString: (queryString: string) => void,
     scope: string,
     autoFocus?: boolean,
     onSubmit: () => void,
-    isLoading?: boolean
+    isLoading?: boolean,
+    placeholder?: string,
 }) {
     return (
         <form id="QueryAutocompleteSuggestionSearchBox" onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
         }}>
-            <QueryAutocompleteSuggestionCombobox queryString={queryString} setQueryString={setQueryString} scope={scope} autoFocus={autoFocus} disabled={isLoading} />
-            <button className="search-button" type="submit" disabled={isLoading}>{isLoading ? <FontAwesomeIcon icon={solid("circle-notch")} spin /> : <FontAwesomeIcon icon={solid("magnifying-glass")}></FontAwesomeIcon>}</button>
+            <QueryAutocomplete
+                autoFocus={autoFocus}
+                queryString={queryString}
+                setQueryString={setQueryString}
+                scope={scope}
+                disabled={isLoading}
+                renderInput={(params) => {
+                    const { InputProps, inputProps, ...restParams } = params;
+                    const { startAdornment, ...restInputProps } = InputProps;
+                    return <StyledTextField
+                        {...restParams}
+                        fullWidth
+                        size="small"
+                        placeholder={placeholder}
+                        inputProps={{ ...inputProps, maxLength: 1000 }}
+                        InputProps={{
+                            ...restInputProps,
+                            startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>),
+                            endAdornment: <InputAdornment position="end" sx={{ marginRight: isLoading ? "" : "-30px" }}>
+                                <IconButton type="submit" size="small" disabled={isLoading}>
+                                    {isLoading ? <FontAwesomeIcon icon={solid("circle-notch")} spin /> : <SearchIcon/>}
+                                </IconButton>
+                            </InputAdornment>
+                        }}
+                    />;
+                }}
+            />
         </form>
     );
 }

@@ -1,10 +1,12 @@
 import { Location, NavigateFunction } from "react-router-dom";
 import App, { ModalContent, User } from "./App";
-import http from "./http-common";
+import http, {getApiUrl} from "./http-common";
 import { S3Object, S3ObjectMetadata } from "./Model";
+import urlJoin from "url-join";
 
 export async function performSearchQuery(search: string, app: App, location: Location, navigate: NavigateFunction, loadingModal: ModalContent | undefined = undefined): Promise<SearchResult> {
-    let searchParams = new URLSearchParams(search);
+    let searchUrl = new URL(urlJoin(getApiUrl(), `/search${search}`));
+    let searchParams = new URLSearchParams(searchUrl.search);
     let queryParam: string = searchParams.get("query") ?? "";
 
     let config;
