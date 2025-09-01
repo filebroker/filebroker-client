@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Location, NavigateFunction, Route, Routes } from "react-router-dom";
+import {BrowserRouter, Location, NavigateFunction, Route, Routes, useLocation} from "react-router-dom";
 import "@filebroker/react-widgets/lib/styles.css";
 import './App.css';
 import http from "./http-common";
@@ -98,6 +98,15 @@ export class ModalContent {
     }
 }
 
+function RouteChangeHandler({ onChange }: { onChange: (pathname: string) => void }) {
+    const location = useLocation();
+    React.useEffect(() => {
+        onChange(location.pathname);
+    }, [location.pathname, onChange]);
+    return null;
+}
+
+
 export class App extends React.Component<{ isDesktop: boolean }, {
     jwt: string | null;
     user: User | null;
@@ -106,6 +115,18 @@ export class App extends React.Component<{ isDesktop: boolean }, {
 }> {
 
     pendingLogin: Promise<AxiosResponse<LoginResponse, any>> | null;
+
+    private _lastPath: string | undefined;
+
+    // clear modal stack when route changes
+    onRouteChange = (pathname: string) => {
+        if (this._lastPath && this._lastPath !== pathname) {
+            if (this.state.modalStack.length > 0) {
+                this.setState({ modalStack: [] });
+            }
+        }
+        this._lastPath = pathname;
+    };
 
     constructor(props: { isDesktop: boolean }) {
         super(props);
@@ -191,6 +212,9 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                         </Modal>
                     )}
                 </div>
+
+                <RouteChangeHandler onChange={this.onRouteChange} />
+
                 <Routes>
                     <Route path="/" element={<Home></Home>}></Route>
                     <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
@@ -230,20 +254,6 @@ export class App extends React.Component<{ isDesktop: boolean }, {
             console.log("Failed to refresh login: " + e);
             this.handleLogin(null);
         }
-    }
-
-    private _lastPath: string | undefined;
-
-    componentDidUpdate(): void {
-        // Check if the pathname has changed
-        const currentPath = window.location.pathname;
-        if (this._lastPath && this._lastPath !== currentPath) {
-            // Clear all modals when navigation occurs
-            if (this.state.modalStack.length > 0) {
-                this.setState({ modalStack: [] });
-            }
-        }
-        this._lastPath = currentPath;
     }
 
     handleLogin(loginResponse: LoginResponse | null) {
