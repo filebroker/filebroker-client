@@ -4,7 +4,7 @@ import App, { ModalContent, User } from "../App";
 import http, {getApiUrl} from "../http-common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import {Avatar, Button, Paper, TextField} from "@mui/material";
+import {Avatar, Button, IconButton, Paper, TextField} from "@mui/material";
 import { emailRegex } from "./Register";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
@@ -86,7 +86,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
     let profileContent;
     if (user != null) {
         profileContent = <>
-            <Button onClick={() => app.openModal("Select Avatar", (modal) => <PostPicker app={app} constriction={"@type ~= \"image/%\""} onPostSelect={(post) => {
+            <IconButton sx={{ width: "fit-content", justifySelf: "center", alignSelf: "center" }} onClick={() => app.openModal("Select Avatar", (modal) => <PostPicker app={app} constriction={"@type ~= \"image/%\""} onPostSelect={(post) => {
                 app.openModal(
                     "Avatar Cropper",
                     (avatarCropperModal) => <AvatarCropper sourceObjectKey={post.s3_object.object_key} modal={avatarCropperModal} app={app} />,
@@ -105,7 +105,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                 <Avatar sx={{ width: 100, height: 100 }} src={user.avatar_object_key ? urlJoin(getApiUrl(), "get-object", user.avatar_object_key) : undefined}>
                     {!user.avatar_object_key && (user.display_name ?? user.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
                 </Avatar>
-            </Button>
+            </IconButton>
             <ReadOnlyTextField
                 label="User Name"
                 variant="standard"
