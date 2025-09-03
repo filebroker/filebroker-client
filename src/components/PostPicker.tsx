@@ -18,7 +18,12 @@ export function PostPicker({ app, onPostSelect, constriction = "" }: { app: App,
     const [listPage, setListPage] = useState(0);
     const [pageCount, setPageCount] = useState<number | null>(null);
 
-    const executeSearch = () => {
+    const executeSearch = (resetPagination: boolean) => {
+        if (resetPagination) {
+            setListPage(0);
+            setPageCount(null);
+        }
+
         const search = new URLSearchParams();
         search.set("query", (constriction.length > 0 ? constriction + " " : constriction) + searchQuery);
         search.set("page", listPage.toString());
@@ -33,7 +38,7 @@ export function PostPicker({ app, onPostSelect, constriction = "" }: { app: App,
     };
 
     useEffect(() => {
-        executeSearch();
+        executeSearch(false);
     }, [listPage]);
 
     return (
@@ -43,7 +48,7 @@ export function PostPicker({ app, onPostSelect, constriction = "" }: { app: App,
                     queryString={searchQuery}
                     setQueryString={setSearchQuery}
                     scope="post"
-                    onSubmit={() => executeSearch()}
+                    onSubmit={() => executeSearch(true)}
                     isLoading={queryLoading}
                 />
             </Box>

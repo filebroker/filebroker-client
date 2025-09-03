@@ -24,7 +24,12 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
     const [pageCount, setPageCount] = useState<number | null>(null);
     const { enqueueSnackbar } = useSnackbar();
 
-    const executeSearch = () => {
+    const executeSearch = (resetPagination: boolean) => {
+        if (resetPagination) {
+            setListPage(0);
+            setPageCount(null);
+        }
+
         const search = new URLSearchParams();
         search.set("query", searchQuery);
         search.set("page", listPage.toString());
@@ -39,7 +44,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
     };
 
     useEffect(() => {
-        executeSearch();
+        executeSearch(false);
     }, [listPage]);
 
     const errorHandler = (e: any) => {
@@ -62,7 +67,7 @@ export function AddToCollectionDialogue({ app, postPks, modal, postQuery }: { ap
                 <p>Add {postQuery ? "all found" : postPks.length} posts to collection:</p>
             </div>
             <div id="add-to-collection-search-box">
-                <QueryAutocompleteSearchBox queryString={searchQuery} setQueryString={setSearchQuery} scope="collection" onSubmit={() => executeSearch()} isLoading={queryLoading} />
+                <QueryAutocompleteSearchBox queryString={searchQuery} setQueryString={setSearchQuery} scope="collection" onSubmit={() => executeSearch(true)} isLoading={queryLoading} />
             </div>
             <div id="add-to-collection-list">
                 <List sx={{ width: "100%", minHeight: "300px", overflow: 'auto', flex: "1 1 auto" }}>
