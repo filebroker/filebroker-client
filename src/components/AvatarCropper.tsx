@@ -34,7 +34,6 @@ export function AvatarCropper({ sourceObjectKey, modal, app }: { sourceObjectKey
                     maxZoom={9}
                     aspect={1}
                     onCropComplete={(_, croppedAreaPixels) => {
-                        console.log(croppedAreaPixels);
                         croppedArea.current = croppedAreaPixels;
                     }}
                 />
