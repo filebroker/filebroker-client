@@ -19,6 +19,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { TagGlossary } from './routes/TagGlossary';
 import { TagDetailPage } from './routes/TagDetailPage';
 import NavBar from "./components/NavBar";
+import {GroupMembershipList} from "./routes/GroupMembershipList";
+import {GroupDetailPage} from "./routes/GroupDetailPage";
+import {closeSnackbar, SnackbarProvider} from "notistack";
+import {RedeemUserGroupInvite} from "./routes/RedeemUserGroupInvite";
 
 declare module 'react' {
     interface CSSProperties {
@@ -182,54 +186,63 @@ export class App extends React.Component<{ isDesktop: boolean }, {
 
         return (
             <BrowserRouter basename={process.env.REACT_APP_PATH ? process.env.REACT_APP_PATH : "/"}>
-                <div id="App">
-                    <NavBar app={this} />
-                    {this.state.modalStack.map((modal, idx) =>
-                        <Modal
-                            open={true}
-                            key={"modal_" + idx}
-                            disableEscapeKeyDown={!modal.allowClose}
-                            disableAutoFocus={modal.disableFocus}
-                            onClose={() => {
-                                if (modal.allowClose) {
-                                    modal.close();
-                                }
-                            }}
-                        >
-                            <Box sx={{
-                                position: 'absolute' as 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                display: "flex",
-                            }}>
-                                {modal.disableTransition
-                                    ? (modalPaper(modal))
-                                    : (<Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
-                                        {modalPaper(modal)}
-                                    </Grow>)}
-                            </Box>
-                        </Modal>
-                    )}
-                </div>
+                <SnackbarProvider autoHideDuration={6000} anchorOrigin={{ horizontal: "right", vertical: "bottom" }} action={(snackbarId) => (
+                    <IconButton onClick={() => closeSnackbar(snackbarId)}>
+                        <CloseIcon color='primary' />
+                    </IconButton>
+                )}>
+                    <div id="App">
+                        <NavBar app={this} />
+                        {this.state.modalStack.map((modal, idx) =>
+                            <Modal
+                                open={true}
+                                key={"modal_" + idx}
+                                disableEscapeKeyDown={!modal.allowClose}
+                                disableAutoFocus={modal.disableFocus}
+                                onClose={() => {
+                                    if (modal.allowClose) {
+                                        modal.close();
+                                    }
+                                }}
+                            >
+                                <Box sx={{
+                                    position: 'absolute' as 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    display: "flex",
+                                }}>
+                                    {modal.disableTransition
+                                        ? (modalPaper(modal))
+                                        : (<Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
+                                            {modalPaper(modal)}
+                                        </Grow>)}
+                                </Box>
+                            </Modal>
+                        )}
+                    </div>
 
-                <RouteChangeHandler onChange={this.onRouteChange} />
+                    <RouteChangeHandler onChange={this.onRouteChange} />
 
-                <Routes>
-                    <Route path="/" element={<Home></Home>}></Route>
-                    <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
-                    <Route path="/login" element={<Login app={this}></Login>}></Route>
-                    <Route path="/profile" element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}></Route>
-                    <Route path="/register" element={<Register app={this}></Register>}></Route>
-                    <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
-                    <Route path="/confirm-email/:token" element={<EmailConfirmation app={this}></EmailConfirmation>}></Route>
-                    <Route path="/collections" element={<PostCollectionSearch app={this} />} />
-                    <Route path="/collection/:id" element={<PostCollection app={this} />} />
-                    <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
-                    <Route path="/tags" element={<TagGlossary app={this} />} />
-                    <Route path="/tag/:id" element={<TagDetailPage app={this} />} />
-                    <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
-                </Routes>
+                    <Routes>
+                        <Route path="/" element={<Home></Home>}></Route>
+                        <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
+                        <Route path="/login" element={<Login app={this}></Login>}></Route>
+                        <Route path="/profile" element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}></Route>
+                        <Route path="/register" element={<Register app={this}></Register>}></Route>
+                        <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
+                        <Route path="/confirm-email/:token" element={<EmailConfirmation app={this}></EmailConfirmation>}></Route>
+                        <Route path="/collections" element={<PostCollectionSearch app={this} />} />
+                        <Route path="/collection/:id" element={<PostCollection app={this} />} />
+                        <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
+                        <Route path="/tags" element={<TagGlossary app={this} />} />
+                        <Route path="/tag/:id" element={<TagDetailPage app={this} />} />
+                        <Route path="/groups" element={<GroupMembershipList app={this} />} />
+                        <Route path="/group/:id" element={<GroupDetailPage app={this} />} />
+                        <Route path="/invite/:invite_code" element={<RedeemUserGroupInvite app={this} />}/>
+                        <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
+                    </Routes>
+                </SnackbarProvider>
             </BrowserRouter>
         );
     }

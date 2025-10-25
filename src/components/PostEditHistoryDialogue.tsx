@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import http from "../http-common";
-import {Button, CircularProgress, Pagination, Paper} from "@mui/material";
+import {Button, Checkbox, CircularProgress, FormControlLabel, Pagination, Paper} from "@mui/material";
 import App, {ModalContent} from "../App";
 import {useLocation, useNavigate} from "react-router";
 
@@ -16,7 +16,7 @@ import {
     TagCategory,
     TagDetailed,
     TagUsage,
-    UserGroup,
+    UserGroup, UserGroupDetailed,
     UserPublic
 } from "../Model";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -244,6 +244,78 @@ export function TagEditHistoryDialogue({app, tag, modal}: {
     );
 }
 
+interface UserGroupEditHistorySnapshot {
+    pk: number;
+    fk_user_group: number;
+    edit_user: UserPublic;
+    edit_timestamp: string;
+    name: string;
+    name_changed: boolean;
+    is_public: boolean;
+    public_changed: boolean;
+    description: string | null | undefined;
+    description_changed: boolean;
+    allow_member_invite: boolean;
+    allow_member_invite_changed: boolean;
+    tags_changed: boolean;
+    tags: TagUsage[];
+}
+
+export function UserGroupEditHistoryDialogue({app, user_group, modal}: {
+    app: App,
+    user_group: UserGroupDetailed,
+    modal?: ModalContent | undefined
+}) {
+    return (
+        <InternalEditHistoryDialogue<UserGroupDetailed, UserGroupEditHistorySnapshot>
+            app={app}
+            history_object={user_group}
+            modal={modal}
+            get_history_endpoint="get-user-group-edit-history"
+            object_name="user group"
+            rewind_history_endpoint="rewind-user-group-history-snapshot"
+            render_object_values={user_group => <Paper elevation={2} className="snapshot-values-container">
+                <ReadOnlyTextField label="Name" value={user_group.name} variant="standard"/>
+                <ReadOnlyTextField label="Description" value={user_group.description ?? ""} variant="standard"
+                                   multiline maxRows={5}/>
+                <TagSelector
+                    values={user_group.tags?.sort(sortTagUsages).map(tagUsage => tagUsage.tag)}
+                    readOnly setSelectedTags={() => {}} enableTagLink/>
+                <FormControlLabel
+                    control={<Checkbox checked={user_group.is_public} disabled readOnly sx={{'&.Mui-disabled': {color: 'text.primary'}}} />}
+                    label="Public"
+                    sx={{ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': {color: 'text.primary'} }}
+                />
+                <FormControlLabel
+                    control={<Checkbox checked={user_group.allow_member_invite} disabled readOnly sx={{'&.Mui-disabled': {color: 'text.primary'}}} />}
+                    label="Allow Member Invite"
+                    sx={{ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': {color: 'text.primary'} }}
+                />
+            </Paper>}
+            render_snapshot_values={snapshot => <Paper elevation={2} className="snapshot-values-container">
+                <ReadOnlyTextField label="Title" value={snapshot.name ?? ""} variant="standard"
+                                   color={snapshot.name_changed ? "info" : undefined}/>
+                <ReadOnlyTextField label="Description" value={snapshot.description ?? ""} variant="standard"
+                                   color={snapshot.description_changed ? "info" : undefined} multiline maxRows={5}/>
+                <TagSelector
+                    values={snapshot.tags.sort(sortTagUsages).map(tagUsage => tagUsage.tag)}
+                    readOnly setSelectedTags={() => {
+                }} color={snapshot.tags_changed ? "info" : undefined} enableTagLink/>
+                <FormControlLabel
+                    control={<Checkbox checked={snapshot.is_public} disabled readOnly sx={(theme) => ({'&.Mui-disabled': {color: snapshot.public_changed ? theme.palette.info.main : theme.palette.text.primary}})} />}
+                    label="Public"
+                    sx={(theme) => ({ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': {color: snapshot.public_changed ? theme.palette.info.main : theme.palette.text.primary} })}
+                />
+                <FormControlLabel
+                    control={<Checkbox checked={snapshot.allow_member_invite} disabled readOnly sx={(theme) => ({'&.Mui-disabled': {color: snapshot.allow_member_invite_changed ? theme.palette.info.main : theme.palette.text.primary}})} />}
+                    label="Allow Member Invite"
+                    sx={(theme) => ({ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': {color: snapshot.allow_member_invite_changed ? theme.palette.info.main : theme.palette.text.primary} })}
+                />
+            </Paper>}
+        />
+    );
+}
+
 interface HistoryObject {
     pk: number;
     edit_user: UserPublic;
@@ -438,7 +510,7 @@ function InternalEditHistoryDialogue<O extends {
                                                                 const loadingModal = app.openLoadingModal();
                                                                 try {
                                                                     const config = await app.getAuthorization(location, navigate);
-                                                                    const response = await http.post<PostDetailed>(`${rewind_history_endpoint}/${snapshot.pk}`, {}, config);
+                                                                    const response = await http.post(`${rewind_history_endpoint}/${snapshot.pk}`, {}, config);
 
                                                                     enqueueSnackbar("History rewound", {variant: "success"});
 

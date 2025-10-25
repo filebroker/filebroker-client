@@ -13,10 +13,11 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
 import SelectAllIcon from '@mui/icons-material/SelectAll';
 import DeselectIcon from '@mui/icons-material/Deselect';
+import {UserPublic} from "../Model";
 
 export interface PaginatedGridViewItem {
     pk: number;
-    create_user: User;
+    create_user: User | UserPublic;
     title?: string | null | undefined;
     thumbnail_url?: string | null | undefined;
     thumbnail_object_key?: string | null | undefined;

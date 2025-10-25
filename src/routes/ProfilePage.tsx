@@ -108,7 +108,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
             </IconButton>
             <ReadOnlyTextField
                 label="User Name"
-                variant="standard"
+                variant="outlined"
                 value={userName}
                 fullWidth
             />

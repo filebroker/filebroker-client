@@ -4,12 +4,10 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Modal from 'react-modal';
 import {createTheme, styled, ThemeProvider} from '@mui/material/styles';
-import {closeSnackbar, SnackbarProvider} from 'notistack';
 import {
     Autocomplete,
     FormControl,
     FormLabelProps,
-    IconButton,
     InputLabel,
     Select,
     SelectProps,
@@ -19,7 +17,6 @@ import {
     useMediaQuery,
     useTheme
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import * as React from "react";
 import {ChipTypeMap} from "@mui/material/Chip";
 import {AutocompleteProps} from "@mui/material/Autocomplete/Autocomplete";
@@ -105,6 +102,24 @@ const StyledReadOnlyTextField = styled(TextField)(({ theme, color }) => {
         },
         "& .MuiInput-underline:after": {
             borderBottom: `1px solid ${themeColor}`, // Remove underline when focused
+        },
+        "& .MuiOutlinedInput-root": {
+            "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderWidth: "1px",
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderWidth: "1px",
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderWidth: "1px",
+            },
+        },
+        "& .MuiInputLabel-root": {
+            color: "white",
+            'WebkitTextFillColor': 'white',
         },
     };
 });
@@ -241,13 +256,7 @@ const DimensionAwareApp = () => {
 
 root.render(
     <ThemeProvider theme={MUI_THEME}>
-        <SnackbarProvider autoHideDuration={6000} anchorOrigin={{ horizontal: "right", vertical: "bottom" }} action={(snackbarId) => (
-            <IconButton onClick={() => closeSnackbar(snackbarId)}>
-                <CloseIcon color='primary' />
-            </IconButton>
-        )}>
-            <DimensionAwareApp />
-        </SnackbarProvider>
+        <DimensionAwareApp />
     </ThemeProvider>
 );
 

@@ -13,7 +13,12 @@ import {enqueueSnackbar} from "notistack";
  *
  *  NOTE: When used in a modal, disable scaling effect transitions using disableTransitions. See https://github.com/ValentinH/react-easy-crop/issues/400
  */
-export function AvatarCropper({ sourceObjectKey, modal, app }: { sourceObjectKey: string, modal?: ModalContent, app: App }) {
+export function AvatarCropper({sourceObjectKey, modal, userGroupPk, app}: {
+    sourceObjectKey: string,
+    modal?: ModalContent,
+    userGroupPk?: number | undefined,
+    app: App
+}) {
     const location = useLocation();
     const navigate = useNavigate();
     const [crop, setCrop] = useState({x: 0, y: 0});
@@ -52,19 +57,29 @@ export function AvatarCropper({ sourceObjectKey, modal, app }: { sourceObjectKey
                     const loadingModal = app.openLoadingModal();
                     try {
                         let config = await app.getAuthorization(location, navigate);
-                        let response = await http.post<User>("create-user-avatar", {
+                        let req = {
                             source_object_key: sourceObjectKey,
                             width: currentArea.width,
                             height: currentArea.height,
                             x: currentArea.x,
                             y: currentArea.y
-                        }, config);
-                        enqueueSnackbar({
-                            message: "Avatar saved",
-                            variant: "success"
-                        });
-                        app.updateUserData(response.data);
-                        modal?.close(response.data);
+                        };
+                        if (userGroupPk) {
+                            let response = await http.post<User>(`/create-user-group-avatar/${userGroupPk}`, req, config);
+                            enqueueSnackbar({
+                                message: "Avatar saved",
+                                variant: "success"
+                            });
+                            modal?.close(response.data);
+                        } else {
+                            let response = await http.post<User>("create-user-avatar", req, config);
+                            enqueueSnackbar({
+                                message: "Avatar saved",
+                                variant: "success"
+                            });
+                            app.updateUserData(response.data);
+                            modal?.close(response.data);
+                        }
                     } catch (e: any) {
                         if (e?.response?.data?.error_code === 500017) {
                             app.openModal("Error", <p>Cannot save avatar image because site admin has not set up a system bucket.</p>);

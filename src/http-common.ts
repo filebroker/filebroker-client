@@ -28,3 +28,16 @@ export function getPublicUrl(): string {
         return url;
     }
 }
+
+export function getSiteBaseURI(): string {
+    const origin = window.location.origin;
+    let path = process.env.REACT_APP_PATH;
+
+    if (path === undefined || path === "/") {
+        return origin + "/";
+    } else if (!path.endsWith("/")) {
+        return origin + path + "/";
+    } else {
+        return origin + path;
+    }
+}

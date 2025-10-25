@@ -1,14 +1,29 @@
-import {AppBar, Avatar, Box, Button, IconButton, List, ListItem, styled, Toolbar} from "@mui/material";
-import React from "react";
+import {
+    AppBar,
+    Avatar,
+    Box,
+    Button, ClickAwayListener, Divider, Grow,
+    IconButton,
+    List,
+    ListItem,
+    ListItemIcon, ListItemText,
+    MenuItem, MenuList, Paper, Popper,
+    styled,
+    Toolbar
+} from "@mui/material";
+import React, {useRef} from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import {GlobalQueryInput} from "./QueryInput";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import urlJoin from "url-join";
-import {getApiUrl, getPublicUrl} from "../http-common";
-import App from "../App";
+import http, {getApiUrl, getPublicUrl} from "../http-common";
+import App, {ModalContent} from "../App";
 import UploadDialogue from "./UploadDialogue";
 import {FontAwesomeSvgIcon} from "./FontAwesomeSvgIcon";
 import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import {AccountCircle} from "@mui/icons-material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import GroupIcon from '@mui/icons-material/Group';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
     backgroundColor: "#000a14e6",
@@ -28,8 +43,8 @@ const NavLinkButton = styled(Button)({
     color: "inherit",
     textTransform: "inherit",
     textDecoration: "inherit",
-    '&:hover': {
-        color: '#2a52be'
+    "&:hover": {
+        color: "#2a52be"
     }
 }) as typeof Button;
 
@@ -49,12 +64,15 @@ const NavLinkIconButton = styled(IconButton)({
     color: "inherit",
     textTransform: "inherit",
     textDecoration: "inherit",
-    '&:hover': {
-        color: '#2a52be'
+    "&:hover": {
+        color: "#2a52be"
     }
 }) as typeof IconButton;
 
 export default function NavBar({ app }: { app: App }) {
+    const [navMenuAnchor, setNavMenuAnchor] = React.useState<null | HTMLElement>(null);
+    const navigate = useNavigate();
+    const navModal = useRef<ModalContent | null>(null);
     return (
         <StyledAppBar position="fixed">
             <Toolbar disableGutters>
@@ -63,49 +81,55 @@ export default function NavBar({ app }: { app: App }) {
                         size="large"
                         aria-label="mobile navigation menu"
                         aria-controls="menu-appbar"
-                        onClick={() => app.openModal("", (modal) =>
-                            <List sx={{display: "flex", flexDirection: "column", alignItems: "center", justifyItems: "center", justifyContent: "center", width: "100%", height: "100%"}}>
-                                <ListItem sx={{display: "flex", width: "fit-content"}}><NavLinkButton component={Link} to={"/"} onClick={() => modal.close()}>
-                                    <img src={urlJoin(getPublicUrl(), "logo192.png")} alt="Logo" height="48"/>
-                                </NavLinkButton></ListItem>
-                                <ListItem sx={{display: "flex", width: "fit-content"}}>
-                                    <NavLinkButton component={Link} to={"/posts"} onClick={() => modal.close()}>Posts</NavLinkButton>
-                                </ListItem>
-                                <ListItem sx={{display: "flex", width: "fit-content"}}>
-                                    <NavLinkButton component={Link} to={"/collections"} onClick={() => modal.close()}>Collections</NavLinkButton>
-                                </ListItem>
-                                <ListItem sx={{display: "flex", width: "fit-content"}}>
-                                    <NavLinkButton
-                                        variant="text"
-                                        disabled={!app.isLoggedIn()}
-                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("cloud-arrow-up")}/>}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            if (app.isLoggedIn()) {
-                                                app.openModal("Upload", uploadModal =>
-                                                    <UploadDialogue
-                                                        app={app}
-                                                        modal={uploadModal}></UploadDialogue>);
-                                            } else {
-                                                app.openModal("Error", <p>Must be logged in</p>);
-                                            }
-                                        }}>Upload</NavLinkButton>
-                                </ListItem>
-                                <ListItem sx={{display: "flex", width: "fit-content"}}>
-                                    <NavLinkButton component={Link} to="/tags" onClick={() => modal.close()}>Tags</NavLinkButton>
-                                </ListItem>
-                                <ListItem sx={{display: "flex", width: "fit-content"}}>
-                                    {app.isLoggedIn()
-                                        ? <NavLinkIconButton component={Link} to={"/profile"}>
-                                            <Avatar sx={{ width: 48, height: 48 }} src={app.getUser()?.avatar_object_key ? urlJoin(getApiUrl(), "get-object", app.getUser()!.avatar_object_key!) : undefined}>
-                                                {!(app.getUser()?.avatar_object_key) && (app.getUser()!.display_name ?? app.getUser()!.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
-                                            </Avatar>
-                                        </NavLinkIconButton>
-                                        : <NavLinkOutlinedButton component={Link} to={"/login"} variant="contained" color="secondary">Log In</NavLinkOutlinedButton>
-                                    }
-                                </ListItem>
-                            </List>)}
+                        onClick={() => app.openModal("", (modal) => {
+                            navModal.current = modal;
+                            return (
+                                <List sx={{display: "flex", flexDirection: "column", alignItems: "center", justifyItems: "center", justifyContent: "center", width: "100%", height: "100%"}}>
+                                    <ListItem sx={{display: "flex", width: "fit-content"}}><NavLinkButton component={Link} to={"/"} onClick={() => modal.close()}>
+                                        <img src={urlJoin(getPublicUrl(), "logo192.png")} alt="Logo" height="48"/>
+                                    </NavLinkButton></ListItem>
+                                    <ListItem sx={{display: "flex", width: "fit-content"}}>
+                                        <NavLinkButton component={Link} to={"/posts"} onClick={() => modal.close()}>Posts</NavLinkButton>
+                                    </ListItem>
+                                    <ListItem sx={{display: "flex", width: "fit-content"}}>
+                                        <NavLinkButton component={Link} to={"/collections"} onClick={() => modal.close()}>Collections</NavLinkButton>
+                                    </ListItem>
+                                    <ListItem sx={{display: "flex", width: "fit-content"}}>
+                                        <NavLinkButton
+                                            variant="text"
+                                            disabled={!app.isLoggedIn()}
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("cloud-arrow-up")}/>}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                if (app.isLoggedIn()) {
+                                                    app.openModal("Upload", uploadModal =>
+                                                        <UploadDialogue
+                                                            app={app}
+                                                            modal={uploadModal}></UploadDialogue>);
+                                                } else {
+                                                    app.openModal("Error", <p>Must be logged in</p>);
+                                                }
+                                            }}>Upload</NavLinkButton>
+                                    </ListItem>
+                                    <ListItem sx={{display: "flex", width: "fit-content"}}>
+                                        <NavLinkButton component={Link} to="/tags" onClick={() => modal.close()}>Tags</NavLinkButton>
+                                    </ListItem>
+                                    <ListItem sx={{display: "flex", width: "fit-content"}}>
+                                        {app.isLoggedIn()
+                                            ? <NavLinkIconButton onClick={(e) => {
+                                                setNavMenuAnchor(e.currentTarget);
+                                            }}>
+                                                <Avatar sx={{ width: 48, height: 48 }} src={app.getUser()?.avatar_object_key ? urlJoin(getApiUrl(), "get-object", app.getUser()!.avatar_object_key!) : undefined}>
+                                                    {!(app.getUser()?.avatar_object_key) && (app.getUser()!.display_name ?? app.getUser()!.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
+                                                </Avatar>
+                                            </NavLinkIconButton>
+                                            : <NavLinkOutlinedButton component={Link} to={"/login"} variant="contained" color="secondary">Log In</NavLinkOutlinedButton>
+                                        }
+                                    </ListItem>
+                                </List>
+                            );
+                        }, () => { navModal.current = null })}
                         color="inherit"
                     >
                         <MenuIcon/>
@@ -137,7 +161,7 @@ export default function NavBar({ app }: { app: App }) {
                         }}>Upload</NavLinkButton>
                         <NavLinkButton component={Link} to="/tags">Tags</NavLinkButton>
                         {app.isLoggedIn()
-                            ? <NavLinkIconButton component={Link} to={"/profile"}>
+                            ? <NavLinkIconButton onClick={(e) => setNavMenuAnchor(e.currentTarget)}>
                                 <Avatar sx={{ width: 40, height: 40 }} src={app.getUser()?.avatar_object_key ? urlJoin(getApiUrl(), "get-object", app.getUser()!.avatar_object_key!) : undefined}>
                                     {!(app.getUser()?.avatar_object_key) && (app.getUser()!.display_name ?? app.getUser()!.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
                                 </Avatar>
@@ -147,6 +171,75 @@ export default function NavBar({ app }: { app: App }) {
                     </Box>
                 </Box>
             </Toolbar>
+            <Popper
+                open={Boolean(navMenuAnchor)}
+                anchorEl={navMenuAnchor}
+                role={undefined}
+                placement="bottom-start"
+                transition
+                sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+            >
+                {({ TransitionProps, placement }) => (
+                    <Grow
+                        {...TransitionProps}
+                        style={{
+                            transformOrigin:
+                                placement === "bottom-start" ? "left top" : "left bottom",
+                        }}
+                    >
+                        <Paper>
+                            <ClickAwayListener onClickAway={() => setNavMenuAnchor(null)}>
+                                <MenuList
+                                    autoFocusItem={Boolean(navMenuAnchor)}
+                                    id="nav-menu"
+                                    sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Tab") {
+                                            event.preventDefault();
+                                            setNavMenuAnchor(null);
+                                        } else if (event.key === "Escape") {
+                                            setNavMenuAnchor(null);
+                                        }
+                                    }}
+                                >
+                                    <MenuItem component={Link} to={"/profile"} onClick={() => {
+                                        setNavMenuAnchor(null);
+                                        navModal.current?.close();
+                                    }}>
+                                        <ListItemIcon><AccountCircle /></ListItemIcon>
+                                        <ListItemText>Profile</ListItemText>
+                                    </MenuItem>
+                                    <MenuItem component={Link} to={"/groups"} onClick={() => {
+                                        setNavMenuAnchor(null);
+                                        navModal.current?.close();
+                                    }}>
+                                        <ListItemIcon><GroupIcon /></ListItemIcon>
+                                        <ListItemText>Groups</ListItemText>
+                                    </MenuItem>
+                                    <Divider />
+                                    <MenuItem onClick={async () => {
+                                        setNavMenuAnchor(null);
+                                        navModal.current?.close();
+                                        await http.post("/logout", null, { withCredentials: true });
+                                        app.setState({
+                                            jwt: null,
+                                            user: null,
+                                            loginExpiry: null
+                                        });
+                                        navigate("/");
+                                    }} sx={{color: "red"}}>
+                                        <ListItemIcon sx={{color: "inherit"}}><LogoutIcon /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Log Out"
+                                            primaryTypographyProps={{ sx: { color: "inherit" } }}
+                                        />
+                                    </MenuItem>
+                                </MenuList>
+                            </ClickAwayListener>
+                        </Paper>
+                    </Grow>
+                )}
+            </Popper>
         </StyledAppBar>
     );
 }

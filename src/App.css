@@ -736,7 +736,7 @@ input:-webkit-autofill:focus {
 .form-paper-content {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 10px;
     min-width: 325px;
     text-align: center;
 }
@@ -779,4 +779,33 @@ input:-webkit-autofill:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.full-page-component {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    min-height: calc(100vh - 64px);
+}
+
+.full-page-content-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media all and (orientation:portrait) {
+    .full-page-content-wrapper {
+        min-width: max(25vh, min(375px, calc(100vw - 40px)));
+        min-height: max(25vh, min(375px, calc(100vh - 64px)));
+    }
+}
+
+@media all and (orientation:landscape) {
+    .full-page-content-wrapper {
+        min-width: max(25vw, min(375px, calc(100vw - 40px)));
+        min-height: max(25vw, min(375px, calc(100vh - 64px)));
+        justify-content: center;
+    }
 }

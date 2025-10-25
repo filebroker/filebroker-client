@@ -1,17 +1,27 @@
 import { Button, ButtonGroup } from "@mui/material";
 import { ModalContent } from "../App";
-import "./ActionModal.css";
+import {ReactNode, useState} from "react";
 
 export interface Action {
     name: string;
-    fn: (modalContent?: ModalContent) => any;
+    fn: (modalContent?: ModalContent, additionalContent?: string) => any;
 }
 
-export function ActionModal({ modalContent, text, actions, showCancelButton = true }: { modalContent: ModalContent, text: string, actions: Action[], showCancelButton?: boolean }) {
+export function ActionModal({ modalContent, text, additionalContent, actions, showCancelButton = true }: {
+    modalContent: ModalContent,
+    text: string,
+    additionalContent?: (value: string, setValue: (v: string) => void) => ReactNode;
+    actions: Action[],
+    showCancelButton?: boolean,
+}) {
+    const [value, setValue] = useState("");
     return (
-        <div id="ActionModal">
+        <div id="ActionModal" style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: "350px" }}>
             <div id="action-modal-text">
                 <p>{text}</p>
+            </div>
+            <div>
+                {additionalContent && additionalContent(value, setValue)}
             </div>
             <div id="action-modal-button-row">
                 {showCancelButton && <div style={{ "float": "left" }}>
@@ -22,7 +32,7 @@ export function ActionModal({ modalContent, text, actions, showCancelButton = tr
                         {actions.map((action) => <Button key={"action_button_" + action.name} onClick={async () => {
                             let returnValue;
                             try {
-                                returnValue = await action.fn(modalContent);
+                                returnValue = await action.fn(modalContent, additionalContent && value);
                             } finally {
                                 modalContent.close(returnValue);
                             }

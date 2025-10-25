@@ -1,7 +1,7 @@
 import { Location, NavigateFunction } from "react-router-dom";
-import App, { ModalContent, User } from "./App";
+import App, { ModalContent } from "./App";
 import http, {getApiUrl} from "./http-common";
-import { S3Object, S3ObjectMetadata } from "./Model";
+import {S3Object, S3ObjectMetadata, UserPublic} from "./Model";
 import urlJoin from "url-join";
 
 export async function performSearchQuery(search: string, app: App, location: Location, navigate: NavigateFunction, loadingModal: ModalContent | undefined = undefined): Promise<SearchResult> {
@@ -73,19 +73,22 @@ export class SearchResult {
     posts: PostQueryObject[] | undefined;
     collections: PostCollectionQueryObject[] | undefined;
     collection_items: PostCollectionItemQueryObject[] | undefined;
+    user_groups: UserGroupQueryObject[] | undefined;
 
     constructor(
         full_count: number,
         pages: number,
         posts: PostQueryObject[] | undefined,
         collections: PostCollectionQueryObject[] | undefined,
-        collection_items: PostCollectionItemQueryObject[] | undefined
+        collection_items: PostCollectionItemQueryObject[] | undefined,
+        user_groups: UserGroupQueryObject[] | undefined,
     ) {
         this.full_count = full_count;
         this.pages = pages;
         this.posts = posts;
         this.collections = collections;
         this.collection_items = collection_items;
+        this.user_groups = user_groups;
     }
 }
 
@@ -95,7 +98,7 @@ export class PostQueryObject {
     source_url: string | null;
     title: string | null;
     creation_timestamp: string;
-    create_user: User;
+    create_user: UserPublic;
     score: number;
     s3_object: S3Object;
     s3_object_metadata: S3ObjectMetadata;
@@ -111,7 +114,7 @@ export class PostQueryObject {
         source_url: string | null,
         title: string | null,
         creation_timestamp: string,
-        create_user: User,
+        create_user: UserPublic,
         score: number,
         s3_object: S3Object,
         s3_object_metadata: S3ObjectMetadata,
@@ -142,7 +145,7 @@ export class PostCollectionQueryObject {
     pk: number;
     title: string | null;
     creation_timestamp: string;
-    create_user: User;
+    create_user: UserPublic;
     poster_object: S3Object | null;
     thumbnail_object_key: string | null;
     is_public: boolean;
@@ -153,7 +156,7 @@ export class PostCollectionQueryObject {
         pk: number,
         title: string | null,
         creation_timestamp: string,
-        create_user: User,
+        create_user: UserPublic,
         poster_object: S3Object | null,
         thumbnail_object_key: string | null,
         is_public: boolean,
@@ -175,7 +178,7 @@ export class PostCollectionQueryObject {
 export class PostCollectionItemQueryObject {
     post: PostQueryObject;
     post_collection: PostCollectionQueryObject;
-    added_by: User;
+    added_by: UserPublic;
     creation_timestamp: string;
     pk: number;
     ordinal: number;
@@ -183,7 +186,7 @@ export class PostCollectionItemQueryObject {
     constructor(
         post: PostQueryObject,
         post_collection: PostCollectionQueryObject,
-        added_by: User,
+        added_by: UserPublic,
         creation_timestamp: string,
         pk: number,
         ordinal: number
@@ -194,5 +197,39 @@ export class PostCollectionItemQueryObject {
         this.creation_timestamp = creation_timestamp;
         this.pk = pk;
         this.ordinal = ordinal;
+    }
+}
+
+export class UserGroupQueryObject {
+    pk: number;
+    name: string;
+    is_public: boolean;
+    owner: UserPublic;
+    creation_timestamp: string;
+    description: string | null | undefined;
+    allow_member_invite: boolean;
+    avatar_object_key: string | null | undefined;
+    edit_timestamp: string;
+
+    constructor(
+        pk: number,
+    name: string,
+        is_public: boolean,
+    owner: UserPublic,
+    creation_timestamp: string,
+    description: string | null | undefined,
+    allow_member_invite: boolean,
+    avatar_object_key: string | null | undefined,
+    edit_timestamp: string
+    ) {
+        this.pk = pk;
+        this.name = name;
+        this.is_public = is_public;
+        this.owner = owner;
+        this.creation_timestamp = creation_timestamp;
+        this.description = description;
+        this.allow_member_invite = allow_member_invite;
+        this.avatar_object_key = avatar_object_key;
+        this.edit_timestamp = edit_timestamp;
     }
 }

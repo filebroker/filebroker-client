@@ -506,7 +506,6 @@ export class UserGroup {
     pk: number;
     name: string;
     is_public: boolean;
-    hidden: boolean;
     fk_owner: number;
     creation_timestamp: string;
 
@@ -514,15 +513,328 @@ export class UserGroup {
         pk: number,
         name: string,
         is_public: boolean,
-        hidden: boolean,
         fk_owner: number,
         creation_timestamp: string
     ) {
         this.pk = pk;
         this.name = name;
         this.is_public = is_public;
-        this.hidden = hidden;
         this.fk_owner = fk_owner;
+        this.creation_timestamp = creation_timestamp;
+    }
+}
+
+export class UserGroupDetailed {
+    pk: number;
+    name: string;
+    is_public: boolean;
+    owner: UserPublic;
+    creation_timestamp: string;
+    description: string | null | undefined;
+    allow_member_invite: boolean;
+    avatar_object_key: string | null | undefined;
+    create_user: UserPublic;
+    edit_timestamp: string;
+    edit_user: UserPublic;
+    tags: TagUsage[] | undefined;
+    is_editable: boolean;
+    user_can_invite: boolean;
+
+    constructor(
+        pk: number,
+        name: string,
+        is_public: boolean,
+        owner: UserPublic,
+        creation_timestamp: string,
+        description: string | null | undefined,
+        allow_member_invite: boolean,
+        avatar_object_key: string | null | undefined,
+        create_user: UserPublic,
+        edit_timestamp: string,
+        edit_user: UserPublic,
+        tags: TagUsage[] | undefined,
+        is_editable: boolean,
+        user_can_invite: boolean
+    ) {
+        this.pk = pk;
+        this.name = name;
+        this.is_public = is_public;
+        this.owner = owner;
+        this.creation_timestamp = creation_timestamp;
+        this.description = description;
+        this.allow_member_invite = allow_member_invite;
+        this.avatar_object_key = avatar_object_key;
+        this.create_user = create_user;
+        this.edit_timestamp = edit_timestamp;
+        this.edit_user = edit_user;
+        this.tags = tags;
+        this.is_editable = is_editable;
+        this.user_can_invite = user_can_invite;
+    }
+}
+
+export class UserGroupMembership {
+    fk_group: number;
+    fk_user: number;
+    administrator: boolean;
+    is_owner: boolean;
+    revoked: boolean;
+    fk_granted_by: number;
+    creation_timestamp: string;
+
+    constructor(
+        fk_group: number,
+        fk_user: number,
+        administrator: boolean,
+        is_owner: boolean,
+        revoked: boolean,
+        fk_granted_by: number,
+        creation_timestamp: string
+    ) {
+        this.fk_group = fk_group;
+        this.fk_user = fk_user;
+        this.administrator = administrator;
+        this.is_owner = is_owner;
+        this.revoked = revoked;
+        this.fk_granted_by = fk_granted_by;
+        this.creation_timestamp = creation_timestamp;
+    }
+}
+
+export class UserGroupMembershipDetailed {
+    group: UserGroupDetailed;
+    user: UserPublic;
+    administrator: boolean;
+    is_owner: boolean;
+    revoked: boolean;
+    granted_by: UserPublic;
+    creation_timestamp: string;
+
+    constructor(
+        group: UserGroupDetailed,
+        user: UserPublic,
+        administrator: boolean,
+        is_owner: boolean,
+        revoked: boolean,
+        granted_by: UserPublic,
+        creation_timestamp: string
+    ) {
+        this.group = group;
+        this.user = user;
+        this.administrator = administrator;
+        this.is_owner = is_owner;
+        this.revoked = revoked;
+        this.granted_by = granted_by;
+        this.creation_timestamp = creation_timestamp;
+    }
+}
+
+export class UserGroupJoined {
+    group: UserGroupDetailed;
+    membership: UserGroupMembershipInnerJoined | null | undefined;
+    tags: TagUsage[];
+
+    constructor(
+        group: UserGroupDetailed,
+        membership: UserGroupMembershipInnerJoined | null | undefined,
+        tags: TagUsage[]
+    ) {
+        this.group = group;
+        this.membership = membership;
+        this.tags = tags;
+    }
+}
+
+export class UserGroupMembershipInnerJoined {
+    user: UserPublic;
+    administrator: boolean;
+    is_owner: boolean;
+    revoked: boolean;
+    granted_by: UserPublic;
+    creation_timestamp: string;
+
+    constructor(
+        user: UserPublic,
+        administrator: boolean,
+        is_owner: boolean,
+        revoked: boolean,
+        granted_by: UserPublic,
+        creation_timestamp: string
+    ) {
+        this.user = user;
+        this.administrator = administrator;
+        this.is_owner = is_owner;
+        this.revoked = revoked;
+        this.granted_by = granted_by;
+        this.creation_timestamp = creation_timestamp;
+    }
+}
+
+export class UserGroupInvite {
+    code: string;
+    fk_user_group: number;
+    fk_create_user: number;
+    fk_invited_user: number | null | undefined;
+    creation_timestamp: string;
+    expiration_timestamp: string | null | undefined;
+    last_used_timestamp: string | null | undefined;
+    max_uses: number | null | undefined;
+    uses_count: number;
+    revoked: boolean;
+
+    constructor(
+        code: string,
+        fk_user_group: number,
+        fk_create_user: number,
+        fk_invited_user: number | null | undefined,
+        creation_timestamp: string,
+        expiration_timestamp: string | null | undefined,
+        last_used_timestamp: string | null | undefined,
+        max_uses: number | null | undefined,
+        uses_count: number,
+        revoked: boolean
+    ) {
+        this.code = code;
+        this.fk_user_group = fk_user_group;
+        this.fk_create_user = fk_create_user;
+        this.fk_invited_user = fk_invited_user;
+        this.creation_timestamp = creation_timestamp;
+        this.expiration_timestamp = expiration_timestamp;
+        this.last_used_timestamp = last_used_timestamp;
+        this.max_uses = max_uses;
+        this.uses_count = uses_count;
+        this.revoked = revoked;
+    }
+}
+
+export class UserGroupInviteDetailed {
+    code: string;
+    user_group: UserGroupDetailed;
+    create_user: UserPublic;
+    invited_user: UserPublic | null | undefined;
+    creation_timestamp: string;
+    expiration_timestamp: string | null | undefined;
+    last_used_timestamp: string | null | undefined;
+    max_uses: number | null | undefined;
+    uses_count: number;
+    revoked: boolean;
+
+    constructor(
+        code: string,
+        user_group: UserGroupDetailed,
+        create_user: UserPublic,
+        invited_user: UserPublic | null | undefined,
+        creation_timestamp: string,
+        expiration_timestamp: string | null | undefined,
+        last_used_timestamp: string | null | undefined,
+        max_uses: number | null | undefined,
+        uses_count: number,
+        revoked: boolean
+    ) {
+        this.code = code;
+        this.user_group = user_group;
+        this.create_user = create_user;
+        this.invited_user = invited_user;
+        this.creation_timestamp = creation_timestamp;
+        this.expiration_timestamp = expiration_timestamp;
+        this.last_used_timestamp = last_used_timestamp;
+        this.max_uses = max_uses;
+        this.uses_count = uses_count;
+        this.revoked = revoked;
+    }
+}
+
+export type UserGroupAuditAction = "Edit" | "Join" | "Invite" | "RevokeInvite" | "Leave" | "Kick" | "Ban" | "Unban" | "AdminPromote" | "AdminDemote" | "AvatarChange";
+
+export class UserGroupAuditLogInnerJoined {
+    pk: number;
+    user: UserPublic;
+    action: UserGroupAuditAction;
+    target_user: UserPublic | null | undefined;
+    invite_code: string | null | undefined;
+    reason: string | null | undefined;
+    creation_timestamp: string;
+
+    constructor(
+        pk: number,
+        user: UserPublic,
+        action: UserGroupAuditAction,
+        target_user: UserPublic | null | undefined,
+        invite_code: string | null | undefined,
+        reason: string | null | undefined,
+        creation_timestamp: string
+    ) {
+        this.pk = pk;
+        this.user = user;
+        this.action = action;
+        this.target_user = target_user;
+        this.invite_code = invite_code;
+        this.reason = reason;
+        this.creation_timestamp = creation_timestamp;
+    }
+}
+
+export class UserGroupInviteInnerJoined {
+    code: string;
+    create_user: UserPublic;
+    invited_user: UserPublic | null | undefined;
+    creation_timestamp: string;
+    expiration_timestamp: string | null | undefined;
+    last_used_timestamp: string | null | undefined;
+    max_uses: number | null | undefined;
+    uses_count: number;
+    revoked: boolean;
+    active: boolean;
+
+    constructor(
+        code: string,
+        create_user: UserPublic,
+        invited_user: UserPublic | null | undefined,
+        creation_timestamp: string,
+        expiration_timestamp: string | null | undefined,
+        last_used_timestamp: string | null | undefined,
+        max_uses: number | null | undefined,
+        uses_count: number,
+        revoked: boolean,
+        active: boolean
+    ) {
+        this.code = code;
+        this.create_user = create_user;
+        this.invited_user = invited_user;
+        this.creation_timestamp = creation_timestamp;
+        this.expiration_timestamp = expiration_timestamp;
+        this.last_used_timestamp = last_used_timestamp;
+        this.max_uses = max_uses;
+        this.uses_count = uses_count;
+        this.revoked = revoked;
+        this.active = active;
+    }
+}
+
+export class BrokerAccessInnerJoined {
+    pk: number;
+    broker: Broker;
+    write: boolean;
+    quota: number | null | undefined;
+    used_bytes: number;
+    granted_by: UserPublic;
+    creation_timestamp: string;
+
+    constructor(
+        pk: number,
+        broker: Broker,
+        write: boolean,
+        quota: number | null | undefined,
+        used_bytes: number,
+        granted_by: UserPublic,
+        creation_timestamp: string
+    ) {
+        this.pk = pk;
+        this.broker = broker;
+        this.write = write;
+        this.quota = quota;
+        this.used_bytes = used_bytes;
+        this.granted_by = granted_by;
         this.creation_timestamp = creation_timestamp;
     }
 }
