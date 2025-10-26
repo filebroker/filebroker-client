@@ -48,6 +48,8 @@ import {ActionModal} from "../components/ActionModal";
 import {a11yProps, TabPanel} from "../components/TabPanel";
 import {Direction, PaginatedTable, PaginatedTableHandle, PaginatedTableRowAction} from "../components/PaginatedTable";
 import {formatBytes} from "../Util";
+import {RevokeUserGroupInviteResponse} from "./GroupMembershipList";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 
 export interface GetUserGroupMembersResponse {
     total_count: number,
@@ -257,7 +259,7 @@ export function GroupDetailPage({app}: {app: App}) {
         additionalModalContent?: (value: string, setValue: (v: string) => void) => ReactNode,
     ): PaginatedTableRowAction<UserGroupMembershipInnerJoined> => ({
         label: label,
-        exec: async (member) => app.openModal(
+        exec: (member) => app.openModal(
             "Confirm",
             (modal) => <ActionModal
                 modalContent={modal}
@@ -652,6 +654,46 @@ export function GroupDetailPage({app}: {app: App}) {
                                                 data: response.data.invites
                                             };
                                         }}
+                                        rowActions={[
+                                            {
+                                                label: "Revoke Invite",
+                                                exec: (invite) => app.openModal(
+                                                    "Confirm",
+                                                    (modal) => <ActionModal
+                                                        modalContent={modal}
+                                                        text={`Revoke Invite ${invite.code}? This invite will no longer be usable and cannot be recovered.`}
+                                                        actions={[
+                                                            {
+                                                                name: "Ok",
+                                                                fn: async () => {
+                                                                    const loadingModal = app.openLoadingModal();
+                                                                    try {
+                                                                        let config = await app.getAuthorization(location, navigate);
+                                                                        let response = await http.post<RevokeUserGroupInviteResponse>(`/revoke-user-group-invite/${invite.code}`, undefined, config);
+
+                                                                        enqueueSnackbar({
+                                                                            message: `Invite ${invite.code} has been revoked.`,
+                                                                            variant: "success"
+                                                                        });
+
+                                                                        return response.data;
+                                                                    } finally {
+                                                                        loadingModal.close();
+                                                                    }
+                                                                }
+                                                            }
+                                                        ]}
+                                                    />,
+                                                    (result: RevokeUserGroupInviteResponse) => {
+                                                        if (result && result.updated) {
+                                                            inviteTableRef.current?.reload();
+                                                        }
+                                                    }
+                                                ),
+                                                color: "error",
+                                                icon: <RemoveCircleOutlineIcon />
+                                            }
+                                        ]}
                                     />
                                     <FormControlLabel control={<Checkbox checked={activeInvitesOnly} onChange={(e) => setActiveInvitesOnly(e.currentTarget.checked)} />} label={"Active Only"} />
                                 </TabPanel>
