@@ -50,6 +50,8 @@ import {Direction, PaginatedTable, PaginatedTableHandle, PaginatedTableRowAction
 import {formatBytes} from "../Util";
 import {RevokeUserGroupInviteResponse} from "./GroupMembershipList";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import {PostCollectionQueryObject, PostQueryObject, SearchResult} from "../Search";
+import {PreviewGrid} from "../components/PaginatedGridView";
 
 export interface GetUserGroupMembersResponse {
     total_count: number,
@@ -210,6 +212,9 @@ export function GroupDetailPage({app}: {app: App}) {
         inviteTableRef.current?.reload();
     }, [activeInvitesOnly]);
 
+    const [posts, setPosts] = useState<PostQueryObject[]>([]);
+    const [collections, setCollections] = useState<PostCollectionQueryObject[]>([]);
+
     const [editMode, setEditMode] = useState(false);
     const [inviteMenuAnchor, setInviteMenuAnchor] = React.useState<null | HTMLElement>(null);
 
@@ -242,6 +247,35 @@ export function GroupDetailPage({app}: {app: App}) {
             loadingModal.close();
         }
     };
+
+    const loadPosts = async () => {
+        if (group) {
+            try {
+                const config = await app.getAuthorization(location, navigate, false);
+                const response = await http.get<SearchResult>(`/search?query=${encodeURIComponent(`.shared_with_group(${group.pk}) %limit(5)`)}`, config);
+                setPosts(response.data.posts || []);
+            } catch (e: any) {
+                console.error("Failed to load posts", e);
+            }
+        }
+    };
+    const loadCollections = async () => {
+        if (group) {
+            try {
+                const config = await app.getAuthorization(location, navigate, false);
+                const response = await http.get<SearchResult>(`/search/collection?query=${encodeURIComponent(`.shared_with_group(${group.pk}) %limit(5)`)}`, config);
+                setCollections(response.data.collections || []);
+            } catch (e: any) {
+                console.error("Failed to load collections", e);
+            }
+        }
+    };
+    useEffect(() => {
+        if (group) {
+            loadPosts();
+            loadCollections();
+        }
+    }, [group]);
 
     useEffect(() => {
         loadGroup();
@@ -791,6 +825,8 @@ export function GroupDetailPage({app}: {app: App}) {
                             : <div><FontAwesomeIcon icon={solid("circle-notch")} spin size="6x" /></div>}
                     </Paper>
                 </div> }
+                {group && posts.length > 0 && <PreviewGrid title="Posts" items={posts} searchLink={`/posts?query=${encodeURIComponent(`.shared_with_group(${group.pk})`)}`} onItemClickPath={(item) => `/post/${item.pk}`} />}
+                {group && collections.length > 0 && <PreviewGrid title="Collections" items={collections} searchLink={`/collections?query=${encodeURIComponent(`.shared_with_group(${group.pk})`)}`} onItemClickPath={(item) => `/collection/${item.pk}`} />}
             </div>
             <Popper
                 open={Boolean(inviteMenuAnchor)}

@@ -1,14 +1,11 @@
-import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import App from "../App";
-import http, {getApiUrl, getPublicUrl} from "../http-common";
+import http from "../http-common";
 import React, {useEffect, useState} from "react";
 import {getIconForTagCategory, Tag, TagCategory, TagDetailed, TagEdge} from "../Model";
 import {
     Button,
     IconButton,
-    ImageList,
-    ImageListItem,
-    ImageListItemBar,
     ListItem,
     ListItemIcon, ListItemText,
     Paper,
@@ -21,9 +18,7 @@ import {TagSelector} from "../components/TagEditor";
 import {FontAwesomeSvgIcon} from "../components/FontAwesomeSvgIcon";
 import {enqueueSnackbar} from "notistack";
 import {PostCollectionQueryObject, PostQueryObject, SearchResult} from "../Search";
-import urlJoin from "url-join";
-import {LazyLoadImage} from "react-lazy-load-image-component";
-import {PaginatedGridViewItem} from "../components/PaginatedGridView";
+import {PreviewGrid} from "../components/PaginatedGridView";
 import {AccountTree} from "@mui/icons-material";
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape, {ElementDefinition} from "cytoscape";
@@ -315,57 +310,6 @@ export function TagDetailPage({ app }: { app: App }) {
                 {tag && collections.length > 0 && <PreviewGrid title="Collections" items={collections} searchLink={`/collections?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`} onItemClickPath={(item) => `/collection/${item.pk}`} />}
             </div>
         </div>
-    );
-}
-
-function PreviewGrid({ items, title, searchLink, onItemClickPath }: { items: PaginatedGridViewItem[], title: string, searchLink: string, onItemClickPath: (item: PaginatedGridViewItem) => string, }) {
-    return (
-        <Paper elevation={2} className="post-preview-container">
-            <h3 className="preview-title"><Link className="undecorated-link" to={searchLink}>{title} <FontAwesomeIcon icon={solid("arrow-up-right-from-square")} /></Link></h3>
-            <ImageList cols={5} sx={{
-                width: "100%", height: "100%", paddingTop: "25px", paddingBottom: "25px", gridTemplateColumns: "repeat(5, 1fr)", gridAutoFlow: "column"
-            }}>
-                {items.map(item => {
-                    let thumbnailUrl;
-                    if (item.thumbnail_url) {
-                        thumbnailUrl = item.thumbnail_url;
-                    } else if (item.thumbnail_object_key) {
-                        thumbnailUrl = urlJoin(getApiUrl(), "get-object", item.thumbnail_object_key);
-                    } else {
-                        thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
-                    }
-
-                    return (
-                        <ImageListItem key={item.pk}>
-                            <Button component={Link} to={{
-                                pathname: onItemClickPath(item),
-                            }} className="paginated_grid_view_item_button" key={"link_" + item.pk} sx={{ height: "100%" }}>
-                                <div key={"flex_" + item.pk} className="paginated_grid_view_item_wrapper_flexbox">
-                                    <div key={"thumbnail_wrapper_" + item.pk} className="preview_thumbnail_wrapper">
-                                        <div key={"thumbnail_wrapper_img_" + item.pk} className="preview_thumbnail_image">
-                                            <LazyLoadImage
-                                                alt={`Thumnail for item ${item.pk}`}
-                                                src={thumbnailUrl}
-                                                effect="blur"
-                                                placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
-                                                className="thumb-img"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div key={"footer_" + item.pk} className="paginated_grid_view_item_footer">
-                                        <ImageListItemBar
-                                            title={item.title}
-                                            subtitle={item.create_user.display_name ?? item.create_user.user_name}
-                                            position='below'
-                                        />
-                                    </div>
-                                </div>
-                            </Button>
-                        </ImageListItem>
-                    );
-                })}
-            </ImageList>
-        </Paper>
     );
 }
 
