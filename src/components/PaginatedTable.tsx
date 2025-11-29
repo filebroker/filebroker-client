@@ -133,8 +133,13 @@ function PaginatedTableInner<T>({
     }, [fetchPage]);
 
     return (
-        <Paper>
-            <TableContainer ref={tableContainerRef}>
+        <Paper sx={{ maxWidth: 'calc(100% - 20px)', overflow: 'hidden', alignSelf: 'center' }}>
+            <TableContainer
+                ref={tableContainerRef}
+                sx={{
+                    overflowX: 'auto'
+                }}
+            >
                 <Table>
                     <TableHead>
                         <TableRow>

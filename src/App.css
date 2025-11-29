@@ -739,6 +739,7 @@ input:-webkit-autofill:focus {
     gap: 10px;
     min-width: 325px;
     text-align: center;
+    max-width: 100%;
 }
 
 .button-row {
