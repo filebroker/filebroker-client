@@ -87,6 +87,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                 } else if (e.response?.status === 401) {
                     app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                 } else {
+                    app.openModal("Error", <p>An unexpected error occurred creating the broker, please try again.</p>);
                     console.error("Failed to create broker", e);
                 }
             }
