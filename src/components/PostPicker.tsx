@@ -27,7 +27,6 @@ export function PostPicker({ app, onPostSelect, constriction = "" }: { app: App,
         const search = new URLSearchParams();
         search.set("query", (constriction.length > 0 ? constriction + " " : constriction) + searchQuery);
         search.set("page", listPage.toString());
-        search.set("writable_only", "true");
         search.set("limit", "15");
 
         setQueryLoading(true);
