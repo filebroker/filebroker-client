@@ -185,7 +185,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
             let config = await app.getAuthorization(location, navigate);
 
             http
-                .get<BrokerAvailability[]>("/get-brokers", config)
+                .get<BrokerAvailability[]>("/get-available-brokers", config)
                 .then(result => setBrokers(result.data));
 
             http
@@ -224,7 +224,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 let config = await app.getAuthorization(location, navigate);
 
                 http
-                    .get<BrokerAvailability[]>("/get-brokers", config)
+                    .get<BrokerAvailability[]>("/get-available-brokers", config)
                     .then(result => setBrokers(result.data));
             });
         }}><AddIcon /></IconButton>
