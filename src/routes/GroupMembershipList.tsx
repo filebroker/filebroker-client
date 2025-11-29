@@ -17,6 +17,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import DoneIcon from '@mui/icons-material/Done';
 import {ActionModal} from "../components/ActionModal";
+import GroupIcon from "@mui/icons-material/Group";
 
 export interface GetCurrentUserGroupMembershipsResponse {
     total_count: number,
@@ -109,6 +110,7 @@ export function GroupMembershipList({app}: { app: App }) {
             <div className="full-page-content-wrapper">
                 <Paper elevation={2} className="form-paper">
                     <div className="form-paper-content">
+                        <Typography variant="h3" component="h2"><GroupIcon fontSize={"inherit"} /></Typography>
                         <h2>Groups</h2>
                         <PaginatedTable<UserGroupMembershipDetailed>
                             ref={tableRef}
