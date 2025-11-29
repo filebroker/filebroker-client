@@ -357,6 +357,64 @@ export class BrokerAvailability {
     }
 }
 
+export class BrokerDetailed {
+    pk: number;
+    name: string;
+    bucket: string;
+    endpoint: string;
+    access_key: string | null | undefined;
+    secret_key: string | null | undefined;
+    is_aws_region: boolean;
+    remove_duplicate_files: boolean;
+    owner: UserPublic;
+    creation_timestamp: string;
+    hls_enabled: boolean;
+    enable_presigned_get: boolean;
+    is_system_bucket: boolean;
+    is_public: boolean;
+    is_admin: boolean;
+    used_bytes: number;
+    quota_bytes: number | null | undefined;
+
+    constructor(
+        pk: number,
+        name: string,
+        bucket: string,
+        endpoint: string,
+        access_key: string | null | undefined,
+        secret_key: string | null | undefined,
+        is_aws_region: boolean,
+        remove_duplicate_files: boolean,
+        owner: UserPublic,
+        creation_timestamp: string,
+        hls_enabled: boolean,
+        enable_presigned_get: boolean,
+        is_system_bucket: boolean,
+        is_public: boolean,
+        is_admin: boolean,
+        used_bytes: number,
+        quota_bytes: number | null | undefined
+    ) {
+        this.pk = pk;
+        this.name = name;
+        this.bucket = bucket;
+        this.endpoint = endpoint;
+        this.access_key = access_key;
+        this.secret_key = secret_key;
+        this.is_aws_region = is_aws_region;
+        this.remove_duplicate_files = remove_duplicate_files;
+        this.owner = owner;
+        this.creation_timestamp = creation_timestamp;
+        this.hls_enabled = hls_enabled;
+        this.enable_presigned_get = enable_presigned_get;
+        this.is_system_bucket = is_system_bucket;
+        this.is_public = is_public;
+        this.is_admin = is_admin;
+        this.used_bytes = used_bytes;
+        this.quota_bytes = quota_bytes;
+    }
+}
+
 export class Tag {
     pk: number;
     tag_name: string;

@@ -24,6 +24,7 @@ import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
 import {AccountCircle} from "@mui/icons-material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import GroupIcon from '@mui/icons-material/Group';
+import StorageIcon from '@mui/icons-material/Storage';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
     backgroundColor: "#000a14e6",
@@ -209,12 +210,20 @@ export default function NavBar({ app }: { app: App }) {
                                         <ListItemIcon><AccountCircle /></ListItemIcon>
                                         <ListItemText>Profile</ListItemText>
                                     </MenuItem>
+                                    <Divider />
                                     <MenuItem component={Link} to={"/groups"} onClick={() => {
                                         setNavMenuAnchor(null);
                                         navModal.current?.close();
                                     }}>
                                         <ListItemIcon><GroupIcon /></ListItemIcon>
                                         <ListItemText>Groups</ListItemText>
+                                    </MenuItem>
+                                    <MenuItem component={Link} to={"/brokers"} onClick={() => {
+                                        setNavMenuAnchor(null);
+                                        navModal.current?.close();
+                                    }}>
+                                        <ListItemIcon><StorageIcon /></ListItemIcon>
+                                        <ListItemText>Brokers</ListItemText>
                                     </MenuItem>
                                     <Divider />
                                     <MenuItem onClick={async () => {

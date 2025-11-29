@@ -23,6 +23,7 @@ import {GroupMembershipList} from "./routes/GroupMembershipList";
 import {GroupDetailPage} from "./routes/GroupDetailPage";
 import {closeSnackbar, SnackbarProvider} from "notistack";
 import {RedeemUserGroupInvite} from "./routes/RedeemUserGroupInvite";
+import BrokerListPage from "./routes/BrokerListPage";
 
 declare module 'react' {
     interface CSSProperties {
@@ -240,6 +241,7 @@ export class App extends React.Component<{ isDesktop: boolean }, {
                         <Route path="/groups" element={<GroupMembershipList app={this} />} />
                         <Route path="/group/:id" element={<GroupDetailPage app={this} />} />
                         <Route path="/invite/:invite_code" element={<RedeemUserGroupInvite app={this} />}/>
+                        <Route path="/brokers" element={<BrokerListPage app={this} />} />
                         <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                     </Routes>
                 </SnackbarProvider>
