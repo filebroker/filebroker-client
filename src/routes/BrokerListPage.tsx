@@ -1,5 +1,5 @@
 import App from "../App";
-import {useLocation, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import React, {useRef} from "react";
 import {Direction, PaginatedTable, PaginatedTableHandle} from "../components/PaginatedTable";
 import {Button, Paper, Typography} from "@mui/material";
@@ -46,6 +46,22 @@ export default function BrokerListPage({app}: { app: App }) {
                                     data: response.data.brokers
                                 };
                             }}
+                            dataRowPropsFn={(broker) => ({
+                                key: broker.pk,
+                                component: Link,
+                                to: `/broker/${broker.pk}`,
+                                hover: true,
+                                sx: {
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    cursor: 'pointer',
+                                    '&:visited': { color: 'inherit' },
+                                    '& td': {
+                                        textDecoration: 'none',
+                                        color: 'inherit',
+                                    },
+                                }
+                            })}
                         />
                         <div className="form-paper-button-row">
                             <Button

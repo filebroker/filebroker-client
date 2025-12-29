@@ -309,6 +309,7 @@ export class Broker {
     hls_enabled: boolean;
     enable_presigned_get: boolean;
     is_system_bucket: boolean;
+    description: string | null | undefined;
 
     constructor(
         pk: number,
@@ -324,6 +325,7 @@ export class Broker {
         hls_enabled: boolean,
         enable_presigned_get: boolean = true,
         is_system_bucket: boolean = false,
+        description: string | null | undefined
     ) {
         this.pk = pk;
         this.name = name;
@@ -338,6 +340,7 @@ export class Broker {
         this.hls_enabled = hls_enabled;
         this.enable_presigned_get = enable_presigned_get;
         this.is_system_bucket = is_system_bucket;
+        this.description = description;
     }
 }
 
@@ -360,6 +363,7 @@ export class BrokerAvailability {
 export class BrokerDetailed {
     pk: number;
     name: string;
+    description: string | null | undefined;
     bucket: string;
     endpoint: string;
     access_key: string | null | undefined;
@@ -375,10 +379,12 @@ export class BrokerDetailed {
     is_admin: boolean;
     used_bytes: number;
     quota_bytes: number | null | undefined;
+    total_used_bytes: number | null | undefined;
 
     constructor(
         pk: number,
         name: string,
+        description: string | null | undefined,
         bucket: string,
         endpoint: string,
         access_key: string | null | undefined,
@@ -393,10 +399,12 @@ export class BrokerDetailed {
         is_public: boolean,
         is_admin: boolean,
         used_bytes: number,
-        quota_bytes: number | null | undefined
+        quota_bytes: number | null | undefined,
+        total_used_bytes: number | null | undefined,
     ) {
         this.pk = pk;
         this.name = name;
+        this.description = description;
         this.bucket = bucket;
         this.endpoint = endpoint;
         this.access_key = access_key;
@@ -412,7 +420,53 @@ export class BrokerDetailed {
         this.is_admin = is_admin;
         this.used_bytes = used_bytes;
         this.quota_bytes = quota_bytes;
+        this.total_used_bytes = total_used_bytes;
     }
+}
+
+export function updateBrokerWithValues(current: BrokerDetailed, values: Broker): BrokerDetailed {
+    return {
+        ...current,
+        name: values.name,
+        description: values.description,
+        bucket: values.bucket,
+        endpoint: values.endpoint,
+        access_key: values.access_key,
+        secret_key: values.secret_key,
+        is_aws_region: values.is_aws_region,
+        remove_duplicate_files: values.remove_duplicate_files,
+        creation_timestamp: values.creation_timestamp,
+        hls_enabled: values.hls_enabled,
+        enable_presigned_get: values.enable_presigned_get,
+        is_system_bucket: values.is_system_bucket,
+    };
+}
+
+export function isBrokerDetailed(
+    broker: Broker | BrokerDetailed | null
+): broker is BrokerDetailed {
+    return !!broker && "owner" in broker && "is_admin" in broker && "used_bytes" in broker;
+}
+
+export type BrokerAuditAction = "Edit" | "BucketConnectionEdit" | "AccessGranted" | "AccessRevoked" | "AccessQuotaEdit" | "AccessAdminPromote" | "AccessAdminDemote";
+
+export interface BrokerAuditLogInnerJoined {
+    pk: number;
+    user: UserPublic;
+    action: BrokerAuditAction;
+    target_group: UserGroup | null | undefined;
+    new_quota: number | null | undefined;
+    creation_timestamp: string;
+}
+
+export interface BrokerAccess {
+    pk: number;
+    fk_broker: number;
+    fk_granted_group: number | null | undefined;
+    write: boolean;
+    quota: number | null | undefined;
+    fk_granted_by: number;
+    creation_timestamp: string;
 }
 
 export class Tag {

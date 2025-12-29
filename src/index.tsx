@@ -201,12 +201,16 @@ export const StyledAutocomplete = <
       readOnly,
       value,
       variant,
+      error,
+      helperText,
       ...props
   }: Omit<AutocompleteProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>, "renderInput"> & {
     label: string,
     color?: FormLabelProps["color"],
     variant?: TextFieldVariants,
     placeholder?: string | undefined,
+    error?: boolean,
+    helperText?: string | undefined,
 }) => {
     const theme = useTheme();
     return (
@@ -243,6 +247,8 @@ export const StyledAutocomplete = <
                             }
                         }
                     }}
+                    error={error}
+                    helperText={helperText}
                 />;
             }}
         />
