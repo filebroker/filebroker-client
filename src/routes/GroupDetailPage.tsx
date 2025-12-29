@@ -477,7 +477,8 @@ export function GroupDetailPage({app}: {app: App}) {
                                             tags_overwrite: enteredTags,
                                             tag_pks_overwrite: selectedTags
                                         }, config);
-                                        updateGroup(result.data);enqueueSnackbar({
+                                        updateGroup(result.data);
+                                        enqueueSnackbar({
                                             message: "Group edited",
                                             variant: "success"
                                         });
