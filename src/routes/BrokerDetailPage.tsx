@@ -35,6 +35,8 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import RemoveModeratorIcon from '@mui/icons-material/RemoveModerator';
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import {ActionModal} from "../components/ActionModal";
+import {PostQueryObject, SearchResult} from "../Search";
+import {PreviewGrid} from "../components/PaginatedGridView";
 
 interface VerifyBucketConnectionResponse {
     is_valid: boolean;
@@ -295,6 +297,24 @@ export function BrokerDetailPage({app}: {app: App}) {
     useEffect(() => {
         loadBroker();
     }, [id, editMode, bucketEditMode]);
+
+    const [posts, setPosts] = useState<PostQueryObject[]>([]);
+    const loadPosts = async () => {
+        if (broker) {
+            try {
+                const config = await app.getAuthorization(location, navigate, false);
+                const response = await http.get<SearchResult>(`/search?query=${encodeURIComponent(`@broker=${broker.pk} %limit(5)`)}`, config);
+                setPosts(response.data.posts || []);
+            } catch (e: any) {
+                console.error("Failed to load posts", e);
+            }
+        }
+    };
+    useEffect(() => {
+        if (broker) {
+            loadPosts();
+        }
+    }, [broker]);
 
     return (
         <div id="BrokerDetailPage" className="full-page-component">
@@ -799,6 +819,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                         </div>
                     </Paper>
                 </div>}
+                {broker && posts.length > 0 && <PreviewGrid title="Uploaded Posts" items={posts} searchLink={`/posts?query=${encodeURIComponent(`@broker=${broker.pk}`)}`} onItemClickPath={(item) => `/post/${item.pk}`} />}
             </div>
         </div>
     );
