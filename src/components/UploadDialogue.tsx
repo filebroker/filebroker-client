@@ -422,6 +422,8 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                             uploadProgressModal.close();
                             if (e?.response?.data?.error_code === 400019) {
                                 app.openModal("Error", <p>You have run out of available storage for this broker.</p>);
+                            } else if (e?.response?.data?.error_code === 400025) {
+                                app.openModal("Error", <p>This broker currently does not accept further uploads.</p>);
                             } else {
                                 console.error("Error occurred creating post for file " + e);
                                 app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);
@@ -486,6 +488,8 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                             uploadProgressModal.close();
                             if (e?.response?.data?.error_code === 400019) {
                                 app.openModal("Error", <p>You have run out of available storage for this broker.</p>);
+                            } else if (e?.response?.data?.error_code === 400025) {
+                                app.openModal("Error", <p>This broker currently does not accept further uploads.</p>);
                             } else {
                                 console.error("Error occurred creating post for file " + e);
                                 app.openModal("Error", <p>An error occurred creating your post, please try again.</p>);

@@ -37,6 +37,8 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import {ActionModal} from "../components/ActionModal";
 import {PostQueryObject, SearchResult} from "../Search";
 import {PreviewGrid} from "../components/PaginatedGridView";
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 
 interface VerifyBucketConnectionResponse {
     is_valid: boolean;
@@ -325,6 +327,63 @@ export function ChangeQuotaForm({broker, brokerAccess, modal, app}: { broker: Br
     );
 }
 
+export function ChangeTotalQuotaForm({broker, modal, app}: { broker: Broker | BrokerDetailed, modal?: ModalContent, app: App }) {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [quota, setQuota] = useState<number | null>(null);
+    const [isQuotaInvalid, setIsQuotaInvalid] = useState(false);
+    useEffect(() => {
+        setIsQuotaInvalid(quota != null && quota < 0.001);
+    }, [quota, broker]);
+
+    return (
+        <Paper elevation={2} className="fieldset-paper">
+            <div className="form-paper-content">
+                <p>Change the total amount of data users can store on this broker. Broker owner and admins are exempt from this restriction, but their uploads still count towards the quota.</p>
+                <TextField
+                    type="number"
+                    label="Quota (GB)"
+                    value={quota}
+                    onChange={(e) => e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))}
+                    error={isQuotaInvalid}
+                    helperText={isQuotaInvalid ? "Quota must be empty or greater than 0." : undefined}
+                />
+                <div className="form-paper-button-row">
+                    <Button color="secondary" disabled={isQuotaInvalid} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} onClick={async () => {
+                        const loadingModal = app.openLoadingModal();
+                        try {
+                            const config = await app.getAuthorization(location, navigate);
+                            const response = await http.post<Broker>(`/edit-broker/${broker.pk}`, {
+                                total_quota: quota !== null ? gibToBytes(quota) : null
+                            }, config);
+                            enqueueSnackbar({
+                                message: "Quota updated",
+                                variant: "success",
+                            })
+                            modal?.close(response.data);
+                        } catch (e: any) {
+                            if (e.response?.status === 401) {
+                                enqueueSnackbar({
+                                    message: "Your credentials have expired, try refreshing the page.",
+                                    variant: "error"
+                                });
+                            } else {
+                                enqueueSnackbar({
+                                    message: "An error occurred updating quota, please try again",
+                                    variant: "error"
+                                });
+                            }
+                        } finally {
+                            loadingModal.close();
+                        }
+                    }}>Save</Button>
+                </div>
+            </div>
+        </Paper>
+    );
+}
+
 export function BrokerDetailPage({app}: {app: App}) {
     const { id } = useParams();
     const location = useLocation();
@@ -405,6 +464,13 @@ export function BrokerDetailPage({app}: {app: App}) {
         <div id="BrokerDetailPage" className="full-page-component">
             <div className="full-page-content-wrapper">
                 <Paper elevation={2} className="form-paper">
+                    {broker?.disable_uploads && <Typography variant="body1" color="warning.main" sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}>
+                        <FontAwesomeIcon icon={solid("triangle-exclamation")}/>Uploads are currently disabled for this broker. Only the broker owner and admins can upload files.
+                    </Typography>}
                     {broker
                         ? <div className="form-paper" style={{ flexDirection: "row" }}>
                             <div className="form-paper-content" style={{ paddingLeft: "20px", paddingRight: "20px" }}>
@@ -674,11 +740,56 @@ export function BrokerDetailPage({app}: {app: App}) {
                             </Paper>}
                         </div>
                         : <div><FontAwesomeIcon icon={solid("circle-notch")} spin size="6x"/></div>}
-                    {broker && <div style={{ display: "flex", flexDirection: "row" }}>
-                        <ReadOnlyTextField label="Your Usage" variant="standard" value={`${formatBytes(broker.used_bytes)} / ${broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}`}/>
-                        {broker.total_used_bytes && <ReadOnlyTextField label="Total Usage" variant="standard" value={`${formatBytes(broker.total_used_bytes)}`}/>}
-                        <ReadOnlyTextField label="Owner" variant="standard" value={broker.owner.display_name ?? broker.owner.user_name}/>
-                    </div>}
+                    {broker && <>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                            <ReadOnlyTextField label="Your Usage" variant="standard" value={`${formatBytes(broker.used_bytes)} / ${broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}`}/>
+                            {broker.total_used_bytes && <ReadOnlyTextField label="Total Usage" variant="standard" value={broker.total_quota ? `${formatBytes(broker.total_used_bytes)} / ${formatBytes(broker.total_quota)}` : `${formatBytes(broker.total_used_bytes)}`}/>}
+                            <ReadOnlyTextField label="Owner" variant="standard" value={broker.owner.display_name ?? broker.owner.user_name}/>
+                        </div>
+                        {broker.is_admin && <div className="button-row" style={{ marginTop: "10px" }}>
+                            <Button startIcon={broker.disable_uploads ? <LockOpenIcon/> : <LockIcon/>} onClick={() => app.openModal(
+                                broker.disable_uploads ? "Enable Uploads" : "Disable Uploads",
+                                (actionModal) => <ActionModal
+                                    modalContent={actionModal}
+                                    text={broker.disable_uploads ? "Resume allowing uploads from users with access" : "Temporarily prevent users from uploading to this broker. The broker owner and admins are exempt from this restriction."}
+                                    actions={[{
+                                        name: "Ok",
+                                        fn: async () => {
+                                            const loadingModal = app.openLoadingModal();
+                                            try {
+                                                const config = await app.getAuthorization(location, navigate);
+                                                const response = await http.post<Broker>(`/edit-broker/${broker.pk}`, {
+                                                    disable_uploads: !broker.disable_uploads
+                                                }, config);
+                                                updateBroker(response.data);
+                                                enqueueSnackbar({
+                                                    message: broker.disable_uploads ? "Uploads Enabled" : "Uploads Disabled",
+                                                    variant: "success"
+                                                });
+                                            } catch (e) {
+                                                console.error("Failed to update broker", e);
+                                                enqueueSnackbar({
+                                                    message: "Failed to update broker",
+                                                    variant: "error"
+                                                });
+                                            } finally {
+                                                loadingModal.close();
+                                            }
+                                        }
+                                    }]}
+                                />
+                            )}>{broker.disable_uploads ? "Enable Uploads" : "Disable Uploads"}</Button>
+                            <Button startIcon={<DataUsageIcon />} onClick={() => app.openModal(
+                                "Change Total Quota",
+                                (changeTotalQuotaModal) => <ChangeTotalQuotaForm broker={broker} app={app} modal={changeTotalQuotaModal} />,
+                                (result) => {
+                                    if (result) {
+                                        updateBroker(result);
+                                    }
+                                }
+                            )}>Change Total Quota</Button>
+                        </div>}
+                    </>}
                 </Paper>
                 {broker && broker.is_admin && <div className="broker-tabs-wrapper" style={{ width: "60%", minWidth: "max(25vh, min(375px, calc(100vw - 40px)))" }}>
                     <Paper elevation={2} className="fieldset-paper">
