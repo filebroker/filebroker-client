@@ -310,6 +310,8 @@ export class Broker {
     enable_presigned_get: boolean;
     is_system_bucket: boolean;
     description: string | null | undefined;
+    total_quota: number | null | undefined;
+    disable_uploads: boolean;
 
     constructor(
         pk: number,
@@ -325,7 +327,9 @@ export class Broker {
         hls_enabled: boolean,
         enable_presigned_get: boolean = true,
         is_system_bucket: boolean = false,
-        description: string | null | undefined
+        description: string | null | undefined,
+        total_quota: number | null | undefined,
+        disable_uploads: boolean,
     ) {
         this.pk = pk;
         this.name = name;
@@ -341,6 +345,8 @@ export class Broker {
         this.enable_presigned_get = enable_presigned_get;
         this.is_system_bucket = is_system_bucket;
         this.description = description;
+        this.total_quota = total_quota;
+        this.disable_uploads = disable_uploads;
     }
 }
 
@@ -375,6 +381,8 @@ export class BrokerDetailed {
     hls_enabled: boolean;
     enable_presigned_get: boolean;
     is_system_bucket: boolean;
+    total_quota: number | null | undefined;
+    disable_uploads: boolean;
     is_public: boolean;
     is_admin: boolean;
     used_bytes: number;
@@ -396,6 +404,8 @@ export class BrokerDetailed {
         hls_enabled: boolean,
         enable_presigned_get: boolean,
         is_system_bucket: boolean,
+        total_quota: number | null | undefined,
+        disable_uploads: boolean,
         is_public: boolean,
         is_admin: boolean,
         used_bytes: number,
@@ -416,6 +426,8 @@ export class BrokerDetailed {
         this.hls_enabled = hls_enabled;
         this.enable_presigned_get = enable_presigned_get;
         this.is_system_bucket = is_system_bucket;
+        this.total_quota = total_quota;
+        this.disable_uploads = disable_uploads;
         this.is_public = is_public;
         this.is_admin = is_admin;
         this.used_bytes = used_bytes;
@@ -439,6 +451,8 @@ export function updateBrokerWithValues(current: BrokerDetailed, values: Broker):
         hls_enabled: values.hls_enabled,
         enable_presigned_get: values.enable_presigned_get,
         is_system_bucket: values.is_system_bucket,
+        total_quota: values.total_quota,
+        disable_uploads: values.disable_uploads,
     };
 }
 
@@ -448,7 +462,7 @@ export function isBrokerDetailed(
     return !!broker && "owner" in broker && "is_admin" in broker && "used_bytes" in broker;
 }
 
-export type BrokerAuditAction = "Edit" | "BucketConnectionEdit" | "AccessGranted" | "AccessRevoked" | "AccessQuotaEdit" | "AccessAdminPromote" | "AccessAdminDemote";
+export type BrokerAuditAction = "Edit" | "BucketConnectionEdit" | "AccessGranted" | "AccessRevoked" | "AccessQuotaEdit" | "AccessAdminPromote" | "AccessAdminDemote" | "DisableUploads" | "EnableUploads";
 
 export interface BrokerAuditLogInnerJoined {
     pk: number;
@@ -457,6 +471,7 @@ export interface BrokerAuditLogInnerJoined {
     target_group: UserGroup | null | undefined;
     new_quota: number | null | undefined;
     creation_timestamp: string;
+    target_user: UserPublic | null | undefined;
 }
 
 export interface BrokerAccess {
@@ -467,6 +482,8 @@ export interface BrokerAccess {
     quota: number | null | undefined;
     fk_granted_by: number;
     creation_timestamp: string;
+    fk_target_user: number | null | undefined;
+    is_public: boolean;
 }
 
 export class Tag {

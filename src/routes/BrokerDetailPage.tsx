@@ -2,7 +2,7 @@ import {
     Box,
     Button,
     Checkbox,
-    FormControlLabel,
+    FormControlLabel, FormGroup,
     ListItem,
     ListItemText,
     Paper,
@@ -51,6 +51,8 @@ interface BrokerAccessInnerJoined {
     used_bytes: number;
     granted_by: UserPublic;
     creation_timestamp: string;
+    granted_user: UserPublic | null | undefined;
+    is_public: boolean;
 }
 
 interface GetBrokerAccessResponse {
@@ -87,68 +89,151 @@ export function BrokerAccessCreator({broker, modal, app}: { broker: Broker | Bro
     const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
     const [quota, setQuota] = useState<number | null>(null);
     const [isAdminAccess, setIsAdminAccess] = useState(false);
+    const [userName, setUserName] = useState("");
+
+    const [activeTab, setActiveTab] = useState(0);
+    useEffect(() => {
+        setGroupInput("");
+        setSelectedGroup(null);
+        setQuota(null);
+        setIsAdminAccess(false);
+        setUserName("");
+    }, [activeTab]);
 
     const [isQuotaInvalid, setIsQuotaInvalid] = useState(false);
     const [isGroupInvalid, setIsGroupInvalid] = useState(false);
+    const [isUserInvalid, setIsUserInvalid] = useState(false);
     useEffect(() => {
-        setIsQuotaInvalid((quota != null && quota < 0.001) || (quota == null && selectedGroup == null));
-    }, [quota, selectedGroup]);
+        setIsQuotaInvalid((quota != null && quota < 0.001) || (quota == null && activeTab === 2));
+    }, [quota, activeTab]);
     useEffect(() => {
-        if ((isAdminAccess && selectedGroup == null) || (!app.getUser()?.is_admin && selectedGroup == null)) {
-            setIsGroupInvalid(true);
-        } else {
-            setIsGroupInvalid(false);
-        }
-    }, [selectedGroup, isAdminAccess]);
+        setIsGroupInvalid(selectedGroup == null && activeTab === 0)
+    }, [selectedGroup, activeTab]);
+    useEffect(() => {
+        setIsUserInvalid(false);
+    }, [userName]);
 
     return (
         <div id="BrokerAccessCreator">
             <Paper elevation={2} className="fieldset-paper">
                 <div className="form-paper-content">
-                    <p>Grant access to members of the selected group to upload files to this broker.
-                    The quota limits the amount of storage space available to each user within the group, no quota means unlimited storage.</p>
-                    <StyledAutocomplete
-                        label="Group"
-                        options={currentUserGroups}
-                        getOptionLabel={(option) => option.name}
-                        value={selectedGroup}
-                        onChange={(_event: any, newValue: UserGroup | null) => setSelectedGroup(newValue)}
-                        inputValue={groupInput}
-                        onInputChange={(_event, newInputValue) => setGroupInput(newInputValue)}
-                        isOptionEqualToValue={(option, value) => option.pk === value.pk}
-                        renderOption={(props, option) => (
-                            <ListItem {...props}>
-                                <ListItemText primary={option.name} />
-                            </ListItem>
-                        )}
-                        error={isGroupInvalid}
-                        helperText={isGroupInvalid ? isAdminAccess ? "Group is required for admin access" : "Group is required" : undefined}
-                    />
-                    <TextField
-                        type="number"
-                        label="Quota (GB)"
-                        value={quota}
-                        onChange={(e) => e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))}
-                        error={isQuotaInvalid}
-                        helperText={isQuotaInvalid ? quota === null ? "Quota may not be empty for public access." : "Quota must be empty or greater than 0." : undefined}
-                    />
-                    <div className="flex-row">
-                        <FormControlLabel
-                            control={<Checkbox checked={isAdminAccess}
-                                               onChange={(e) => setIsAdminAccess(e.currentTarget.checked)}
-                                               sx={{'&.Mui-disabled': { color: 'text.primary' }}}/>}
-                            label="Admin Access"
-                            sx={{ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': { color: 'text.primary' } }}
-                        />
-                        <FontAwesomeIcon icon={solid("warning")} data-tip="BEWARE: Granting admin privileges means that admins of the selected groups will be able to view broker credentials, edit broker details and bucket configuration and grant access to other groups."/>
-                        <ReactTooltip effect="solid" type="warning" place="right"></ReactTooltip>
-                    </div>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs variant="scrollable" scrollButtons="auto" value={activeTab} onChange={(_e, val: number) => setActiveTab(val)}>
+                            <Tab label="Collective Access" {...a11yProps(0)} />
+                            <Tab label="User Access" {...a11yProps(1)} />
+                            {app.getUser()?.is_admin && <Tab label="Public Access" {...a11yProps(2)} />}
+                        </Tabs>
+                    </Box>
+                    <TabPanel value={activeTab} index={0}>
+                        <FormGroup className="form-container">
+                            <p>Grant access to members of the selected group to upload files to this broker.
+                            The quota limits the amount of storage space available to each user within the group, no quota means unlimited storage.</p>
+                            <StyledAutocomplete
+                                label="Group"
+                                options={currentUserGroups}
+                                getOptionLabel={(option) => option.name}
+                                value={selectedGroup}
+                                onChange={(_event: any, newValue: UserGroup | null) => setSelectedGroup(newValue)}
+                                inputValue={groupInput}
+                                onInputChange={(_event, newInputValue) => setGroupInput(newInputValue)}
+                                isOptionEqualToValue={(option, value) => option.pk === value.pk}
+                                renderOption={(props, option) => (
+                                    <ListItem {...props}>
+                                        <ListItemText primary={option.name} />
+                                    </ListItem>
+                                )}
+                                error={isGroupInvalid}
+                                helperText={isGroupInvalid ? isAdminAccess ? "Group is required for admin access" : "Group is required" : undefined}
+                            />
+                            <TextField
+                                type="number"
+                                label="Quota (GB)"
+                                value={quota ?? ""}
+                                onChange={(e) => e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))}
+                                error={isQuotaInvalid}
+                                helperText={isQuotaInvalid && quota !== null ? "Quota must be empty or greater than 0." : undefined}
+                            />
+                            <div className="flex-row">
+                                <FormControlLabel
+                                    control={<Checkbox checked={isAdminAccess}
+                                                       onChange={(e) => setIsAdminAccess(e.currentTarget.checked)}
+                                                       sx={{'&.Mui-disabled': { color: 'text.primary' }}}/>}
+                                    label="Admin Access"
+                                    sx={{ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': { color: 'text.primary' } }}
+                                />
+                                <FontAwesomeIcon icon={solid("warning")} data-tip="BEWARE: Granting admin privileges means that admins of the selected groups will be able to view broker credentials, edit broker details and bucket configuration and grant access to other groups and users."/>
+                                <ReactTooltip effect="solid" type="warning" place="right"></ReactTooltip>
+                            </div>
+                        </FormGroup>
+                    </TabPanel>
+                    <TabPanel value={activeTab} index={1}>
+                        <FormGroup className="form-container">
+                            <p>Grant access to the user with the provided user name (unique user ID, not display name).
+                                The quota limits the amount of storage space available to the given user, no quota means unlimited storage.
+                                If a user is member of a group that has access, the user-specific access overrides the group access.</p>
+                            <TextField
+                                label="User Name"
+                                variant="outlined"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                inputProps={{ maxLength: 25 }}
+                                error={isUserInvalid || !Boolean(userName)}
+                                helperText={isUserInvalid && "User Not Found"}
+                            />
+                            <TextField
+                                type="number"
+                                label="Quota (GB)"
+                                value={quota}
+                                onChange={(e) => e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))}
+                                error={isQuotaInvalid}
+                                helperText={isQuotaInvalid && quota !== null ? "Quota must be empty or greater than 0." : undefined}
+                            />
+                            <div className="flex-row">
+                                <FormControlLabel
+                                    control={<Checkbox checked={isAdminAccess}
+                                                       onChange={(e) => setIsAdminAccess(e.currentTarget.checked)}
+                                                       sx={{'&.Mui-disabled': { color: 'text.primary' }}}/>}
+                                    label="Admin Access"
+                                    sx={{ opacity: 1, '& .MuiFormControlLabel-label.Mui-disabled': { color: 'text.primary' } }}
+                                />
+                                <FontAwesomeIcon icon={solid("warning")} data-tip="BEWARE: Granting admin privileges means that the selected user will be able to view broker credentials, edit broker details and bucket configuration and grant access to other groups and users."/>
+                                <ReactTooltip effect="solid" type="warning" place="right"></ReactTooltip>
+                            </div>
+                        </FormGroup>
+                    </TabPanel>
+                    <TabPanel value={activeTab} index={2}>
+                        <FormGroup className="form-container">
+                            <p>BEWARE: This grants access to all registered users, intended to be a free access tier. Be careful setting quota, unlimited is not allowed here (as are admin privileges).</p>
+                            <TextField
+                                type="number"
+                                label="Quota (GB)"
+                                value={quota}
+                                onChange={(e) => e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))}
+                                error={isQuotaInvalid}
+                                helperText={isQuotaInvalid ? quota === null ? "Quota may not be empty for public access." : "Quota must be empty or greater than 0." : undefined}
+                            />
+                        </FormGroup>
+                    </TabPanel>
                     <div className="form-paper-button-row">
-                        <Button color="secondary" disabled={isQuotaInvalid || isGroupInvalid} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} onClick={async () => {
+                        <Button color="secondary" disabled={isQuotaInvalid || isGroupInvalid || isUserInvalid || (activeTab === 1 && !Boolean(userName))} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} onClick={async () => {
                             const loadingModal = app.openLoadingModal();
                             try {
                                 const config = await app.getAuthorization(location, navigate);
+
+                                let user;
+                                if (userName) {
+                                    try {
+                                        const res = await http.get<UserPublic>(`/get-user-public-name/${encodeURIComponent(userName)}`);
+                                        user = res.data;
+                                    } catch (e) {
+                                        console.error("Failed to load user data", e);
+                                        setIsUserInvalid(true);
+                                        return;
+                                    }
+                                }
+
                                 const response = await http.post<BrokerAccess>(`/create-broker-access/${broker.pk}`, {
+                                    user_pk: user ? user.pk : undefined,
                                     user_group_pk: selectedGroup !== null ? selectedGroup.pk : undefined,
                                     quota: quota !== null ? gibToBytes(quota) : undefined,
                                     is_admin: isAdminAccess
@@ -166,7 +251,7 @@ export function BrokerAccessCreator({broker, modal, app}: { broker: Broker | Bro
                                         variant: "error"
                                     });
                                 } else if (e?.response?.data?.error_code === 400024) {
-                                    app.openModal("Error", <p>Broker access for this group already exists</p>);
+                                    app.openModal("Error", <p>Broker access for this user or group already exists</p>);
                                 } else {
                                     enqueueSnackbar({
                                         message: "An error occurred creating broker access, please try again",
@@ -191,7 +276,7 @@ export function ChangeQuotaForm({broker, brokerAccess, modal, app}: { broker: Br
     const [quota, setQuota] = useState<number | null>(null);
     const [isQuotaInvalid, setIsQuotaInvalid] = useState(false);
     useEffect(() => {
-        setIsQuotaInvalid((quota != null && quota < 0.001) || (quota == null && !brokerAccess.granted_group));
+        setIsQuotaInvalid((quota != null && quota < 0.001) || (quota == null && brokerAccess.is_public));
     }, [quota, broker, brokerAccess]);
 
     return (
@@ -601,7 +686,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <Tabs variant="scrollable" scrollButtons="auto" value={activeTab} onChange={(_e, val: number) => setActiveTab(val)}>
                                     <Tab label="Broker Access" {...a11yProps(0)} />
-                                    <Tab label="Audit Logs" {...a11yProps(0)} />
+                                    <Tab label="Audit Logs" {...a11yProps(1)} />
                                 </Tabs>
                             </Box>
                             <TabPanel value={activeTab} index={0}>
@@ -609,6 +694,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                     ref={brokerAccessTableRef}
                                     rowsPerPageOptions={[5, 10, 15]}
                                     columns={[
+                                        { id: "granted_user", name: "User", renderCellValue: (brokerAccess) => brokerAccess.granted_user?.display_name ?? brokerAccess.granted_user?.user_name, allowSorting: true },
                                         { id: "user_group.name", name: "Group", renderCellValue: (brokerAccess) => brokerAccess.granted_group?.name, allowSorting: true },
                                         { id: "write", name: "Admin Access", renderCellValue: (brokerAccess) => brokerAccess.write ? "Yes" : "No" },
                                         { id: "quota", name: "Quota Per User", renderCellValue: (brokerAccess) => brokerAccess.quota ? formatBytes(brokerAccess.quota) : "∞" },
@@ -645,7 +731,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                                 "Grant Admin Rights",
                                                 (modal) => <ActionModal
                                                     modalContent={modal}
-                                                    text={`Grant admin rights to group ${brokerAccess.granted_group?.name}. BEWARE: Granting admin privileges means that admins of the selected groups will be able to view broker credentials, edit broker details and bucket configuration and grant access to other groups.`}
+                                                    text={`Grant admin rights to ${getBrokerAccessDisplayLabel(brokerAccess)}. BEWARE: Granting admin privileges means that the selected user or admins of the selected groups will be able to view broker credentials, edit broker details and bucket configuration and grant access to other groups and users.`}
                                                     actions={[
                                                         {
                                                             name: "Ok",
@@ -687,7 +773,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                                 }
                                             ),
                                             icon: <AdminPanelSettingsIcon />,
-                                            disableForRow: (brokerAccess) => brokerAccess.write === true || !brokerAccess.granted_group,
+                                            disableForRow: (brokerAccess) => brokerAccess.write === true || brokerAccess.is_public,
                                         },
                                         {
                                             label: "Revoke Admin Rights",
@@ -695,7 +781,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                                 "Revoke Admin Rights",
                                                 (modal) => <ActionModal
                                                     modalContent={modal}
-                                                    text={`Revoke admin rights from group ${brokerAccess.granted_group?.name}.`}
+                                                    text={`Revoke admin rights from ${getBrokerAccessDisplayLabel(brokerAccess)}.`}
                                                     actions={[
                                                         {
                                                             name: "Ok",
@@ -745,7 +831,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                                 "Revoke Access",
                                                 (modal) => <ActionModal
                                                     modalContent={modal}
-                                                    text={`Revoke access from group ${brokerAccess.granted_group?.name}.`}
+                                                    text={`Revoke access from ${getBrokerAccessDisplayLabel(brokerAccess)}.`}
                                                     actions={[
                                                         {
                                                             name: "Ok",
@@ -791,10 +877,11 @@ export function BrokerDetailPage({app}: {app: App}) {
                                         )}
                                     >Create Access</Button>
                                 </div>
-                                <p>No linked group means that the broker access is public. Storage usage shows number of bytes
-                                    uploaded to this broker by users that are members of the linked group, if the user is member
+                                <p>No linked user or group means that the broker access is public. Storage usage shows number of bytes
+                                    uploaded to this broker by the linked user or users that are members of the linked group, if the user is member
                                     of multiple groups that have access, the storage usage counts towards all of those group accesses.
-                                    Bytes used by pubic group access counts all uploads by users that are not members of any group with access.</p>
+                                    Bytes used by pubic group access counts all uploads by users that are not members of any group with access.
+                                    If a user is member of a group that has access, the user-specific access overrides the group access.</p>
                             </TabPanel>
                             <TabPanel value={activeTab} index={1}>
                                 <PaginatedTable<BrokerAuditLogInnerJoined>
@@ -802,6 +889,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                         { id: "user", name: "User", renderCellValue: (log) => log.user.display_name ?? log.user.user_name },
                                         { id: "action", name: "Action", renderCellValue: (log) => log.action },
                                         { id: "target_group", name: "Target Group", renderCellValue: (log) => log.target_group?.name },
+                                        { id: "target_user", name: "Target User", renderCellValue: (log) => log.target_user?.display_name ?? log.target_user?.user_name },
                                         { id: "new_quota", name: "New Quota", renderCellValue: (log) => log.new_quota ? formatBytes(log.new_quota) : undefined },
                                         { id: "timestamp", name: "Timestamp", renderCellValue: (log) => new Date(log.creation_timestamp).toLocaleString() }
                                     ]}
@@ -848,4 +936,14 @@ export function showBucketConnectionError(app: App, errorMessage: string | null 
             </pre>
         </div>
     </div>);
+}
+
+function getBrokerAccessDisplayLabel(brokerAccess: BrokerAccessInnerJoined): string {
+    if (brokerAccess.granted_user) {
+        return "user " + (brokerAccess.granted_user.display_name ?? brokerAccess.granted_user.user_name);
+    } else if (brokerAccess.granted_group) {
+        return "group " + brokerAccess.granted_group.name;
+    } else {
+        return "Public";
+    }
 }
