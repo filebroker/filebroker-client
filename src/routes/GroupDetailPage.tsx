@@ -1010,6 +1010,9 @@ function UserInviteDialogue({group, modal, app}: { group: UserGroupDetailed, mod
     const [userName, setUserName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isUserInvalid, setIsUserInvalid] = useState(false);
+    useEffect(() => {
+        setIsUserInvalid(false);
+    }, [userName]);
 
     return (
         <div className="modal-form">
@@ -1028,9 +1031,8 @@ function UserInviteDialogue({group, modal, app}: { group: UserGroupDetailed, mod
                 </div>
             </Paper>
             <div className="modal-form-submit-btn">
-                <Button color="secondary" disabled={!userName || isLoading} startIcon={isLoading && <FontAwesomeIcon icon={solid("circle-notch")} spin />} onClick={async () => {
+                <Button color="secondary" disabled={!userName || isLoading || isUserInvalid} startIcon={isLoading && <FontAwesomeIcon icon={solid("circle-notch")} spin />} onClick={async () => {
                     setIsLoading(true);
-                    setIsUserInvalid(false);
                     try {
                         let user;
                         try {
