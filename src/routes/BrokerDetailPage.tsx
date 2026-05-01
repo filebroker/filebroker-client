@@ -67,7 +67,7 @@ interface GetBrokerAuditLogsResponse {
     audit_logs: BrokerAuditLogInnerJoined[];
 }
 
-const gibToBytes = (gib: number): number => gib * (1024 ** 3);
+const gibToBytes = (gib: number): number => Math.floor(gib * (1024 ** 3));
 
 export function BrokerAccessCreator({broker, modal, app}: { broker: Broker | BrokerDetailed, modal?: ModalContent, app: App }) {
     const location = useLocation();
