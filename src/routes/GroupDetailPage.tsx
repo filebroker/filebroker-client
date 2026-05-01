@@ -638,7 +638,7 @@ export function GroupDetailPage({app}: {app: App}) {
                                             { id: "broker.name", name: "Broker", renderCellValue: (brokerAccess) => brokerAccess.broker.name, allowSorting: true },
                                             { id: "write", name: "Admin Group", renderCellValue: (brokerAccess) => brokerAccess.write ? "Yes" : "No" },
                                             { id: "quota", name: "Quota Per User", renderCellValue: (brokerAccess) => brokerAccess.quota ? formatBytes(brokerAccess.quota) : "∞" },
-                                            { id: "used_bytes", name: "Bytes Used By Group", renderCellValue: (brokerAccess) => formatBytes(brokerAccess.used_bytes) },
+                                            { id: "used_bytes", name: "Bytes Used By Group", renderCellValue: (brokerAccess) => `${formatBytes(brokerAccess.used_quota)} (${formatBytes(brokerAccess.used_bytes)} total)` },
                                             { id: "granted_by", name: "Granted By", renderCellValue: (brokerAccess) => brokerAccess.granted_by.display_name ?? brokerAccess.granted_by.user_name, allowSorting: true },
                                             { id: "creation_timestamp", name: "Granted At", renderCellValue: (brokerAccess) => new Date(brokerAccess.creation_timestamp).toLocaleString(), allowSorting: true},
                                         ]}

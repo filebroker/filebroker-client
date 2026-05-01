@@ -51,6 +51,7 @@ interface BrokerAccessInnerJoined {
     write: boolean;
     quota: number | null | undefined;
     used_bytes: number;
+    used_quota: number;
     granted_by: UserPublic;
     creation_timestamp: string;
     granted_user: UserPublic | null | undefined;
@@ -742,7 +743,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                         : <div><FontAwesomeIcon icon={solid("circle-notch")} spin size="6x"/></div>}
                     {broker && <>
                         <div style={{ display: "flex", flexDirection: "row" }}>
-                            <ReadOnlyTextField label="Your Usage" variant="standard" value={`${formatBytes(broker.used_bytes)} / ${broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}`}/>
+                            <ReadOnlyTextField label="Your Usage" variant="standard" value={`${formatBytes(broker.used_quota)} (${formatBytes(broker.used_bytes)}) / ${broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}`}/>
                             {broker.total_used_bytes && <ReadOnlyTextField label="Total Usage" variant="standard" value={broker.total_quota ? `${formatBytes(broker.total_used_bytes)} / ${formatBytes(broker.total_quota)}` : `${formatBytes(broker.total_used_bytes)}`}/>}
                             <ReadOnlyTextField label="Owner" variant="standard" value={broker.owner.display_name ?? broker.owner.user_name}/>
                         </div>
@@ -809,7 +810,7 @@ export function BrokerDetailPage({app}: {app: App}) {
                                         { id: "user_group.name", name: "Group", renderCellValue: (brokerAccess) => brokerAccess.granted_group?.name, allowSorting: true },
                                         { id: "write", name: "Admin Access", renderCellValue: (brokerAccess) => brokerAccess.write ? "Yes" : "No" },
                                         { id: "quota", name: "Quota Per User", renderCellValue: (brokerAccess) => brokerAccess.quota ? formatBytes(brokerAccess.quota) : "∞" },
-                                        { id: "used_bytes", name: "Bytes Used By Access", renderCellValue: (brokerAccess) => formatBytes(brokerAccess.used_bytes) },
+                                        { id: "used_bytes", name: "Bytes Used By Access", renderCellValue: (brokerAccess) => `${formatBytes(brokerAccess.used_quota)} (${formatBytes(brokerAccess.used_bytes)} total)` },
                                         { id: "granted_by", name: "Granted By", renderCellValue: (brokerAccess) => brokerAccess.granted_by.display_name ?? brokerAccess.granted_by.user_name, allowSorting: true },
                                         { id: "creation_timestamp", name: "Granted At", renderCellValue: (brokerAccess) => new Date(brokerAccess.creation_timestamp).toLocaleString(), allowSorting: true},
                                     ]}

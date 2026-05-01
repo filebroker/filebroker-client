@@ -32,7 +32,7 @@ export default function BrokerListPage({app}: { app: App }) {
                             ref={tableRef}
                             columns={[
                                 { id: "name", name: "Name", renderCellValue: (broker) => broker.name, allowSorting: true },
-                                { id: "used_bytes", name: "Used (By You)", renderCellValue: (broker) => formatBytes(broker.used_bytes) },
+                                { id: "used_quota", name: "Used (By You)", renderCellValue: (broker) => `${formatBytes(broker.used_quota)} quota / ${formatBytes(broker.used_bytes)} total` },
                                 { id: "quota_bytes", name: "Quota Per User", renderCellValue: (broker) => broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞" },
                                 { id: "owner", name: "Owner", renderCellValue: (broker) => broker.owner.display_name ?? broker.owner.user_name, allowSorting: true },
                                 { id: "creation_timestamp", name: "Created At", renderCellValue: (broker) => new Date(broker.creation_timestamp).toLocaleString(), allowSorting: true },

@@ -213,7 +213,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 {brokers.sort((a, b) => a.broker.name.localeCompare(b.broker.name)).map((broker) => <MenuItem key={broker.broker.pk} value={broker.broker.pk}>
                     <ListItemText>{broker.broker.name}</ListItemText>
                     <Typography variant="body2" color="text.secondary">
-                        {formatBytes(broker.used_bytes)} / {broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}
+                        {formatBytes(broker.used_quota)} / {broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}
                     </Typography>
                 </MenuItem>)}
             </Select>

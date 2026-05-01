@@ -353,15 +353,18 @@ export class Broker {
 export class BrokerAvailability {
     broker: Broker;
     used_bytes: number;
+    used_quota: number;
     quota_bytes: number | null | undefined;
 
     constructor(
         broker: Broker,
         used_bytes: number,
+        used_quota: number,
         quota_bytes: number | null | undefined
     ) {
         this.broker = broker;
         this.used_bytes = used_bytes;
+        this.used_quota = used_quota;
         this.quota_bytes = quota_bytes;
     }
 }
@@ -386,6 +389,7 @@ export class BrokerDetailed {
     is_public: boolean;
     is_admin: boolean;
     used_bytes: number;
+    used_quota: number;
     quota_bytes: number | null | undefined;
     total_used_bytes: number | null | undefined;
 
@@ -409,6 +413,7 @@ export class BrokerDetailed {
         is_public: boolean,
         is_admin: boolean,
         used_bytes: number,
+        used_quota: number,
         quota_bytes: number | null | undefined,
         total_used_bytes: number | null | undefined,
     ) {
@@ -431,6 +436,7 @@ export class BrokerDetailed {
         this.is_public = is_public;
         this.is_admin = is_admin;
         this.used_bytes = used_bytes;
+        this.used_quota = used_quota;
         this.quota_bytes = quota_bytes;
         this.total_used_bytes = total_used_bytes;
     }
@@ -946,6 +952,7 @@ export class BrokerAccessInnerJoined {
     write: boolean;
     quota: number | null | undefined;
     used_bytes: number;
+    used_quota: number;
     granted_by: UserPublic;
     creation_timestamp: string;
 
@@ -955,6 +962,7 @@ export class BrokerAccessInnerJoined {
         write: boolean,
         quota: number | null | undefined,
         used_bytes: number,
+        used_quota: number,
         granted_by: UserPublic,
         creation_timestamp: string
     ) {
@@ -963,6 +971,7 @@ export class BrokerAccessInnerJoined {
         this.write = write;
         this.quota = quota;
         this.used_bytes = used_bytes;
+        this.used_quota = used_quota;
         this.granted_by = granted_by;
         this.creation_timestamp = creation_timestamp;
     }
