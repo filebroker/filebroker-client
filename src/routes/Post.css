@@ -6,7 +6,9 @@
     -webkit-transform: translate(-50%, 0%);
     transform: translate(-50%, 0%);
     border-radius: 10px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow:
+        0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
     display: inline-block;
 }
 
@@ -16,7 +18,7 @@
     min-width: 350px;
 }
 
-@media all and (orientation:landscape) {
+@media all and (orientation: landscape) {
     #post-container img {
         max-width: calc(100vw - 20px);
         max-height: 63vh;
@@ -33,7 +35,9 @@
         gap: 10px;
         background-color: #161b22;
         border-radius: 10px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        box-shadow:
+            0 4px 8px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
         margin-top: 20px;
         padding: 10px;
         width: 95%;
@@ -44,7 +48,7 @@
     }
 }
 
-@media all and (orientation:portrait) {
+@media all and (orientation: portrait) {
     #post-container img {
         max-width: calc(100vw - 20px);
         max-height: 63vh;
@@ -61,7 +65,9 @@
         gap: 10px;
         background-color: #161b22;
         border-radius: 10px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        box-shadow:
+            0 4px 8px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
         margin-top: 10px;
         padding: 10px;
         width: calc(100vw - 20px);

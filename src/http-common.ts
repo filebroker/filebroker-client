@@ -1,14 +1,14 @@
 import axios from "axios";
 
 export default axios.create({
-    baseURL: process.env.REACT_APP_API_URL,
+    baseURL: import.meta.env.REACT_APP_API_URL,
     headers: {
-        "Content-type": "application/json"
-    }
+        "Content-type": "application/json",
+    },
 });
 
 export function getApiUrl(): string {
-    let url = process.env.REACT_APP_API_URL;
+    let url = import.meta.env.REACT_APP_API_URL;
     if (url === undefined) {
         return "/";
     } else if (!url.endsWith("/")) {
@@ -19,7 +19,7 @@ export function getApiUrl(): string {
 }
 
 export function getPublicUrl(): string {
-    let url = process.env.PUBLIC_URL;
+    let url = import.meta.env.PUBLIC_URL;
     if (url === undefined) {
         return "/";
     } else if (!url.endsWith("/")) {
@@ -31,7 +31,7 @@ export function getPublicUrl(): string {
 
 export function getSiteBaseURI(): string {
     const origin = window.location.origin;
-    let path = process.env.REACT_APP_PATH;
+    let path = import.meta.env.REACT_APP_PATH;
 
     if (path === undefined || path === "/") {
         return origin + "/";

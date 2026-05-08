@@ -6,18 +6,33 @@ export const validateEmail = (email: string) => {
         );
 };
 
-export function replaceStringRange(s: string, start: number, end: number, substitute: string) {
+export function replaceStringRange(
+    s: string,
+    start: number,
+    end: number,
+    substitute: string
+) {
     return s.substring(0, start) + substitute + s.substring(end);
 }
 
 export function formatBytes(bytes: number, decimals = 2) {
-    if (!+bytes) return '0 Bytes'
+    if (!+bytes) return "0 Bytes";
 
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = [
+        "Bytes",
+        "KiB",
+        "MiB",
+        "GiB",
+        "TiB",
+        "PiB",
+        "EiB",
+        "ZiB",
+        "YiB",
+    ];
 
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }

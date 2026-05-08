@@ -1,10 +1,17 @@
 import { Location, NavigateFunction } from "react-router-dom";
 import App, { ModalContent } from "./App";
-import http, {getApiUrl} from "./http-common";
-import {S3Object, S3ObjectMetadata, UserPublic} from "./Model";
+import http, { getApiUrl } from "./http-common";
+import { S3Object, S3ObjectMetadata, UserPublic } from "./Model";
 import urlJoin from "url-join";
+import { JSX } from "react";
 
-export async function performSearchQuery(search: string, app: App, location: Location, navigate: NavigateFunction, loadingModal: ModalContent | undefined = undefined): Promise<SearchResult> {
+export async function performSearchQuery(
+    search: string,
+    app: App,
+    location: Location,
+    navigate: NavigateFunction,
+    loadingModal: ModalContent | undefined = undefined
+): Promise<SearchResult> {
     let searchUrl = new URL(urlJoin(getApiUrl(), `/search${search}`));
     let searchParams = new URLSearchParams(searchUrl.search);
     let queryParam: string = searchParams.get("query") ?? "";
@@ -28,36 +35,53 @@ export async function performSearchQuery(search: string, app: App, location: Loc
             let i = 0;
 
             if (responseData.compilation_errors) {
-                responseData.compilation_errors.forEach((compilationError: { location: any; msg: string; }) => {
-                    let location = compilationError.location;
-                    let start: number = location.start;
-                    let end: number = location.end;
-                    let startIdx = Math.max(0, start - 25);
-                    let endIdx = Math.min(queryParam.length, end + 25);
-                    let queryPart = queryParam.substring(startIdx, endIdx);
-                    let key = i++;
-                    let marker;
-                    if (end > start) {
-                        marker = " ".repeat(start - startIdx) + "^" + "-".repeat(Math.max(0, end - start - 1)) + "^";
-                    } else {
-                        marker = " ".repeat(start - startIdx) + "^";
+                responseData.compilation_errors.forEach(
+                    (compilationError: { location: any; msg: string }) => {
+                        let location = compilationError.location;
+                        let start: number = location.start;
+                        let end: number = location.end;
+                        let startIdx = Math.max(0, start - 25);
+                        let endIdx = Math.min(queryParam.length, end + 25);
+                        let queryPart = queryParam.substring(startIdx, endIdx);
+                        let key = i++;
+                        let marker;
+                        if (end > start) {
+                            marker =
+                                " ".repeat(start - startIdx) +
+                                "^" +
+                                "-".repeat(Math.max(0, end - start - 1)) +
+                                "^";
+                        } else {
+                            marker = " ".repeat(start - startIdx) + "^";
+                        }
+                        compilationErrors.push(
+                            <div key={key}>
+                                Error {key}:
+                                <pre>
+                                    <code>
+                                        {queryPart}
+                                        <br></br>
+                                        {marker}
+                                        <br></br>
+                                        <br></br>
+                                        {compilationError.msg}
+                                    </code>
+                                </pre>
+                            </div>
+                        );
                     }
-                    compilationErrors.push(
-                        <div key={key}>
-                            Error {key}:
-                            <pre><code>
-                                {queryPart}<br></br>
-                                {marker}<br></br>
-                                <br></br>
-                                {compilationError.msg}
-                            </code></pre>
-                        </div>
-                    );
-                });
+                );
             }
 
             loadingModal?.close();
-            app.openModal("Error", <div>{responseData.message}<br></br>{compilationErrors}</div>);
+            app.openModal(
+                "Error",
+                <div>
+                    {responseData.message}
+                    <br></br>
+                    {compilationErrors}
+                </div>
+            );
         } else {
             loadingModal?.close();
             app.openModal("Error", <div>An unexpected Error occurred</div>);
@@ -81,7 +105,7 @@ export class SearchResult {
         posts: PostQueryObject[] | undefined,
         collections: PostCollectionQueryObject[] | undefined,
         collection_items: PostCollectionItemQueryObject[] | undefined,
-        user_groups: UserGroupQueryObject[] | undefined,
+        user_groups: UserGroupQueryObject[] | undefined
     ) {
         this.full_count = full_count;
         this.pages = pages;
@@ -213,14 +237,14 @@ export class UserGroupQueryObject {
 
     constructor(
         pk: number,
-    name: string,
+        name: string,
         is_public: boolean,
-    owner: UserPublic,
-    creation_timestamp: string,
-    description: string | null | undefined,
-    allow_member_invite: boolean,
-    avatar_object_key: string | null | undefined,
-    edit_timestamp: string
+        owner: UserPublic,
+        creation_timestamp: string,
+        description: string | null | undefined,
+        allow_member_invite: boolean,
+        avatar_object_key: string | null | undefined,
+        edit_timestamp: string
     ) {
         this.pk = pk;
         this.name = name;

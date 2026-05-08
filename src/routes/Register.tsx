@@ -8,7 +8,7 @@ import { Button, Paper, TextField } from "@mui/material";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 export class UserRegistration {
     display_name: string;
@@ -65,7 +65,17 @@ function Register({ app }: RegisterProps) {
     async function register() {
         const modal = app.openLoadingModal();
         try {
-            let response = await http.post<LoginResponse>("/register", new UserRegistration(displayName, userName, password, email, captchaToken), { withCredentials: true });
+            let response = await http.post<LoginResponse>(
+                "/register",
+                new UserRegistration(
+                    displayName,
+                    userName,
+                    password,
+                    email,
+                    captchaToken
+                ),
+                { withCredentials: true }
+            );
             setLoginDisabled(false);
             app.handleLogin(response.data);
             navigate("/profile");
@@ -74,14 +84,19 @@ function Register({ app }: RegisterProps) {
             setLoginDisabled(false);
             console.error("Register failed: " + e);
             modal.close();
-            app.openModal("Error", <p>An error occurred while registering, please try again.</p>);
+            app.openModal(
+                "Error",
+                <p>An error occurred while registering, please try again.</p>
+            );
         }
     }
 
     async function checkUserName() {
         if (userName && userName !== checkedUserName) {
             let userNameToCheck = userName;
-            let response = await http.get<CheckUsernameResponse>(`/check-username/${encodeURIComponent(userNameToCheck)}`);
+            let response = await http.get<CheckUsernameResponse>(
+                `/check-username/${encodeURIComponent(userNameToCheck)}`
+            );
             setUserNameInvalid(!response.data.valid);
             setUserNameTaken(!response.data.available);
             setCheckedUserName(userNameToCheck);
@@ -97,7 +112,9 @@ function Register({ app }: RegisterProps) {
 
     useEffect(() => {
         if (password) {
-            setPasswordScore(zxcvbn(password, [userName, email, displayName]).score);
+            setPasswordScore(
+                zxcvbn(password, [userName, email, displayName]).score
+            );
         } else {
             setPasswordScore(0);
         }
@@ -115,29 +132,52 @@ function Register({ app }: RegisterProps) {
         <div id="Register">
             <div className="form-container-center">
                 <Paper elevation={2} className="form-paper">
-                    <form className="form-paper-content" style={{ gap: "10px" }} onSubmit={(e) => {
-                        e.preventDefault();
-                        setLoginDisabled(true);
-                        register();
-                    }}>
+                    <form
+                        className="form-paper-content"
+                        style={{ gap: "10px" }}
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setLoginDisabled(true);
+                            register();
+                        }}
+                    >
                         <h1>Register</h1>
                         <TextField
                             label="Display Name"
                             variant="outlined"
                             value={displayName}
                             fullWidth
-                            onChange={e => setDisplayName(e.currentTarget.value)}
-                            inputProps={{ maxLength: 32 }}
+                            onChange={(e) =>
+                                setDisplayName(e.currentTarget.value)
+                            }
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 32,
+                                },
+                            }}
                         />
                         <TextField
                             label="User Name"
                             variant="outlined"
                             value={userName}
                             error={userNameInvalid || userNameTaken}
-                            helperText={(userNameInvalid || userNameTaken) && (userNameInvalid ? "User name invalid: cannot contain whitespace" : "User name taken")}
+                            helperText={
+                                (userNameInvalid || userNameTaken) &&
+                                (userNameInvalid
+                                    ? "User name invalid: cannot contain whitespace"
+                                    : "User name taken")
+                            }
                             fullWidth
-                            onChange={e => { setUserNameInvalid(false); setUserNameTaken(false); setUserName(e.currentTarget.value) }}
-                            inputProps={{ maxLength: 25 }}
+                            onChange={(e) => {
+                                setUserNameInvalid(false);
+                                setUserNameTaken(false);
+                                setUserName(e.currentTarget.value);
+                            }}
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 25,
+                                },
+                            }}
                             required
                             onBlur={checkUserName}
                         />
@@ -148,7 +188,7 @@ function Register({ app }: RegisterProps) {
                             error={emailInvalid}
                             value={email}
                             fullWidth
-                            onChange={e => setEmail(e.currentTarget.value)}
+                            onChange={(e) => setEmail(e.currentTarget.value)}
                         />
                         <TextField
                             label="Password"
@@ -157,14 +197,34 @@ function Register({ app }: RegisterProps) {
                             variant="outlined"
                             value={password}
                             // use !! to force this to be a boolean instead of boolean | string
-                            error={!!(passwordConfirm && password && password !== passwordConfirm)}
-                            helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
+                            error={
+                                !!(
+                                    passwordConfirm &&
+                                    password &&
+                                    password !== passwordConfirm
+                                )
+                            }
+                            helperText={
+                                passwordConfirm &&
+                                password &&
+                                password !== passwordConfirm &&
+                                "Passwords do not match"
+                            }
                             fullWidth
-                            onChange={e => setPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                            onChange={(e) => setPassword(e.currentTarget.value)}
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 255,
+                                },
+                            }}
                             required
                             autoComplete="new-password"
                         />
-                        {password && <PasswordStrengthMeter passwordScore={passwordScore} />}
+                        {password && (
+                            <PasswordStrengthMeter
+                                passwordScore={passwordScore}
+                            />
+                        )}
                         <TextField
                             label="Confirm Password"
                             name="passwordNoFill2"
@@ -172,15 +232,62 @@ function Register({ app }: RegisterProps) {
                             variant="outlined"
                             value={passwordConfirm}
                             // use !! to force this to be a boolean instead of boolean | string
-                            error={!!(passwordConfirm && password && password !== passwordConfirm)}
-                            helperText={passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"}
+                            error={
+                                !!(
+                                    passwordConfirm &&
+                                    password &&
+                                    password !== passwordConfirm
+                                )
+                            }
+                            helperText={
+                                passwordConfirm &&
+                                password &&
+                                password !== passwordConfirm &&
+                                "Passwords do not match"
+                            }
                             fullWidth
-                            onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                            onChange={(e) =>
+                                setPasswordConfirm(e.currentTarget.value)
+                            }
+                            slotProps={{
+                                htmlInput: {
+                                    maxLength: 255,
+                                },
+                            }}
                             required
                             autoComplete="new-password"
                         />
-                        <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
-                        <Button type="submit" size="large" variant="contained" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("user-plus")} />} disabled={loginDisabled || userName.length === 0 || password.length === 0 || !captchaToken || passwordScore < 3 || !passwordConfirm || password !== passwordConfirm || emailInvalid}>Register</Button>
+                        <HCaptcha
+                            sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                            onVerify={setCaptchaToken}
+                            theme="dark"
+                            onExpire={() => setCaptchaToken(null)}
+                            onChalExpired={() => setCaptchaToken(null)}
+                            onError={() => setCaptchaToken(null)}
+                        />
+                        <Button
+                            type="submit"
+                            size="large"
+                            variant="contained"
+                            startIcon={
+                                <FontAwesomeSvgIcon
+                                    fontSize="inherit"
+                                    icon={faUserPlus}
+                                />
+                            }
+                            disabled={
+                                loginDisabled ||
+                                userName.length === 0 ||
+                                password.length === 0 ||
+                                !captchaToken ||
+                                passwordScore < 3 ||
+                                !passwordConfirm ||
+                                password !== passwordConfirm ||
+                                emailInvalid
+                            }
+                        >
+                            Register
+                        </Button>
                     </form>
                 </Paper>
             </div>

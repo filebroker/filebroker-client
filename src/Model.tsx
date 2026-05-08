@@ -1,6 +1,14 @@
 import { User } from "./App";
 import { ReactElement } from "react";
-import { Album, Face, LocalMovies, Palette, Save, SportsEsports, TheaterComedy } from "@mui/icons-material";
+import {
+    Album,
+    Face,
+    LocalMovies,
+    Palette,
+    Save,
+    SportsEsports,
+    TheaterComedy,
+} from "@mui/icons-material";
 
 export class UserPublic {
     pk: number;
@@ -23,7 +31,6 @@ export class UserPublic {
         this.avatar_object_key = avatar_object_key;
     }
 }
-
 
 export class Post {
     pk: number;
@@ -169,7 +176,7 @@ export class PostCollection {
         is_public: boolean,
         public_edit: boolean,
         poster_object_key: string | null,
-        description: string | null,
+        description: string | null
     ) {
         this.pk = pk;
         this.title = title;
@@ -272,7 +279,7 @@ export class S3Object {
         thumbnail_fail_count: number | null,
         thumbnail_disabled: boolean,
         metadata_locked_at: string | null,
-        metadata_fail_count: number | null,
+        metadata_fail_count: number | null
     ) {
         this.object_key = object_key;
         this.sha256_hash = sha256_hash;
@@ -329,7 +336,7 @@ export class Broker {
         is_system_bucket: boolean = false,
         description: string | null | undefined,
         total_quota: number | null | undefined,
-        disable_uploads: boolean,
+        disable_uploads: boolean
     ) {
         this.pk = pk;
         this.name = name;
@@ -415,7 +422,7 @@ export class BrokerDetailed {
         used_bytes: number,
         used_quota: number,
         quota_bytes: number | null | undefined,
-        total_used_bytes: number | null | undefined,
+        total_used_bytes: number | null | undefined
     ) {
         this.pk = pk;
         this.name = name;
@@ -442,7 +449,10 @@ export class BrokerDetailed {
     }
 }
 
-export function updateBrokerWithValues(current: BrokerDetailed, values: Broker): BrokerDetailed {
+export function updateBrokerWithValues(
+    current: BrokerDetailed,
+    values: Broker
+): BrokerDetailed {
     return {
         ...current,
         name: values.name,
@@ -465,10 +475,24 @@ export function updateBrokerWithValues(current: BrokerDetailed, values: Broker):
 export function isBrokerDetailed(
     broker: Broker | BrokerDetailed | null
 ): broker is BrokerDetailed {
-    return !!broker && "owner" in broker && "is_admin" in broker && "used_bytes" in broker;
+    return (
+        !!broker &&
+        "owner" in broker &&
+        "is_admin" in broker &&
+        "used_bytes" in broker
+    );
 }
 
-export type BrokerAuditAction = "Edit" | "BucketConnectionEdit" | "AccessGranted" | "AccessRevoked" | "AccessQuotaEdit" | "AccessAdminPromote" | "AccessAdminDemote" | "DisableUploads" | "EnableUploads";
+export type BrokerAuditAction =
+    | "Edit"
+    | "BucketConnectionEdit"
+    | "AccessGranted"
+    | "AccessRevoked"
+    | "AccessQuotaEdit"
+    | "AccessAdminPromote"
+    | "AccessAdminDemote"
+    | "DisableUploads"
+    | "EnableUploads";
 
 export interface BrokerAuditLogInnerJoined {
     pk: number;
@@ -546,32 +570,38 @@ export class TagCategory {
 }
 
 export function sortTags(a: Tag, b: Tag): number {
-    if (!a.tag_category && !b.tag_category) return a.tag_name.localeCompare(b.tag_name);
+    if (!a.tag_category && !b.tag_category)
+        return a.tag_name.localeCompare(b.tag_name);
     if (!a.tag_category) return 1;
     if (!b.tag_category) return -1;
-    return a.tag_category.localeCompare(b.tag_category) || a.tag_name.localeCompare(b.tag_name);
+    return (
+        a.tag_category.localeCompare(b.tag_category) ||
+        a.tag_name.localeCompare(b.tag_name)
+    );
 }
 
 export function sortTagUsages(a: TagUsage, b: TagUsage): number {
     return sortTags(a.tag, b.tag);
 }
 
-export function getIconForTagCategory(tagCategory: string): ReactElement | undefined {
+export function getIconForTagCategory(
+    tagCategory: string
+): ReactElement | undefined {
     switch (tagCategory) {
         case "album":
-            return <Album/>;
+            return <Album />;
         case "artist":
-            return <Palette/>;
+            return <Palette />;
         case "character":
-            return <Face/>;
+            return <Face />;
         case "game":
-            return <SportsEsports/>;
+            return <SportsEsports />;
         case "genre":
-            return <TheaterComedy/>;
+            return <TheaterComedy />;
         case "series":
-            return <LocalMovies/>;
+            return <LocalMovies />;
         case "type":
-            return <Save/>;
+            return <Save />;
         default:
             return undefined;
     }
@@ -879,7 +909,18 @@ export class UserGroupInviteDetailed {
     }
 }
 
-export type UserGroupAuditAction = "Edit" | "Join" | "Invite" | "RevokeInvite" | "Leave" | "Kick" | "Ban" | "Unban" | "AdminPromote" | "AdminDemote" | "AvatarChange";
+export type UserGroupAuditAction =
+    | "Edit"
+    | "Join"
+    | "Invite"
+    | "RevokeInvite"
+    | "Leave"
+    | "Kick"
+    | "Ban"
+    | "Unban"
+    | "AdminPromote"
+    | "AdminDemote"
+    | "AvatarChange";
 
 export class UserGroupAuditLogInnerJoined {
     pk: number;
@@ -1036,7 +1077,11 @@ export class AnalyzeQueryRequest {
     query: string;
     scope: string;
 
-    constructor(cursor_pos: number | null | undefined, query: string, scope: string) {
+    constructor(
+        cursor_pos: number | null | undefined,
+        query: string,
+        scope: string
+    ) {
         this.cursor_pos = cursor_pos;
         this.query = query;
         this.scope = scope;
@@ -1065,7 +1110,7 @@ export class CompilerError {
 
 export class QueryCompilationError {
     phase: string;
-    errors: CompilerError[]
+    errors: CompilerError[];
 
     constructor(phase: string, errors: CompilerError[]) {
         this.phase = phase;
@@ -1089,7 +1134,12 @@ export class QueryAutocompleteSuggestion {
     target_location: Location;
     suggestion_type: QueryAutocompleteSuggestionType;
 
-    constructor(text: string, display: string, target_location: Location, suggestion_type: QueryAutocompleteSuggestionType) {
+    constructor(
+        text: string,
+        display: string,
+        target_location: Location,
+        suggestion_type: QueryAutocompleteSuggestionType
+    ) {
         this.text = text;
         this.display = display;
         this.target_location = target_location;
@@ -1101,7 +1151,10 @@ export class AnalyzeQueryResponse {
     error: QueryCompilationError | null | undefined;
     suggestions: QueryAutocompleteSuggestion[];
 
-    constructor(error: QueryCompilationError | null | undefined, suggestions: QueryAutocompleteSuggestion[]) {
+    constructor(
+        error: QueryCompilationError | null | undefined,
+        suggestions: QueryAutocompleteSuggestion[]
+    ) {
         this.error = error;
         this.suggestions = suggestions;
     }
@@ -1111,10 +1164,7 @@ export class DeletePostsResponse {
     deleted_posts: Post[];
     deleted_objects: S3Object[];
 
-    constructor(
-        deleted_posts: Post[],
-        deleted_objects: S3Object[]
-    ) {
+    constructor(deleted_posts: Post[], deleted_objects: S3Object[]) {
         this.deleted_posts = deleted_posts;
         this.deleted_objects = deleted_objects;
     }

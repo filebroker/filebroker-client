@@ -5,7 +5,9 @@ import React from "react";
 function Home() {
     return (
         <div id="Home">
-            <div><h1>filebroker</h1></div>
+            <div>
+                <h1>filebroker</h1>
+            </div>
             <div id="home-search">
                 <GlobalQueryInput autoFocus />
             </div>

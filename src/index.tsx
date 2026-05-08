@@ -1,9 +1,9 @@
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import Modal from 'react-modal';
-import {createTheme, styled, ThemeProvider} from '@mui/material/styles';
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import Modal from "react-modal";
+import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import {
     Autocomplete,
     FormControl,
@@ -15,44 +15,42 @@ import {
     TextFieldProps,
     TextFieldVariants,
     useMediaQuery,
-    useTheme
-} from '@mui/material';
+    useTheme,
+} from "@mui/material";
 import * as React from "react";
-import {ChipTypeMap} from "@mui/material/Chip";
-import {AutocompleteProps} from "@mui/material/Autocomplete/Autocomplete";
+import { ChipTypeMap } from "@mui/material/Chip";
+import { AutocompleteProps } from "@mui/material/Autocomplete";
 
 const root = ReactDOM.createRoot(
-    document.getElementById('root') as HTMLElement
+    document.getElementById("root") as HTMLElement
 );
 
 Modal.setAppElement("#root");
 
 const MUI_THEME = createTheme({
     typography: {
-        "fontFamily": `-apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif`,
-        "allVariants": {
-            "color": "white"
+        fontFamily: `-apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif`,
+        allVariants: {
+            color: "white",
         },
         button: {
-            textTransform: 'none'
-        }
+            textTransform: "none",
+        },
     },
     palette: {
-        mode: 'dark',
+        mode: "dark",
         primary: {
-            main: "#ffffff"
+            main: "#ffffff",
         },
         secondary: {
-            main: "#3399ff"
-        }
+            main: "#3399ff",
+        },
     },
     components: {
         MuiAutocomplete: {
-            styleOverrides: {
-
-            }
-        }
-    }
+            styleOverrides: {},
+        },
+    },
 });
 
 const StyledTextFieldStyle = styled(TextField)(({ theme, color }) => {
@@ -62,33 +60,42 @@ const StyledTextFieldStyle = styled(TextField)(({ theme, color }) => {
         },
         "& .MuiOutlinedInput-root.Mui-disabled": {
             "& fieldset": {
-                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderColor: color
+                    ? theme.palette[color].main
+                    : "rgba(0, 0, 0, 0.23)",
                 color: color ? theme.palette[color].main : "white",
             },
         },
         "& .MuiOutlinedInput-input.Mui-disabled": {
             color: "white",
-            'WebkitTextFillColor': 'white',
+            WebkitTextFillColor: "white",
         },
     };
-})
+});
 
 export const StyledTextField = (props: TextFieldProps) => {
-    return (<StyledTextFieldStyle
-        {...props}
-        InputProps={{
-            ...props.InputProps,
-            readOnly: props.disabled,
-        }}
-        InputLabelProps={{
-            ...props.InputLabelProps,
-            shrink: true,
-        }}
-    />);
-}
+    return (
+        <StyledTextFieldStyle
+            {...props}
+            slotProps={{
+                ...props.slotProps,
+                input: {
+                    ...props.slotProps?.input,
+                    readOnly: props.disabled,
+                },
+                inputLabel: {
+                    ...props.slotProps?.inputLabel,
+                    shrink: true,
+                },
+            }}
+        />
+    );
+};
 
 const StyledReadOnlyTextField = styled(TextField)(({ theme, color }) => {
-    const themeColor = color ? theme.palette[color].main : "rgba(255, 255, 255, 0.42)";
+    const themeColor = color
+        ? theme.palette[color].main
+        : "rgba(255, 255, 255, 0.42)";
 
     return {
         "& .MuiInputBase-input": {
@@ -105,21 +112,27 @@ const StyledReadOnlyTextField = styled(TextField)(({ theme, color }) => {
         },
         "& .MuiOutlinedInput-root": {
             "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderColor: color
+                    ? theme.palette[color].main
+                    : "rgba(0, 0, 0, 0.23)",
                 borderWidth: "1px",
             },
             "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderColor: color
+                    ? theme.palette[color].main
+                    : "rgba(0, 0, 0, 0.23)",
                 borderWidth: "1px",
             },
             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                borderColor: color
+                    ? theme.palette[color].main
+                    : "rgba(0, 0, 0, 0.23)",
                 borderWidth: "1px",
             },
         },
         "& .MuiInputLabel-root": {
             color: "white",
-            'WebkitTextFillColor': 'white',
+            WebkitTextFillColor: "white",
         },
     };
 });
@@ -129,34 +142,47 @@ export const ReadOnlyTextField = (props: TextFieldProps) => {
         <StyledReadOnlyTextField
             focused
             {...props}
-            InputProps={{
-                ...props.InputProps,
-                readOnly: true
-            }}
-            InputLabelProps={{
-                ...props.InputLabelProps,
-                shrink: true,
+            slotProps={{
+                ...props.slotProps,
+                input: {
+                    ...props.slotProps?.input,
+                    readOnly: true,
+                },
+                inputLabel: {
+                    ...props.slotProps?.inputLabel,
+                    shrink: true,
+                },
             }}
         />
     );
-}
+};
 
-export const StyledSelect = <V, >({
-                                      id,
-                                      label,
-                                      readOnly = false,
-                                      fullWidth = false,
-                                      color,
-                                      value,
-                                      onChange,
-                                      children,
-                                      ...rest
-                                  }: SelectProps<V>) => {
+export const StyledSelect = <V,>({
+    id,
+    label,
+    readOnly = false,
+    fullWidth = false,
+    color,
+    value,
+    onChange,
+    children,
+    ...rest
+}: SelectProps<V>) => {
     const theme = useTheme();
     return (
-        <FormControl style={{width: fullWidth ? undefined : "150px", flexGrow: 0}} fullWidth={fullWidth}>
-            <InputLabel id={`${id}-label`} color={color}><span
-                style={{color: color ? theme.palette[color].main : "white"}}>{label}</span></InputLabel>
+        <FormControl
+            style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }}
+            fullWidth={fullWidth}
+        >
+            <InputLabel id={`${id}-label`} color={color}>
+                <span
+                    style={{
+                        color: color ? theme.palette[color].main : "white",
+                    }}
+                >
+                    {label}
+                </span>
+            </InputLabel>
             <Select
                 labelId={`${id}-label`}
                 id={id}
@@ -171,12 +197,14 @@ export const StyledSelect = <V, >({
                     },
                     "&.MuiOutlinedInput-root.Mui-disabled": {
                         "& fieldset": {
-                            borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                            borderColor: color
+                                ? theme.palette[color].main
+                                : "rgba(0, 0, 0, 0.23)",
                             color: color ? theme.palette[color].main : "white",
                         },
                     },
                     "& .MuiOutlinedInput-input.Mui-disabled": {
-                        'WebkitTextFillColor': 'white',
+                        WebkitTextFillColor: "white",
                     },
                 }}
                 onChange={onChange}
@@ -193,24 +221,33 @@ export const StyledAutocomplete = <
     Multiple extends boolean | undefined = false,
     DisableClearable extends boolean | undefined = false,
     FreeSolo extends boolean | undefined = false,
-    ChipComponent extends React.ElementType = ChipTypeMap['defaultComponent'],
+    ChipComponent extends React.ElementType = ChipTypeMap["defaultComponent"],
 >({
-      color,
-      label,
-      placeholder,
-      readOnly,
-      value,
-      variant,
-      error,
-      helperText,
-      ...props
-  }: Omit<AutocompleteProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>, "renderInput"> & {
-    label: string,
-    color?: FormLabelProps["color"],
-    variant?: TextFieldVariants,
-    placeholder?: string | undefined,
-    error?: boolean,
-    helperText?: string | undefined,
+    color,
+    label,
+    placeholder,
+    readOnly,
+    value,
+    variant,
+    error,
+    helperText,
+    ...props
+}: Omit<
+    AutocompleteProps<
+        Value,
+        Multiple,
+        DisableClearable,
+        FreeSolo,
+        ChipComponent
+    >,
+    "renderInput"
+> & {
+    label: string;
+    color?: FormLabelProps["color"];
+    variant?: TextFieldVariants;
+    placeholder?: string | undefined;
+    error?: boolean;
+    helperText?: string | undefined;
 }) => {
     const theme = useTheme();
     return (
@@ -219,45 +256,66 @@ export const StyledAutocomplete = <
             value={value}
             disabled={readOnly}
             readOnly={readOnly}
-            renderInput={params => {
-                const {InputProps, ...restParams} = params;
-                const {startAdornment, ...restInputProps} = InputProps;
-                return <TextField
-                    {...restParams}
-                    InputProps={{
-                        ...restInputProps,
-                        startAdornment: (startAdornment &&
-                            <div style={{maxHeight: "100px", overflowY: "auto"}}>{startAdornment}</div>)
-                    }}
-                    InputLabelProps={readOnly ? {shrink: true} : undefined}
-                    label={label}
-                    placeholder={value || readOnly ? undefined : placeholder}
-                    variant={variant}
-                    sx={{
-                        "& .MuiOutlinedInput-input.Mui-disabled": {
-                            'WebkitTextFillColor': 'white',
-                        },
-                        "& .MuiInputLabel-root.Mui-disabled": {
-                            color: color ? theme.palette[color].main : "white",
-                        },
-                        "& .MuiInputBase-root.Mui-disabled": {
-                            "& > fieldset": {
-                                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
-                                color: "white",
-                            }
+            renderInput={(params) => {
+                const startAdornment = params.slotProps?.input?.startAdornment;
+                return (
+                    <TextField
+                        {...params}
+                        slotProps={{
+                            ...params.slotProps,
+                            input: {
+                                ...params.slotProps?.input,
+                                startAdornment: startAdornment ? (
+                                    <div
+                                        style={{
+                                            maxHeight: "100px",
+                                            overflowY: "auto",
+                                        }}
+                                    >
+                                        {startAdornment}
+                                    </div>
+                                ) : undefined,
+                            },
+                            inputLabel: {
+                                ...params.slotProps?.inputLabel,
+                                ...(readOnly ? { shrink: true } : {}),
+                            },
+                        }}
+                        label={label}
+                        placeholder={
+                            value || readOnly ? undefined : placeholder
                         }
-                    }}
-                    error={error}
-                    helperText={helperText}
-                />;
+                        variant={variant}
+                        sx={{
+                            "& .MuiOutlinedInput-input.Mui-disabled": {
+                                WebkitTextFillColor: "white",
+                            },
+                            "& .MuiInputLabel-root.Mui-disabled": {
+                                color: color
+                                    ? theme.palette[color].main
+                                    : "white",
+                            },
+                            "& .MuiInputBase-root.Mui-disabled": {
+                                "& > fieldset": {
+                                    borderColor: color
+                                        ? theme.palette[color].main
+                                        : "rgba(0, 0, 0, 0.23)",
+                                    color: "white",
+                                },
+                            },
+                        }}
+                        error={error}
+                        helperText={helperText}
+                    />
+                );
             }}
         />
     );
 };
 
 const DimensionAwareApp = () => {
-    const matches = useMediaQuery('(min-width: 800px)');
-    return (<App isDesktop={matches} />)
+    const matches = useMediaQuery("(min-width: 800px)");
+    return <App isDesktop={matches} />;
 };
 
 root.render(

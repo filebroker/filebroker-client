@@ -1,6 +1,8 @@
 #tag-glossary-container {
     background-color: #161b22;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow:
+        0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
     margin-left: 25px;
     margin-right: 25px;
     padding-top: 10px;
@@ -40,7 +42,6 @@
 }
 
 .tag-glossary-letter {
-    margin-top: 0;
     font-size: 1.5rem;
     text-transform: uppercase;
     padding-top: 0.5rem;
@@ -75,7 +76,9 @@
 }
 
 .loading-container {
-    height: calc(100vh - 120px - 56px); /* 60px each for header and pagination footer, 56px for action bar */
+    height: calc(
+        100vh - 120px - 56px
+    ); /* 60px each for header and pagination footer, 56px for action bar */
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1,31 +1,48 @@
-import {useLocation, useNavigate, useParams} from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../App";
 import http from "../http-common";
-import React, {useEffect, useState} from "react";
-import {getIconForTagCategory, Tag, TagCategory, TagDetailed, TagEdge} from "../Model";
+import React, { useEffect, useState } from "react";
+import {
+    getIconForTagCategory,
+    Tag,
+    TagCategory,
+    TagDetailed,
+    TagEdge,
+} from "../Model";
 import {
     Button,
     IconButton,
     ListItem,
-    ListItemIcon, ListItemText,
+    ListItemIcon,
+    ListItemText,
     Paper,
 } from "@mui/material";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {regular, solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faCircleNotch,
+    faClockRotateLeft,
+    faPenToSquare,
+    faXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { faFloppyDisk } from "@fortawesome/free-regular-svg-icons";
 
 import "./TagDetailPage.css";
-import {TagSelector} from "../components/TagEditor";
-import {FontAwesomeSvgIcon} from "../components/FontAwesomeSvgIcon";
-import {enqueueSnackbar} from "notistack";
-import {PostCollectionQueryObject, PostQueryObject, SearchResult} from "../Search";
-import {PreviewGrid} from "../components/PaginatedGridView";
-import {AccountTree} from "@mui/icons-material";
+import { TagSelector } from "../components/TagEditor";
+import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import { enqueueSnackbar } from "notistack";
+import {
+    PostCollectionQueryObject,
+    PostQueryObject,
+    SearchResult,
+} from "../Search";
+import { PreviewGrid } from "../components/PaginatedGridView";
+import { AccountTree } from "@mui/icons-material";
 import CytoscapeComponent from "react-cytoscapejs";
-import cytoscape, {ElementDefinition} from "cytoscape";
-import dagre from 'cytoscape-dagre';
-import {StyledAutocomplete} from "../index";
-import {TagEditHistoryDialogue} from "../components/PostEditHistoryDialogue";
-import {QueryAutocompleteTextField} from "../components/QueryInput";
+import cytoscape, { ElementDefinition } from "cytoscape";
+import dagre from "cytoscape-dagre";
+import { StyledAutocomplete } from "../index";
+import { TagEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
+import { QueryAutocompleteTextField } from "../components/QueryInput";
 
 cytoscape.use(dagre);
 
@@ -48,9 +65,11 @@ export function TagDetailPage({ app }: { app: App }) {
 
     const [tagCategories, setTagCategories] = useState<TagCategory[]>([]);
     useEffect(() => {
-        http.get<TagCategory[]>(`/get-tag-categories`).then(response => {
-            setTagCategories(response.data);
-        }).catch(e => console.error("Failed to load tag categories", e));
+        http.get<TagCategory[]>(`/get-tag-categories`)
+            .then((response) => {
+                setTagCategories(response.data);
+            })
+            .catch((e) => console.error("Failed to load tag categories", e));
     }, []);
 
     const [tag, setTag] = useState<TagDetailed | null>(null);
@@ -60,11 +79,16 @@ export function TagDetailPage({ app }: { app: App }) {
     const [aliasPks, setAliasPks] = useState<number[]>([]);
     const [tagCategoryInput, setTagCategoryInput] = useState<string>("");
     const [tagCategory, setTagCategory] = useState<TagCategory | null>(null);
-    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState(tag?.auto_match_condition_post ?? "");
-    const [autoMatchConditionCollection, setAutoMatchConditionCollection] = useState(tag?.auto_match_condition_collection ?? "");
+    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState(
+        tag?.auto_match_condition_post ?? ""
+    );
+    const [autoMatchConditionCollection, setAutoMatchConditionCollection] =
+        useState(tag?.auto_match_condition_collection ?? "");
 
     const [posts, setPosts] = useState<PostQueryObject[]>([]);
-    const [collections, setCollections] = useState<PostCollectionQueryObject[]>([]);
+    const [collections, setCollections] = useState<PostCollectionQueryObject[]>(
+        []
+    );
 
     const [ancestors, setAncestors] = useState<TagHierarchyNode[]>([]);
     const [descendants, setDescendants] = useState<TagHierarchyNode[]>([]);
@@ -74,12 +98,14 @@ export function TagDetailPage({ app }: { app: App }) {
     const updateTag = (tag: TagDetailed | null) => {
         setTag(tag);
         setParentTags(tag?.parents ?? []);
-        setParentPks(tag?.parents?.map(p => p.pk) ?? []);
+        setParentPks(tag?.parents?.map((p) => p.pk) ?? []);
         setAliasTags(tag?.aliases ?? []);
-        setAliasPks(tag?.aliases?.map(a => a.pk) ?? []);
+        setAliasPks(tag?.aliases?.map((a) => a.pk) ?? []);
         setTagCategory(tag?.tag_category ?? null);
         setAutoMatchConditionPost(tag?.auto_match_condition_post ?? "");
-        setAutoMatchConditionCollection(tag?.auto_match_condition_collection ?? "");
+        setAutoMatchConditionCollection(
+            tag?.auto_match_condition_collection ?? ""
+        );
     };
 
     const loadTag = async () => {
@@ -107,8 +133,15 @@ export function TagDetailPage({ app }: { app: App }) {
     const loadPosts = async () => {
         if (tag) {
             try {
-                const config = await app.getAuthorization(location, navigate, false);
-                const response = await http.get<SearchResult>(`/search?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`, config);
+                const config = await app.getAuthorization(
+                    location,
+                    navigate,
+                    false
+                );
+                const response = await http.get<SearchResult>(
+                    `/search?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`,
+                    config
+                );
                 setPosts(response.data.posts || []);
             } catch (e: any) {
                 console.error("Failed to load posts", e);
@@ -118,8 +151,15 @@ export function TagDetailPage({ app }: { app: App }) {
     const loadCollections = async () => {
         if (tag) {
             try {
-                const config = await app.getAuthorization(location, navigate, false);
-                const response = await http.get<SearchResult>(`/search/collection?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`, config);
+                const config = await app.getAuthorization(
+                    location,
+                    navigate,
+                    false
+                );
+                const response = await http.get<SearchResult>(
+                    `/search/collection?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`,
+                    config
+                );
                 setCollections(response.data.collections || []);
             } catch (e: any) {
                 console.error("Failed to load collections", e);
@@ -129,7 +169,9 @@ export function TagDetailPage({ app }: { app: App }) {
     const loadHierarchy = async () => {
         if (tag) {
             try {
-                const response = await http.get<GetTagHierarchyResponse>(`/get-tag-hierarchy/${id}`);
+                const response = await http.get<GetTagHierarchyResponse>(
+                    `/get-tag-hierarchy/${id}`
+                );
                 setAncestors(response.data.ancestors);
                 setDescendants(response.data.descendants);
             } catch (e: any) {
@@ -150,164 +192,389 @@ export function TagDetailPage({ app }: { app: App }) {
             <div id="tag-detail-content-wrapper">
                 <div className="tag-editor">
                     <Paper elevation={2} className="form-paper">
-                        {tag
-                            ? <div className="form-paper-content">
+                        {tag ? (
+                            <div className="form-paper-content">
                                 <div className="form-paper-content-top-btn-row">
-                                    <IconButton hidden={ancestors.length === 0 && descendants.length === 0} onClick={() => {
-                                        const handled: number[] = [];
-                                        const elements: ElementDefinition[] = [{ data: { id: tag.pk.toString(), label: tag.tag_name }, selectable: false }];
-                                        ancestors.forEach(a => {
-                                            if (!handled.includes(a.tag.pk)) {
-                                                handled.push(a.tag.pk);
-                                                elements.push({ data: { id: a.tag.pk.toString(), label: a.tag.tag_name }, selectable: false });
-                                                a.edges.forEach(e => {
-                                                    elements.push({ data: { source: e.fk_parent.toString(), target: e.fk_child.toString() }, selectable: false });
-                                                });
-                                            }
-                                        });
-                                        descendants.forEach(d => {
-                                            if (!handled.includes(d.tag.pk)) {
-                                                handled.push(d.tag.pk);
-                                                elements.push({ data: { id: d.tag.pk.toString(), label: d.tag.tag_name }, selectable: false });
-                                                d.edges.forEach(e => {
-                                                    elements.push({ data: { source: e.fk_parent.toString(), target: e.fk_child.toString() }, selectable: false });
-                                                });
-                                            }
-                                        });
-                                        app.openModal("Tag Hierarchy", <div className="cytoscape-wrapper">
-                                            <CytoscapeComponent
-                                                elements={elements}
-                                                layout={{
-                                                    name: "dagre",
-                                                }}
-                                                style={{ width: '600px', height: '600px' }}
-                                                stylesheet={[
+                                    <IconButton
+                                        hidden={
+                                            ancestors.length === 0 &&
+                                            descendants.length === 0
+                                        }
+                                        onClick={() => {
+                                            const handled: number[] = [];
+                                            const elements: ElementDefinition[] =
+                                                [
                                                     {
-                                                        selector: 'node',
-                                                        style: {
-                                                            'label': 'data(label)',
-                                                            'color': 'white',
-                                                            'text-valign': 'center',
-                                                            'text-halign': 'center',
-                                                            'font-size': '12px'
-                                                        }
+                                                        data: {
+                                                            id: tag.pk.toString(),
+                                                            label: tag.tag_name,
+                                                        },
+                                                        selectable: false,
                                                     },
-                                                    {
-                                                        selector: 'edge',
-                                                        style: {
-                                                            'target-arrow-shape': 'triangle',
-                                                            'curve-style': 'bezier'
-                                                        }
-                                                    }
-                                                ]}
-                                            />
-                                        </div>);
-                                    }}><AccountTree /></IconButton>
+                                                ];
+                                            ancestors.forEach((a) => {
+                                                if (
+                                                    !handled.includes(a.tag.pk)
+                                                ) {
+                                                    handled.push(a.tag.pk);
+                                                    elements.push({
+                                                        data: {
+                                                            id: a.tag.pk.toString(),
+                                                            label: a.tag
+                                                                .tag_name,
+                                                        },
+                                                        selectable: false,
+                                                    });
+                                                    a.edges.forEach((e) => {
+                                                        elements.push({
+                                                            data: {
+                                                                source: e.fk_parent.toString(),
+                                                                target: e.fk_child.toString(),
+                                                            },
+                                                            selectable: false,
+                                                        });
+                                                    });
+                                                }
+                                            });
+                                            descendants.forEach((d) => {
+                                                if (
+                                                    !handled.includes(d.tag.pk)
+                                                ) {
+                                                    handled.push(d.tag.pk);
+                                                    elements.push({
+                                                        data: {
+                                                            id: d.tag.pk.toString(),
+                                                            label: d.tag
+                                                                .tag_name,
+                                                        },
+                                                        selectable: false,
+                                                    });
+                                                    d.edges.forEach((e) => {
+                                                        elements.push({
+                                                            data: {
+                                                                source: e.fk_parent.toString(),
+                                                                target: e.fk_child.toString(),
+                                                            },
+                                                            selectable: false,
+                                                        });
+                                                    });
+                                                }
+                                            });
+                                            app.openModal(
+                                                "Tag Hierarchy",
+                                                <div className="cytoscape-wrapper">
+                                                    <CytoscapeComponent
+                                                        elements={elements}
+                                                        layout={{
+                                                            name: "dagre",
+                                                        }}
+                                                        style={{
+                                                            width: "600px",
+                                                            height: "600px",
+                                                        }}
+                                                        stylesheet={[
+                                                            {
+                                                                selector:
+                                                                    "node",
+                                                                style: {
+                                                                    label: "data(label)",
+                                                                    color: "white",
+                                                                    "text-valign":
+                                                                        "center",
+                                                                    "text-halign":
+                                                                        "center",
+                                                                    "font-size":
+                                                                        "12px",
+                                                                },
+                                                            },
+                                                            {
+                                                                selector:
+                                                                    "edge",
+                                                                style: {
+                                                                    "target-arrow-shape":
+                                                                        "triangle",
+                                                                    "curve-style":
+                                                                        "bezier",
+                                                                },
+                                                            },
+                                                        ]}
+                                                    />
+                                                </div>
+                                            );
+                                        }}
+                                    >
+                                        <AccountTree />
+                                    </IconButton>
                                 </div>
                                 <h1>{tag.tag_name}</h1>
-                                <TagSelector readOnly={!editMode} values={parentTags} setSelectedTags={setParentPks} limit={25} label="Parents" enableTagLink />
-                                <TagSelector readOnly={!editMode} values={aliasTags} setSelectedTags={setAliasPks} limit={25} label="Aliases" enableTagLink />
+                                <TagSelector
+                                    readOnly={!editMode}
+                                    values={parentTags}
+                                    setSelectedTags={setParentPks}
+                                    limit={25}
+                                    label="Parents"
+                                    enableTagLink
+                                />
+                                <TagSelector
+                                    readOnly={!editMode}
+                                    values={aliasTags}
+                                    setSelectedTags={setAliasPks}
+                                    limit={25}
+                                    label="Aliases"
+                                    enableTagLink
+                                />
                                 <div className="material-row-flex">
                                     <StyledAutocomplete
                                         id="tag-category-select"
                                         label="Category"
                                         options={tagCategories}
                                         value={tagCategory}
-                                        onChange={(_event: any, newValue: TagCategory | null) => setTagCategory(newValue)}
+                                        onChange={(
+                                            _event: any,
+                                            newValue: TagCategory | null
+                                        ) => setTagCategory(newValue)}
                                         inputValue={tagCategoryInput}
-                                        onInputChange={(_event: any, newInputValue: string) => setTagCategoryInput(newInputValue)}
+                                        onInputChange={(
+                                            _event: any,
+                                            newInputValue: string
+                                        ) => setTagCategoryInput(newInputValue)}
                                         readOnly={!editMode}
-                                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                                        isOptionEqualToValue={(option, value) =>
+                                            option.id === value.id
+                                        }
                                         renderOption={(props, option) => (
                                             <ListItem {...props}>
                                                 <ListItemIcon>
-                                                    {getIconForTagCategory(option.id)}
+                                                    {getIconForTagCategory(
+                                                        option.id
+                                                    )}
                                                 </ListItemIcon>
-                                                <ListItemText primary={option.label} />
+                                                <ListItemText
+                                                    primary={option.label}
+                                                />
                                             </ListItem>
                                         )}
                                     />
                                 </div>
-                                {app.getUser()?.is_admin && <div className="material-row-flex">
-                                    <QueryAutocompleteTextField
-                                        queryString={autoMatchConditionPost}
-                                        setQueryString={v => setAutoMatchConditionPost(v)}
-                                        label="Auto Match Condition Post"
-                                        scope="tag_auto_match_post"
-                                        disabled={!editMode}
-                                    />
-                                </div>}
-                                {app.getUser()?.is_admin && <div className="material-row-flex">
-                                    <QueryAutocompleteTextField
-                                        queryString={autoMatchConditionCollection}
-                                        setQueryString={v => setAutoMatchConditionCollection(v)}
-                                        label="Auto Match Condition Collection"
-                                        scope="tag_auto_match_collection"
-                                        disabled={!editMode}
-                                    />
-                                </div>}
-                                <div className={"form-paper-button-row" + (editMode ? " form-paper-button--expanded" : "")}>
-                                    {editMode
-                                        ? <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                                        : <div className="button-row">
-                                            <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} hidden={!app.isLoggedIn()} onClick={() => setEditMode(true)}>Edit</Button>
-                                            <Button startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("clock-rotate-left")} />} hidden={!app.isLoggedIn()} onClick={() => app.openModal("History", modal => <TagEditHistoryDialogue app={app} tag={tag} modal={modal} />, (result) => {
-                                                if (result) {
-                                                    updateTag(result);
-                                                }
-                                            })}>History</Button>
-                                        </div>}
-                                    <Button color="secondary" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={regular("floppy-disk")} />} hidden={!editMode} onClick={async () => {
-                                        const loadingModal = app.openLoadingModal();
-                                        try {
-                                            let config = await app.getAuthorization(location, navigate);
-                                            let response = await http.post<TagDetailed>(`/update-tag/${id}`, new UpdateTagRequest(
-                                                null,
-                                                parentPks,
-                                                null,
-                                                null,
-                                                aliasPks,
-                                                null,
-                                                tagCategory?.id ?? "",
-                                                app.getUser()?.is_admin ? autoMatchConditionPost : null,
-                                                app.getUser()?.is_admin ? autoMatchConditionCollection : null
-                                            ), config);
-                                            updateTag(response.data);
-                                            enqueueSnackbar({
-                                                message: "Tag edited",
-                                                variant: "success"
-                                            });
-                                        } catch (e: any) {
-                                            let compilation_errors = e.response?.data?.compilation_errors;
-                                            if (compilation_errors) {
-                                                app.openModal("Error", <div>Failed to compile auto match condition: {compilation_errors[0]?.msg ?? "Unexpected Error"}</div>);
-                                            } else {
-                                                console.error("Failed to update tag", e);
-                                                if (e.response?.status === 401) {
-                                                    enqueueSnackbar({
-                                                        message: "Your credentials have expired, try refreshing the page.",
-                                                        variant: "error"
-                                                    });
-                                                } else {
-                                                    enqueueSnackbar({
-                                                        message: "An error occurred editing your tag, please try again",
-                                                        variant: "error"
-                                                    });
-                                                }
+                                {app.getUser()?.is_admin && (
+                                    <div className="material-row-flex">
+                                        <QueryAutocompleteTextField
+                                            queryString={autoMatchConditionPost}
+                                            setQueryString={(v) =>
+                                                setAutoMatchConditionPost(v)
                                             }
-                                        } finally {
-                                            loadingModal.close();
-                                            setEditMode(false);
+                                            label="Auto Match Condition Post"
+                                            scope="tag_auto_match_post"
+                                            disabled={!editMode}
+                                        />
+                                    </div>
+                                )}
+                                {app.getUser()?.is_admin && (
+                                    <div className="material-row-flex">
+                                        <QueryAutocompleteTextField
+                                            queryString={
+                                                autoMatchConditionCollection
+                                            }
+                                            setQueryString={(v) =>
+                                                setAutoMatchConditionCollection(
+                                                    v
+                                                )
+                                            }
+                                            label="Auto Match Condition Collection"
+                                            scope="tag_auto_match_collection"
+                                            disabled={!editMode}
+                                        />
+                                    </div>
+                                )}
+                                <div
+                                    className={
+                                        "form-paper-button-row" +
+                                        (editMode
+                                            ? " form-paper-button--expanded"
+                                            : "")
+                                    }
+                                >
+                                    {editMode ? (
+                                        <Button
+                                            startIcon={
+                                                <FontAwesomeSvgIcon
+                                                    fontSize="inherit"
+                                                    icon={faXmark}
+                                                />
+                                            }
+                                            onClick={() => setEditMode(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    ) : (
+                                        <div className="button-row">
+                                            <Button
+                                                startIcon={
+                                                    <FontAwesomeSvgIcon
+                                                        fontSize="inherit"
+                                                        icon={faPenToSquare}
+                                                    />
+                                                }
+                                                hidden={!app.isLoggedIn()}
+                                                onClick={() =>
+                                                    setEditMode(true)
+                                                }
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                startIcon={
+                                                    <FontAwesomeSvgIcon
+                                                        fontSize="inherit"
+                                                        icon={faClockRotateLeft}
+                                                    />
+                                                }
+                                                hidden={!app.isLoggedIn()}
+                                                onClick={() =>
+                                                    app.openModal(
+                                                        "History",
+                                                        (modal) => (
+                                                            <TagEditHistoryDialogue
+                                                                app={app}
+                                                                tag={tag}
+                                                                modal={modal}
+                                                            />
+                                                        ),
+                                                        (result) => {
+                                                            if (result) {
+                                                                updateTag(
+                                                                    result
+                                                                );
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                            >
+                                                History
+                                            </Button>
+                                        </div>
+                                    )}
+                                    <Button
+                                        color="secondary"
+                                        startIcon={
+                                            <FontAwesomeSvgIcon
+                                                fontSize="inherit"
+                                                icon={faFloppyDisk}
+                                            />
                                         }
-                                    }}>Save</Button>
+                                        hidden={!editMode}
+                                        onClick={async () => {
+                                            const loadingModal =
+                                                app.openLoadingModal();
+                                            try {
+                                                let config =
+                                                    await app.getAuthorization(
+                                                        location,
+                                                        navigate
+                                                    );
+                                                let response =
+                                                    await http.post<TagDetailed>(
+                                                        `/update-tag/${id}`,
+                                                        new UpdateTagRequest(
+                                                            null,
+                                                            parentPks,
+                                                            null,
+                                                            null,
+                                                            aliasPks,
+                                                            null,
+                                                            tagCategory?.id ??
+                                                                "",
+                                                            app.getUser()
+                                                                ?.is_admin
+                                                                ? autoMatchConditionPost
+                                                                : null,
+                                                            app.getUser()
+                                                                ?.is_admin
+                                                                ? autoMatchConditionCollection
+                                                                : null
+                                                        ),
+                                                        config
+                                                    );
+                                                updateTag(response.data);
+                                                enqueueSnackbar({
+                                                    message: "Tag edited",
+                                                    variant: "success",
+                                                });
+                                            } catch (e: any) {
+                                                let compilation_errors =
+                                                    e.response?.data
+                                                        ?.compilation_errors;
+                                                if (compilation_errors) {
+                                                    app.openModal(
+                                                        "Error",
+                                                        <div>
+                                                            Failed to compile
+                                                            auto match
+                                                            condition:{" "}
+                                                            {compilation_errors[0]
+                                                                ?.msg ??
+                                                                "Unexpected Error"}
+                                                        </div>
+                                                    );
+                                                } else {
+                                                    console.error(
+                                                        "Failed to update tag",
+                                                        e
+                                                    );
+                                                    if (
+                                                        e.response?.status ===
+                                                        401
+                                                    ) {
+                                                        enqueueSnackbar({
+                                                            message:
+                                                                "Your credentials have expired, try refreshing the page.",
+                                                            variant: "error",
+                                                        });
+                                                    } else {
+                                                        enqueueSnackbar({
+                                                            message:
+                                                                "An error occurred editing your tag, please try again",
+                                                            variant: "error",
+                                                        });
+                                                    }
+                                                }
+                                            } finally {
+                                                loadingModal.close();
+                                                setEditMode(false);
+                                            }
+                                        }}
+                                    >
+                                        Save
+                                    </Button>
                                 </div>
                             </div>
-                            : <div><FontAwesomeIcon icon={solid("circle-notch")} spin size="6x" /></div>
-                        }
+                        ) : (
+                            <div>
+                                <FontAwesomeIcon
+                                    icon={faCircleNotch}
+                                    spin
+                                    size="6x"
+                                />
+                            </div>
+                        )}
                     </Paper>
                 </div>
-                {tag && posts.length > 0 && <PreviewGrid title="Posts" items={posts} searchLink={`/posts?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`} onItemClickPath={(item) => `/post/${item.pk}`} />}
-                {tag && collections.length > 0 && <PreviewGrid title="Collections" items={collections} searchLink={`/collections?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`} onItemClickPath={(item) => `/collection/${item.pk}`} />}
+                {tag && posts.length > 0 && (
+                    <PreviewGrid
+                        title="Posts"
+                        items={posts}
+                        searchLink={`/posts?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`}
+                        onItemClickPath={(item) => `/post/${item.pk}`}
+                    />
+                )}
+                {tag && collections.length > 0 && (
+                    <PreviewGrid
+                        title="Collections"
+                        items={collections}
+                        searchLink={`/collections?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`}
+                        onItemClickPath={(item) => `/collection/${item.pk}`}
+                    />
+                )}
             </div>
         </div>
     );

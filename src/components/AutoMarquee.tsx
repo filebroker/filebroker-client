@@ -1,7 +1,7 @@
-import React, {ReactNode, useEffect, useRef, useState} from 'react';
-import Marquee from 'react-fast-marquee';
+import React, { ReactNode, useEffect, useRef, useState } from "react";
+import Marquee from "react-fast-marquee";
 
-const AutoMarquee = ({children}: { children: ReactNode }) => {
+const AutoMarquee = ({ children }: { children: ReactNode }) => {
     const ref = useRef<HTMLDivElement | null>(null);
     const [overflow, setOverflow] = useState(false);
 
@@ -26,14 +26,8 @@ const AutoMarquee = ({children}: { children: ReactNode }) => {
     }, []);
 
     return (
-        <div ref={ref} style={{whiteSpace: 'nowrap', overflow: 'hidden'}}>
-            {overflow ? (
-                <Marquee>
-                    {children}
-                </Marquee>
-            ) : (
-                <span>{children}</span>
-            )}
+        <div ref={ref} style={{ whiteSpace: "nowrap", overflow: "hidden" }}>
+            {overflow ? <Marquee>{children}</Marquee> : <span>{children}</span>}
         </div>
     );
 };
