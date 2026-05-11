@@ -247,7 +247,11 @@ export function MusicPlayer({
                 }}
             />
             <div className="music-player-container">
-                <img className="song-cover" src={cover} alt={`Cover art for ${title}`} />
+                <img
+                    className="song-cover"
+                    src={cover}
+                    alt={`Cover art for ${title}`}
+                />
                 <div className="song-metadata">
                     <h3 className="song-title">
                         <AutoMarquee>{title}</AutoMarquee>
