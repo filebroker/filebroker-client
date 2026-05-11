@@ -290,6 +290,9 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"
+                                        sx={(theme) => ({
+                                            color: theme.palette.text.secondary,
+                                        })}
                                     >
                                         {formatBytes(broker.used_quota)} /{" "}
                                         {broker.quota_bytes
