@@ -241,6 +241,10 @@ export function PaginatedGridView({
                                                     item.create_user.user_name
                                                 }
                                                 position="below"
+                                                sx={{
+                                                    textAlign: "left",
+                                                    alignItems: "flex-start",
+                                                }}
                                             />
                                         </div>
                                     </div>
