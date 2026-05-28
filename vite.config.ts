@@ -2,7 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
 function normalizeBasePath(path: string | undefined): string {
-    if (!path || path === ".") {
+    if (!path || path === "." || path === "/") {
         return "/";
     }
 
