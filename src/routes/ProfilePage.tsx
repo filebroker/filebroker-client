@@ -1,19 +1,26 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import App, { ModalContent, User } from "../App";
-import http, {getApiUrl} from "../http-common";
+import http, { getApiUrl } from "../http-common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { solid } from "@fortawesome/fontawesome-svg-core/import.macro";
-import {Avatar, Button, IconButton, Paper, TextField} from "@mui/material";
+import {
+    faCircleNotch,
+    faKey,
+    faPenToSquare,
+    faSave,
+    faSignOut,
+    faXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { Avatar, Button, IconButton, Paper, TextField } from "@mui/material";
 import { emailRegex } from "./Register";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
 import { LoginResponse } from "./Login";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
-import {ReadOnlyTextField, StyledTextField} from "../index";
-import {PostPicker} from "../components/PostPicker";
-import {AvatarCropper} from "../components/AvatarCropper";
+import { ReadOnlyTextField, StyledTextField } from "../index";
+import { PostPicker } from "../components/PostPicker";
+import { AvatarCropper } from "../components/AvatarCropper";
 import urlJoin from "url-join";
 
 class ProfilePageProps {
@@ -30,10 +37,7 @@ class UpdateUserRequest {
     display_name: string | null;
     email: string | null;
 
-    constructor(
-        display_name: string | null,
-        email: string | null,
-    ) {
+    constructor(display_name: string | null, email: string | null) {
         this.display_name = display_name;
         this.email = email;
     }
@@ -54,7 +58,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
         app.setState({
             jwt: null,
             user: null,
-            loginExpiry: null
+            loginExpiry: null,
         });
         navigate("/");
     }
@@ -85,71 +89,152 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
 
     let profileContent;
     if (user != null) {
-        profileContent = <>
-            <IconButton sx={{ width: "fit-content", justifySelf: "center", alignSelf: "center" }} onClick={() => app.openModal("Select Avatar", (modal) => <PostPicker app={app} constriction={"@type ~= \"image/%\""} onPostSelect={(post) => {
-                app.openModal(
-                    "Avatar Cropper",
-                    (avatarCropperModal) => <AvatarCropper sourceObjectKey={post.s3_object.object_key} modal={avatarCropperModal} app={app} />,
-                    (result) => {
-                        if (result) {
-                            modal.close(result);
-                            setUser(result);
-                        }
-                    },
-                    true,
-                    true,
-                    false,
-                    true
-                );
-            }} /> )}>
-                <Avatar sx={{ width: 100, height: 100 }} src={user.avatar_object_key ? urlJoin(getApiUrl(), "get-object", user.avatar_object_key) : undefined}>
-                    {!user.avatar_object_key && (user.display_name ?? user.user_name).split(/\s+/i, 3).filter(s => s.length > 0).map(s => s[0].toUpperCase())}
-                </Avatar>
-            </IconButton>
-            <ReadOnlyTextField
-                label="User Name"
-                variant="outlined"
-                value={userName}
-                fullWidth
-            />
-            <StyledTextField
-                label="Display Name"
-                variant="outlined"
-                value={displayName}
-                disabled={!editMode}
-                fullWidth
-                onChange={e => setDisplayName(e.currentTarget.value)}
-                inputProps={{ maxLength: 32 }}
-            />
-            <StyledTextField
-                label="Email"
-                variant="outlined"
-                value={email}
-                disabled={!editMode}
-                error={emailInvalid}
-                type="email"
-                fullWidth
-                onChange={e => setEmail(e.currentTarget.value)}
-            />
-            {!user.email_confirmed && user.email && <span>
-                <button className="underscore-button" onClick={async () => {
-                    const loadingModal = app.openLoadingModal();
-                    try {
-                        let config = await app.getAuthorization(location, navigate);
-                        await http.post("send-email-confirmation-link", null, config);
-                        loadingModal.close();
-                        app.openModal("Success", <p>A confirmation link has been sent to your email address.</p>);
-                    } catch (e) {
-                        console.error("Failed to send email confirmation link " + e);
-                        loadingModal.close();
-                        app.openModal("Error", <p>An error occurred sending the confirmation link, please try again.</p>);
+        profileContent = (
+            <>
+                <IconButton
+                    sx={{
+                        width: "fit-content",
+                        justifySelf: "center",
+                        alignSelf: "center",
+                    }}
+                    onClick={() =>
+                        app.openModal("Select Avatar", (modal) => (
+                            <PostPicker
+                                app={app}
+                                constriction={'@type ~= "image/%"'}
+                                onPostSelect={(post) => {
+                                    app.openModal(
+                                        "Avatar Cropper",
+                                        (avatarCropperModal) => (
+                                            <AvatarCropper
+                                                sourceObjectKey={
+                                                    post.s3_object.object_key
+                                                }
+                                                modal={avatarCropperModal}
+                                                app={app}
+                                            />
+                                        ),
+                                        (result) => {
+                                            if (result) {
+                                                modal.close(result);
+                                                setUser(result);
+                                            }
+                                        },
+                                        true,
+                                        true,
+                                        false,
+                                        true
+                                    );
+                                }}
+                            />
+                        ))
                     }
-                }}>Click here</button> to confirm your email address</span>}
-        </>;
+                >
+                    <Avatar
+                        sx={{ width: 100, height: 100 }}
+                        src={
+                            user.avatar_object_key
+                                ? urlJoin(
+                                      getApiUrl(),
+                                      "get-object",
+                                      user.avatar_object_key
+                                  )
+                                : undefined
+                        }
+                    >
+                        {!user.avatar_object_key &&
+                            (user.display_name ?? user.user_name)
+                                .split(/\s+/i, 3)
+                                .filter((s) => s.length > 0)
+                                .map((s) => s[0].toUpperCase())}
+                    </Avatar>
+                </IconButton>
+                <ReadOnlyTextField
+                    label="User Name"
+                    variant="outlined"
+                    value={userName}
+                    fullWidth
+                />
+                <StyledTextField
+                    label="Display Name"
+                    variant="outlined"
+                    value={displayName}
+                    disabled={!editMode}
+                    fullWidth
+                    onChange={(e) => setDisplayName(e.currentTarget.value)}
+                    slotProps={{
+                        htmlInput: {
+                            maxLength: 32,
+                        },
+                    }}
+                />
+                <StyledTextField
+                    label="Email"
+                    variant="outlined"
+                    value={email}
+                    disabled={!editMode}
+                    error={emailInvalid}
+                    type="email"
+                    fullWidth
+                    onChange={(e) => setEmail(e.currentTarget.value)}
+                />
+                {!user.email_confirmed && user.email && (
+                    <span>
+                        <button
+                            className="underscore-button"
+                            onClick={async () => {
+                                const loadingModal = app.openLoadingModal();
+                                try {
+                                    let config = await app.getAuthorization(
+                                        location,
+                                        navigate
+                                    );
+                                    await http.post(
+                                        "send-email-confirmation-link",
+                                        null,
+                                        config
+                                    );
+                                    loadingModal.close();
+                                    app.openModal(
+                                        "Success",
+                                        <p>
+                                            A confirmation link has been sent to
+                                            your email address.
+                                        </p>
+                                    );
+                                } catch (e) {
+                                    console.error(
+                                        "Failed to send email confirmation link " +
+                                            e
+                                    );
+                                    loadingModal.close();
+                                    app.openModal(
+                                        "Error",
+                                        <p>
+                                            An error occurred sending the
+                                            confirmation link, please try again.
+                                        </p>
+                                    );
+                                }
+                            }}
+                        >
+                            Click here
+                        </button>{" "}
+                        to confirm your email address
+                    </span>
+                )}
+            </>
+        );
     } else {
-        profileContent = <div className="loading-container">
-            <FontAwesomeIcon icon={solid("circle-notch")} spin size="6x"></FontAwesomeIcon>
-        </div>;
+        profileContent = (
+            <div className="loading-container">
+                <FontAwesomeIcon
+                    icon={faCircleNotch}
+                    spin
+                    size="6x"
+                ></FontAwesomeIcon>
+            </div>
+        );
     }
 
     return (
@@ -159,27 +244,117 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                     <div className="form-paper-content">
                         {profileContent}
                         <div className="form-paper-button-row form-paper-button--expanded">
-                            {editMode
-                                ? <Button variant="outlined" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("xmark")} />} onClick={() => setEditMode(false)}>Cancel</Button>
-                                : <Button variant="outlined" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("pen-to-square")} />} onClick={() => setEditMode(true)}>Edit</Button>}
-                            <Button variant="outlined" hidden={editMode} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("sign-out")} />} onClick={handleLogout}>Logout</Button>
-                            <Button variant="outlined" hidden={!editMode} disabled={emailInvalid} startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("save")} />} onClick={async () => {
-                                const modal = app.openLoadingModal();
-                                try {
-                                    let config = await app.getAuthorization(location, navigate);
-                                    let response = await http.post<User>("edit-user", new UpdateUserRequest(displayName, email), config);
-                                    setUser(response.data);
-                                    setEditMode(false);
-                                    modal.close();
-                                } catch (e) {
-                                    modal.close();
-                                    console.error("An error occurred updating the user: " + e);
-                                    app.openModal("Error", <p>An error occurred updating the user, please try again.</p>);
+                            {editMode ? (
+                                <Button
+                                    variant="outlined"
+                                    startIcon={
+                                        <FontAwesomeSvgIcon
+                                            fontSize="inherit"
+                                            icon={faXmark}
+                                        />
+                                    }
+                                    onClick={() => setEditMode(false)}
+                                >
+                                    Cancel
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="outlined"
+                                    startIcon={
+                                        <FontAwesomeSvgIcon
+                                            fontSize="inherit"
+                                            icon={faPenToSquare}
+                                        />
+                                    }
+                                    onClick={() => setEditMode(true)}
+                                >
+                                    Edit
+                                </Button>
+                            )}
+                            <Button
+                                variant="outlined"
+                                hidden={editMode}
+                                startIcon={
+                                    <FontAwesomeSvgIcon
+                                        fontSize="inherit"
+                                        icon={faSignOut}
+                                    />
                                 }
-                            }}>Save</Button>
-                            {user && <Button variant="outlined" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("key")} />} onClick={() => {
-                                app.openModal("Change Password", (modal) => <ChangePasswordForm app={app} user={user} modal={modal} />);
-                            }}>Change Password</Button>}
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                hidden={!editMode}
+                                disabled={emailInvalid}
+                                startIcon={
+                                    <FontAwesomeSvgIcon
+                                        fontSize="inherit"
+                                        icon={faSave}
+                                    />
+                                }
+                                onClick={async () => {
+                                    const modal = app.openLoadingModal();
+                                    try {
+                                        let config = await app.getAuthorization(
+                                            location,
+                                            navigate
+                                        );
+                                        let response = await http.post<User>(
+                                            "edit-user",
+                                            new UpdateUserRequest(
+                                                displayName,
+                                                email
+                                            ),
+                                            config
+                                        );
+                                        setUser(response.data);
+                                        setEditMode(false);
+                                        modal.close();
+                                    } catch (e) {
+                                        modal.close();
+                                        console.error(
+                                            "An error occurred updating the user: " +
+                                                e
+                                        );
+                                        app.openModal(
+                                            "Error",
+                                            <p>
+                                                An error occurred updating the
+                                                user, please try again.
+                                            </p>
+                                        );
+                                    }
+                                }}
+                            >
+                                Save
+                            </Button>
+                            {user && (
+                                <Button
+                                    variant="outlined"
+                                    startIcon={
+                                        <FontAwesomeSvgIcon
+                                            fontSize="inherit"
+                                            icon={faKey}
+                                        />
+                                    }
+                                    onClick={() => {
+                                        app.openModal(
+                                            "Change Password",
+                                            (modal) => (
+                                                <ChangePasswordForm
+                                                    app={app}
+                                                    user={user}
+                                                    modal={modal}
+                                                />
+                                            )
+                                        );
+                                    }}
+                                >
+                                    Change Password
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </Paper>
@@ -193,14 +368,26 @@ class ChangePasswordRequest {
     new_password: string;
     captcha_token: string | null;
 
-    constructor(password: string, new_password: string, captcha_token: string | null) {
+    constructor(
+        password: string,
+        new_password: string,
+        captcha_token: string | null
+    ) {
         this.password = password;
         this.new_password = new_password;
         this.captcha_token = captcha_token;
     }
 }
 
-function ChangePasswordForm({ app, user, modal }: { app: App, user: User, modal: ModalContent }) {
+function ChangePasswordForm({
+    app,
+    user,
+    modal,
+}: {
+    app: App;
+    user: User;
+    modal: ModalContent;
+}) {
     const location = useLocation();
     const navigate = useNavigate();
     const [password, setPassword] = useState("");
@@ -213,7 +400,13 @@ function ChangePasswordForm({ app, user, modal }: { app: App, user: User, modal:
 
     useEffect(() => {
         if (newPassword) {
-            setPasswordScore(zxcvbn(newPassword, [user.user_name, user.email ?? "", user.display_name ?? ""]).score);
+            setPasswordScore(
+                zxcvbn(newPassword, [
+                    user.user_name,
+                    user.email ?? "",
+                    user.display_name ?? "",
+                ]).score
+            );
         } else {
             setPasswordScore(0);
         }
@@ -231,10 +424,20 @@ function ChangePasswordForm({ app, user, modal }: { app: App, user: User, modal:
                 type="password"
                 value={password}
                 error={loginFailed || (!!password && password === newPassword)}
-                helperText={loginFailed ? "Invalid Credentials" : (!!password && password === newPassword) ? "New password cannot match old password" : null}
+                helperText={
+                    loginFailed
+                        ? "Invalid Credentials"
+                        : !!password && password === newPassword
+                          ? "New password cannot match old password"
+                          : null
+                }
                 fullWidth
-                onChange={e => setPassword(e.currentTarget.value)}
-                inputProps={{ maxLength: 255 }}
+                onChange={(e) => setPassword(e.currentTarget.value)}
+                slotProps={{
+                    htmlInput: {
+                        maxLength: 255,
+                    },
+                }}
                 required
             />
             <TextField
@@ -244,14 +447,32 @@ function ChangePasswordForm({ app, user, modal }: { app: App, user: User, modal:
                 variant="outlined"
                 value={newPassword}
                 // use !! to force this to be a boolean instead of boolean | string
-                error={!!(passwordConfirm && newPassword && newPassword !== passwordConfirm)}
-                helperText={passwordConfirm && newPassword && newPassword !== passwordConfirm && "Passwords do not match"}
+                error={
+                    !!(
+                        passwordConfirm &&
+                        newPassword &&
+                        newPassword !== passwordConfirm
+                    )
+                }
+                helperText={
+                    passwordConfirm &&
+                    newPassword &&
+                    newPassword !== passwordConfirm &&
+                    "Passwords do not match"
+                }
                 fullWidth
-                onChange={e => setNewPassword(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                onChange={(e) => setNewPassword(e.currentTarget.value)}
+                slotProps={{
+                    htmlInput: {
+                        maxLength: 255,
+                    },
+                }}
                 required
                 autoComplete="new-password"
             />
-            {newPassword && <PasswordStrengthMeter passwordScore={passwordScore} />}
+            {newPassword && (
+                <PasswordStrengthMeter passwordScore={passwordScore} />
+            )}
             <TextField
                 label="Confirm Password"
                 name="passwordNoFill2"
@@ -259,37 +480,95 @@ function ChangePasswordForm({ app, user, modal }: { app: App, user: User, modal:
                 variant="outlined"
                 value={passwordConfirm}
                 // use !! to force this to be a boolean instead of boolean | string
-                error={!!(passwordConfirm && newPassword && newPassword !== passwordConfirm)}
-                helperText={passwordConfirm && newPassword && newPassword !== passwordConfirm && "Passwords do not match"}
+                error={
+                    !!(
+                        passwordConfirm &&
+                        newPassword &&
+                        newPassword !== passwordConfirm
+                    )
+                }
+                helperText={
+                    passwordConfirm &&
+                    newPassword &&
+                    newPassword !== passwordConfirm &&
+                    "Passwords do not match"
+                }
                 fullWidth
-                onChange={e => setPasswordConfirm(e.currentTarget.value)} inputProps={{ maxLength: 255 }}
+                onChange={(e) => setPasswordConfirm(e.currentTarget.value)}
+                slotProps={{
+                    htmlInput: {
+                        maxLength: 255,
+                    },
+                }}
                 required
                 autoComplete="new-password"
             />
-            {showCaptcha &&
-                <HCaptcha sitekey={process.env.REACT_APP_CAPTCHA_SITEKEY!} onVerify={setCaptchaToken} theme="dark" onExpire={() => setCaptchaToken(null)} onChalExpired={() => setCaptchaToken(null)} onError={() => setCaptchaToken(null)} />
-            }
-            <Button disabled={!password || passwordScore < 3 || !newPassword || !passwordConfirm || newPassword !== passwordConfirm || newPassword === password || (showCaptcha && !captchaToken)} size="large" variant="contained" startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={solid("save")} />} onClick={async () => {
-                let config = await app.getAuthorization(location, navigate);
-                const loadingModal = app.openLoadingModal();
-                try {
-                    let loginResponse = await http.post<LoginResponse>("change-password", new ChangePasswordRequest(password, newPassword, showCaptcha ? captchaToken : null), { ...config, withCredentials: true });
-                    app.handleLogin(loginResponse.data);
-                    loadingModal.close();
-                    modal.close();
-                    app.openModal("Success", <p>Password changed successfully.</p>);
-                } catch (e: any) {
-                    loadingModal.close();
-                    if (e?.response?.status >= 500) {
-                        console.log("Changing password failed: " + e);
-                        app.openModal("Error", <p>An error occurred changing password, please try again.</p>);
-                    } else if (e?.response?.data?.error_code === 400011) {
-                        setShowCaptcha(true);
-                    } else {
-                        setLoginFailed(true);
-                    }
+            {showCaptcha && (
+                <HCaptcha
+                    sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                    onVerify={setCaptchaToken}
+                    theme="dark"
+                    onExpire={() => setCaptchaToken(null)}
+                    onChalExpired={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                />
+            )}
+            <Button
+                disabled={
+                    !password ||
+                    passwordScore < 3 ||
+                    !newPassword ||
+                    !passwordConfirm ||
+                    newPassword !== passwordConfirm ||
+                    newPassword === password ||
+                    (showCaptcha && !captchaToken)
                 }
-            }}>Save</Button>
+                size="large"
+                variant="contained"
+                startIcon={
+                    <FontAwesomeSvgIcon fontSize="inherit" icon={faSave} />
+                }
+                onClick={async () => {
+                    let config = await app.getAuthorization(location, navigate);
+                    const loadingModal = app.openLoadingModal();
+                    try {
+                        let loginResponse = await http.post<LoginResponse>(
+                            "change-password",
+                            new ChangePasswordRequest(
+                                password,
+                                newPassword,
+                                showCaptcha ? captchaToken : null
+                            ),
+                            { ...config, withCredentials: true }
+                        );
+                        app.handleLogin(loginResponse.data);
+                        loadingModal.close();
+                        modal.close();
+                        app.openModal(
+                            "Success",
+                            <p>Password changed successfully.</p>
+                        );
+                    } catch (e: any) {
+                        loadingModal.close();
+                        if (e?.response?.status >= 500) {
+                            console.log("Changing password failed: " + e);
+                            app.openModal(
+                                "Error",
+                                <p>
+                                    An error occurred changing password, please
+                                    try again.
+                                </p>
+                            );
+                        } else if (e?.response?.data?.error_code === 400011) {
+                            setShowCaptcha(true);
+                        } else {
+                            setLoginFailed(true);
+                        }
+                    }
+                }}
+            >
+                Save
+            </Button>
         </div>
     );
 }

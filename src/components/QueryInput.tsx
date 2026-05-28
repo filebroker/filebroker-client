@@ -1,20 +1,30 @@
-import {Combobox} from "@filebroker/react-widgets/lib/cjs";
-import React, {useEffect, useState} from "react";
-import {AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion} from "../Model";
+import { Combobox } from "@filebroker/react-widgets/lib/cjs";
+import React, { useEffect, useState } from "react";
+import {
+    AnalyzeQueryRequest,
+    AnalyzeQueryResponse,
+    QueryAutocompleteSuggestion,
+} from "../Model";
 import http from "../http-common";
-import {replaceStringRange} from "../Util";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {solid} from "@fortawesome/fontawesome-svg-core/import.macro";
+import { replaceStringRange } from "../Util";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import "./QueryInput.css";
-import {Autocomplete, IconButton, InputAdornment} from "@mui/material";
-import {StyledTextField} from "../index";
-import {useLocation, useNavigate} from "react-router-dom";
-import {AutocompleteRenderInputParams} from "@mui/material/Autocomplete/Autocomplete";
-import SearchIcon from '@mui/icons-material/Search';
+import { Autocomplete, IconButton, InputAdornment } from "@mui/material";
+import { StyledTextField } from "../index";
+import { useLocation, useNavigate } from "react-router-dom";
+import { AutocompleteRenderInputParams } from "@mui/material/Autocomplete";
+import SearchIcon from "@mui/icons-material/Search";
 
 let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
 
-export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boolean, autoFocus?: boolean }) {
+export function GlobalQueryInput({
+    hideOnHome,
+    autoFocus,
+}: {
+    hideOnHome?: boolean;
+    autoFocus?: boolean;
+}) {
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
@@ -36,7 +46,11 @@ export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boole
     if (pathName === "/collections") {
         searchSite = pathName;
     } else if (pathName.startsWith("/collection/")) {
-        searchSite = pathName.split("/").filter((part) => part.length > 0).slice(0, 2).join("/");
+        searchSite = pathName
+            .split("/")
+            .filter((part) => part.length > 0)
+            .slice(0, 2)
+            .join("/");
     }
 
     let scope = "post";
@@ -52,59 +66,102 @@ export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boole
     }
 
     return (
-        <form style={{ width: "100%" }} onSubmit={e => {
-            e.preventDefault();
-            let searchParams = new URLSearchParams();
-            searchParams.set("query", queryString);
-            navigate({ pathname: searchSite, search: searchParams.toString() });
-            document.getElementById("App")?.focus();
-
-            // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
-            // retrieve it via id and blur
-            if (hideOnHome) {
-                document.querySelectorAll("[id^=rw_][id$=_input]").forEach(el => {
-                    if (el instanceof HTMLElement) {
-                        el.blur();
-                    }
+        <form
+            style={{ width: "100%" }}
+            onSubmit={(e) => {
+                e.preventDefault();
+                let searchParams = new URLSearchParams();
+                searchParams.set("query", queryString);
+                navigate({
+                    pathname: searchSite,
+                    search: searchParams.toString(),
                 });
-            }
-        }}>
+                document.getElementById("App")?.focus();
+
+                // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
+                // retrieve it via id and blur
+                if (hideOnHome) {
+                    document
+                        .querySelectorAll("[id^=rw_][id$=_input]")
+                        .forEach((el) => {
+                            if (el instanceof HTMLElement) {
+                                el.blur();
+                            }
+                        });
+                }
+            }}
+        >
             <QueryAutocomplete
                 queryString={queryString}
                 setQueryString={setQueryString}
                 scope={scope}
                 autoFocus={autoFocus}
                 renderInput={(params) => {
-                    const { InputProps, inputProps, ...restParams } = params;
-                    const { startAdornment, ...restInputProps } = InputProps;
-                    return <StyledTextField
-                        {...restParams}
-                        fullWidth
-                        size="small"
-                        placeholder={placeholder}
-                        autoFocus={autoFocus}
-                        inputProps={{ ...inputProps, maxLength: 1000 }}
-                        InputProps={{
-                            ...restInputProps,
-                            startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>),
-                            endAdornment: <InputAdornment position="end" sx={{ marginRight: "-30px" }}>
-                                <IconButton type="submit" size="small"><SearchIcon/></IconButton>
-                            </InputAdornment>
-                        }}
-                    />;
+                    const startAdornment =
+                        params.slotProps?.input?.startAdornment;
+
+                    return (
+                        <StyledTextField
+                            {...params}
+                            fullWidth
+                            size="small"
+                            placeholder={placeholder}
+                            autoFocus={autoFocus}
+                            slotProps={{
+                                ...params.slotProps,
+                                htmlInput: {
+                                    ...params.slotProps?.htmlInput,
+                                    maxLength: 1000,
+                                },
+                                input: {
+                                    ...params.slotProps?.input,
+                                    startAdornment: startAdornment ? (
+                                        <div
+                                            style={{
+                                                maxHeight: "100px",
+                                                overflowY: "auto",
+                                            }}
+                                        >
+                                            {startAdornment}
+                                        </div>
+                                    ) : undefined,
+                                    endAdornment: (
+                                        <InputAdornment
+                                            position="end"
+                                            sx={{ marginRight: "-30px" }}
+                                        >
+                                            <IconButton
+                                                type="submit"
+                                                size="small"
+                                            >
+                                                <SearchIcon />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
+                        />
+                    );
                 }}
             />
         </form>
     );
 }
 
-export function QueryAutocompleteTextField({ label, queryString, setQueryString, scope, disabled = false, placeholder = undefined }: {
-    label: string,
-    queryString: string,
-    setQueryString: (queryString: string) => void,
-    scope: string,
-    disabled?: boolean,
-    placeholder?: string,
+export function QueryAutocompleteTextField({
+    label,
+    queryString,
+    setQueryString,
+    scope,
+    disabled = false,
+    placeholder = undefined,
+}: {
+    label: string;
+    queryString: string;
+    setQueryString: (queryString: string) => void;
+    scope: string;
+    disabled?: boolean;
+    placeholder?: string;
 }) {
     return (
         <QueryAutocomplete
@@ -113,29 +170,57 @@ export function QueryAutocompleteTextField({ label, queryString, setQueryString,
             scope={scope}
             disabled={disabled}
             renderInput={(params) => {
-                const { InputProps, inputProps, ...restParams } = params;
-                const { startAdornment, ...restInputProps } = InputProps;
-                return <StyledTextField
-                    {...restParams}
-                    label={label}
-                    placeholder={placeholder}
-                    inputProps={{ ...inputProps, maxLength: 1000 }}
-                    InputProps={{ ...restInputProps, startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>) }}
-                />;
+                const startAdornment = params.slotProps?.input?.startAdornment;
+
+                return (
+                    <StyledTextField
+                        {...params}
+                        label={label}
+                        placeholder={placeholder}
+                        slotProps={{
+                            ...params.slotProps,
+                            htmlInput: {
+                                ...params.slotProps?.htmlInput,
+                                maxLength: 1000,
+                            },
+                            input: {
+                                ...params.slotProps?.input,
+                                startAdornment: startAdornment ? (
+                                    <div
+                                        style={{
+                                            maxHeight: "100px",
+                                            overflowY: "auto",
+                                        }}
+                                    >
+                                        {startAdornment}
+                                    </div>
+                                ) : undefined,
+                            },
+                        }}
+                    />
+                );
             }}
         />
     );
 }
 
-export function QueryAutocomplete({ queryString, setQueryString, scope, disabled = false, autoFocus, renderInput }: {
-    queryString: string,
-    setQueryString: (queryString: string) => void,
-    scope: string,
-    disabled?: boolean,
-    autoFocus?: boolean,
-    renderInput: (params: AutocompleteRenderInputParams) => React.ReactNode,
+export function QueryAutocomplete({
+    queryString,
+    setQueryString,
+    scope,
+    disabled = false,
+    autoFocus,
+    renderInput,
+}: {
+    queryString: string;
+    setQueryString: (queryString: string) => void;
+    scope: string;
+    disabled?: boolean;
+    autoFocus?: boolean;
+    renderInput: (params: AutocompleteRenderInputParams) => React.ReactNode;
 }) {
-    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
+    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] =
+        useState<QueryAutocompleteSuggestion[]>([]);
 
     const handleQueryChange = (cursorPos: number, query: string) => {
         setQueryAutocompleteSuggestions([]);
@@ -143,10 +228,13 @@ export function QueryAutocomplete({ queryString, setQueryString, scope, disabled
             clearTimeout(scheduledAnalyzeQueryRequest);
         }
         scheduledAnalyzeQueryRequest = setTimeout(async () => {
-            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query, scope));
+            const response = await http.post<AnalyzeQueryResponse>(
+                "analyze-query",
+                new AnalyzeQueryRequest(cursorPos, query, scope)
+            );
             setQueryAutocompleteSuggestions(response.data.suggestions);
         }, 250);
-    }
+    };
 
     return (
         <Autocomplete
@@ -156,7 +244,7 @@ export function QueryAutocomplete({ queryString, setQueryString, scope, disabled
             renderInput={renderInput}
             fullWidth
             options={queryAutocompleteSuggestions}
-            filterOptions={x => x}
+            filterOptions={(x) => x}
             getOptionLabel={(option) => {
                 if (typeof option === "string") {
                     return option;
@@ -177,7 +265,12 @@ export function QueryAutocomplete({ queryString, setQueryString, scope, disabled
                 } else if (val) {
                     let prevVal = queryString;
                     let targetLocation = val.target_location;
-                    let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, val.text);
+                    let newVal = replaceStringRange(
+                        prevVal,
+                        targetLocation.start,
+                        targetLocation.end + 1,
+                        val.text
+                    );
                     setQueryString(newVal);
                     setQueryAutocompleteSuggestions([]);
                 }
@@ -186,15 +279,23 @@ export function QueryAutocomplete({ queryString, setQueryString, scope, disabled
     );
 }
 
-export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryString, scope, autoFocus = false, disabled = false, placeholder = undefined }: {
-    queryString: string,
-    setQueryString: (queryString: string) => void,
-    scope: string,
-    autoFocus?: boolean,
-    disabled?: boolean,
-    placeholder?: string,
+export function QueryAutocompleteSuggestionCombobox({
+    queryString,
+    setQueryString,
+    scope,
+    autoFocus = false,
+    disabled = false,
+    placeholder = undefined,
+}: {
+    queryString: string;
+    setQueryString: (queryString: string) => void;
+    scope: string;
+    autoFocus?: boolean;
+    disabled?: boolean;
+    placeholder?: string;
 }) {
-    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
+    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] =
+        useState<QueryAutocompleteSuggestion[]>([]);
 
     const handleQueryChange = (cursorPos: number, query: string) => {
         setQueryAutocompleteSuggestions([]);
@@ -202,48 +303,84 @@ export function QueryAutocompleteSuggestionCombobox({ queryString, setQueryStrin
             clearTimeout(scheduledAnalyzeQueryRequest);
         }
         scheduledAnalyzeQueryRequest = setTimeout(async () => {
-            const response = await http.post<AnalyzeQueryResponse>("analyze-query", new AnalyzeQueryRequest(cursorPos, query, scope));
+            const response = await http.post<AnalyzeQueryResponse>(
+                "analyze-query",
+                new AnalyzeQueryRequest(cursorPos, query, scope)
+            );
             setQueryAutocompleteSuggestions(response.data.suggestions);
         }, 250);
-    }
+    };
 
     return (
-        <Combobox hideCaret hideEmptyPopup data={queryAutocompleteSuggestions} textField="display" value={queryString} onChange={(value, event) => {
-            if (typeof value === "string") {
-                setQueryString(value);
-                let inputElement = event.originalEvent!!.currentTarget as HTMLInputElement;
-                handleQueryChange(inputElement.selectionStart || value.length, value);
-            } else {
-                let prevVal = event.lastValue as string;
-                let targetLocation = value.target_location;
-                let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, value.text);
-                setQueryString(newVal);
-                setQueryAutocompleteSuggestions([]);
-            }
-        }} placeholder={placeholder ?? "Search"} filter={() => true} autoFocus={autoFocus} inputProps={{ autoFocus: autoFocus }} disabled={disabled} onKeyDown={(e) => {
-            let { key } = e;
-            if (key === "Escape") {
-                // prevent propagating escape key in case it would close surrounding modal
-                e.stopPropagation();
-            }
-        }}></Combobox>
+        <Combobox
+            hideCaret
+            hideEmptyPopup
+            data={queryAutocompleteSuggestions}
+            textField="display"
+            value={queryString}
+            onChange={(value, event) => {
+                if (typeof value === "string") {
+                    setQueryString(value);
+                    let inputElement = event.originalEvent!!
+                        .currentTarget as HTMLInputElement;
+                    handleQueryChange(
+                        inputElement.selectionStart || value.length,
+                        value
+                    );
+                } else {
+                    let prevVal = event.lastValue as string;
+                    let targetLocation = value.target_location;
+                    let newVal = replaceStringRange(
+                        prevVal,
+                        targetLocation.start,
+                        targetLocation.end + 1,
+                        value.text
+                    );
+                    setQueryString(newVal);
+                    setQueryAutocompleteSuggestions([]);
+                }
+            }}
+            placeholder={placeholder ?? "Search"}
+            filter={() => true}
+            autoFocus={autoFocus}
+            inputProps={{ autoFocus: autoFocus }}
+            disabled={disabled}
+            onKeyDown={(e) => {
+                let { key } = e;
+                if (key === "Escape") {
+                    // prevent propagating escape key in case it would close surrounding modal
+                    e.stopPropagation();
+                }
+            }}
+        ></Combobox>
     );
 }
 
-export function QueryAutocompleteSearchBox({ queryString, setQueryString, scope, autoFocus = false, onSubmit, isLoading = false, placeholder = "Search" }: {
-    queryString: string,
-    setQueryString: (queryString: string) => void,
-    scope: string,
-    autoFocus?: boolean,
-    onSubmit: () => void,
-    isLoading?: boolean,
-    placeholder?: string,
+export function QueryAutocompleteSearchBox({
+    queryString,
+    setQueryString,
+    scope,
+    autoFocus = false,
+    onSubmit,
+    isLoading = false,
+    placeholder = "Search",
+}: {
+    queryString: string;
+    setQueryString: (queryString: string) => void;
+    scope: string;
+    autoFocus?: boolean;
+    onSubmit: () => void;
+    isLoading?: boolean;
+    placeholder?: string;
 }) {
     return (
-        <form id="QueryAutocompleteSuggestionSearchBox" onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit();
-        }}>
+        <form
+            id="QueryAutocompleteSuggestionSearchBox"
+            onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit();
+            }}
+        >
             <QueryAutocomplete
                 autoFocus={autoFocus}
                 queryString={queryString}
@@ -251,24 +388,62 @@ export function QueryAutocompleteSearchBox({ queryString, setQueryString, scope,
                 scope={scope}
                 disabled={isLoading}
                 renderInput={(params) => {
-                    const { InputProps, inputProps, ...restParams } = params;
-                    const { startAdornment, ...restInputProps } = InputProps;
-                    return <StyledTextField
-                        {...restParams}
-                        fullWidth
-                        size="small"
-                        placeholder={placeholder}
-                        inputProps={{ ...inputProps, maxLength: 1000 }}
-                        InputProps={{
-                            ...restInputProps,
-                            startAdornment: (startAdornment && <div style={{ maxHeight: "100px", overflowY: "auto" }}>{startAdornment}</div>),
-                            endAdornment: <InputAdornment position="end" sx={{ marginRight: isLoading ? "" : "-30px" }}>
-                                <IconButton type="submit" size="small" disabled={isLoading}>
-                                    {isLoading ? <FontAwesomeIcon icon={solid("circle-notch")} spin /> : <SearchIcon/>}
-                                </IconButton>
-                            </InputAdornment>
-                        }}
-                    />;
+                    const startAdornment =
+                        params.slotProps?.input?.startAdornment;
+
+                    return (
+                        <StyledTextField
+                            {...params}
+                            fullWidth
+                            size="small"
+                            placeholder={placeholder}
+                            slotProps={{
+                                ...params.slotProps,
+                                htmlInput: {
+                                    ...params.slotProps?.htmlInput,
+                                    maxLength: 1000,
+                                },
+                                input: {
+                                    ...params.slotProps?.input,
+                                    startAdornment: startAdornment ? (
+                                        <div
+                                            style={{
+                                                maxHeight: "100px",
+                                                overflowY: "auto",
+                                            }}
+                                        >
+                                            {startAdornment}
+                                        </div>
+                                    ) : undefined,
+                                    endAdornment: (
+                                        <InputAdornment
+                                            position="end"
+                                            sx={{
+                                                marginRight: isLoading
+                                                    ? ""
+                                                    : "-30px",
+                                            }}
+                                        >
+                                            <IconButton
+                                                type="submit"
+                                                size="small"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? (
+                                                    <FontAwesomeIcon
+                                                        icon={faCircleNotch}
+                                                        spin
+                                                    />
+                                                ) : (
+                                                    <SearchIcon />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
+                        />
+                    );
                 }}
             />
         </form>

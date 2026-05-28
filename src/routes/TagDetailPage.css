@@ -21,14 +21,14 @@
     max-width: calc(100vw - 40px);
 }
 
-@media all and (orientation:portrait) {
+@media all and (orientation: portrait) {
     #tag-detail-content-wrapper {
         min-width: max(25vh, min(375px, calc(100vw - 40px)));
         min-height: max(25vh, min(375px, calc(100vh - 60px)));
     }
 }
 
-@media all and (orientation:landscape) {
+@media all and (orientation: landscape) {
     #tag-detail-content-wrapper {
         min-width: max(25vw, min(375px, calc(100vw - 40px)));
         min-height: max(25vw, min(375px, calc(100vh - 60px)));

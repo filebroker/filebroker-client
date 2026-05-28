@@ -5,7 +5,9 @@
 
 #image-wall-container {
     background-color: #161b22;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow:
+        0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
     margin-left: 25px;
     margin-right: 25px;
     padding-left: 10px;
@@ -86,7 +88,9 @@
 .thumbnail_image {
     overflow: hidden;
     border-radius: 5px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow:
+        0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
     width: max-content;
     height: max-content;
     max-width: 320px;
@@ -108,7 +112,7 @@
 }
 
 .thumbnail_image img {
-    transition: all .2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 .paginated_grid_view_item_wrapper_flexbox {
@@ -140,7 +144,7 @@
 }
 
 .lazy-load-image-background img {
-    transition: all .2s ease-in-out !important;
+    transition: all 0.2s ease-in-out !important;
 }
 
 .lazy-load-image-loaded {
@@ -199,14 +203,14 @@
     top: 0;
 }
 
-@media all and (orientation:portrait) {
+@media all and (orientation: portrait) {
     .post-preview-container {
         min-width: max(25vh, min(375px, calc(100vw - 40px)));
         width: calc(100vw - 40px);
     }
 }
 
-@media all and (orientation:landscape) {
+@media all and (orientation: landscape) {
     .post-preview-container {
         min-width: max(25vw, min(375px, calc(100vw - 40px)));
         width: 80%;
@@ -235,7 +239,9 @@
 .preview_thumbnail_image {
     overflow: hidden;
     border-radius: 5px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow:
+        0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
     width: max-content;
     height: max-content;
     max-width: 320px;
@@ -250,5 +256,5 @@
 }
 
 .preview_thumbnail_image img {
-    transition: all .2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }

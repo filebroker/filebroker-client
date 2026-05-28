@@ -1,23 +1,55 @@
-import { FormControl, FormLabelProps, InputLabel, MenuItem, Select, useTheme } from "@mui/material";
+import {
+    FormControl,
+    FormLabelProps,
+    InputLabel,
+    MenuItem,
+    Select,
+    useTheme,
+} from "@mui/material";
 
-export default function VisibilitySelect({ isPublic, isPublicEdit, readOnly = false, setPublic, setPublicEdit, fullWidth = false, color }: {
-    isPublic: boolean,
-    isPublicEdit: boolean,
-    readOnly?: boolean,
-    setPublic: (v: boolean) => void,
-    setPublicEdit: (v: boolean) => void,
-    fullWidth?: boolean,
-    color?: FormLabelProps["color"]
+export default function VisibilitySelect({
+    isPublic,
+    isPublicEdit,
+    readOnly = false,
+    setPublic,
+    setPublicEdit,
+    fullWidth = false,
+    color,
+}: {
+    isPublic: boolean;
+    isPublicEdit: boolean;
+    readOnly?: boolean;
+    setPublic: (v: boolean) => void;
+    setPublicEdit: (v: boolean) => void;
+    fullWidth?: boolean;
+    color?: FormLabelProps["color"];
 }) {
     const theme = useTheme();
     return (
-        <FormControl style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }} fullWidth={fullWidth}>
-            <InputLabel id="post-visibility-select-label" color={color}><span style={{ color: color ? theme.palette[color].main : "white" }}>Visibility</span></InputLabel>
+        <FormControl
+            style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }}
+            fullWidth={fullWidth}
+        >
+            <InputLabel id="post-visibility-select-label" color={color}>
+                <span
+                    style={{
+                        color: color ? theme.palette[color].main : "white",
+                    }}
+                >
+                    Visibility
+                </span>
+            </InputLabel>
             <Select
                 labelId="post-visibility-select-label"
                 id="post-visibility-select"
                 label="Visibility"
-                value={isPublic ? (isPublicEdit ? "public-edit" : "public") : "private"}
+                value={
+                    isPublic
+                        ? isPublicEdit
+                            ? "public-edit"
+                            : "public"
+                        : "private"
+                }
                 readOnly={readOnly}
                 disabled={readOnly}
                 color={color}
@@ -27,15 +59,17 @@ export default function VisibilitySelect({ isPublic, isPublicEdit, readOnly = fa
                     },
                     "&.MuiOutlinedInput-root.Mui-disabled": {
                         "& fieldset": {
-                            borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
+                            borderColor: color
+                                ? theme.palette[color].main
+                                : "rgba(0, 0, 0, 0.23)",
                             color: color ? theme.palette[color].main : "white",
                         },
                     },
                     "& .MuiOutlinedInput-input.Mui-disabled": {
-                        'WebkitTextFillColor': 'white',
+                        WebkitTextFillColor: "white",
                     },
                 }}
-                onChange={e => {
+                onChange={(e) => {
                     if (e.target.value === "public") {
                         setPublic(true);
                         setPublicEdit(false);
@@ -54,4 +88,4 @@ export default function VisibilitySelect({ isPublic, isPublicEdit, readOnly = fa
             </Select>
         </FormControl>
     );
-};
+}
