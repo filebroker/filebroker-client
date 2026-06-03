@@ -6,6 +6,7 @@ import http from "../http-common";
 import { UserGroupJoined } from "../Model";
 import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PageTitle } from "../index";
 
 export function RedeemUserGroupInvite({ app }: { app: App }) {
     let { invite_code } = useParams();
@@ -89,6 +90,7 @@ export function RedeemUserGroupInvite({ app }: { app: App }) {
 
     return (
         <div id="RedeemUserGroupInvite">
+            <PageTitle title="Redeem Group Invite" />
             <div className="form-container-center">
                 <Paper elevation={2} className="form-paper">
                     <div className="form-paper-content">{content}</div>

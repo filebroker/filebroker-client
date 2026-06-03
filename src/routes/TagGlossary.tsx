@@ -21,6 +21,7 @@ import {
 import { TagCategoryList, TagCreator } from "../components/TagEditor";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { Link } from "react-router-dom";
+import { PageTitle } from "../index";
 
 interface GetTagReponse {
     tags: Tag[];
@@ -100,6 +101,7 @@ export function TagGlossary({ app }: { app: App }) {
 
     return (
         <div id="TagGlossary">
+            <PageTitle title="Tag Glossary" />
             <div id="tag-glossary-container">
                 <div id="tag-glossary-action-row">
                     <TextField

@@ -14,6 +14,7 @@ import StorageIcon from "@mui/icons-material/Storage";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import CreateBrokerDialogue from "../components/CreateBrokerDialogue";
+import { PageTitle } from "../index";
 
 export interface GetBrokersResponse {
     total_count: number;
@@ -26,7 +27,8 @@ export default function BrokerListPage({ app }: { app: App }) {
     const tableRef = useRef<PaginatedTableHandle>(null);
 
     return (
-        <div id="GroupMembershipList" className="full-page-component">
+        <div id="BrokerList" className="full-page-component">
+            <PageTitle title="Brokers" />
             <div className="full-page-content-wrapper">
                 <Paper elevation={2} className="form-paper">
                     <div className="form-paper-content">

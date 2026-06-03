@@ -33,6 +33,7 @@ import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from "@mui/icons-material/Add";
 import { PostCollectionEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
+import { PageTitle } from "../index";
 
 export function PostCollection({ app }: { app: App }) {
     let { id } = useParams();
@@ -180,6 +181,13 @@ export function PostCollection({ app }: { app: App }) {
 
     return (
         <div id="PostCollection">
+            <PageTitle
+                title={
+                    postCollection
+                        ? postCollection.title || "Untitled"
+                        : undefined
+                }
+            />
             <div id="post-collection-head">
                 <div id="post-collection-information-container">
                     <div id="post-collection-button-row">

@@ -8,13 +8,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 import App from "../App";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { PaginatedGridView } from "../components/PaginatedGridView";
-import { PostQueryObject, performSearchQuery } from "../Search";
+import {
+    PostQueryObject,
+    performSearchQuery,
+    extractQueryFromSearch,
+} from "../Search";
 import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { ActionModal } from "../components/ActionModal";
 import { DeletePostsResponse, PostDetailed } from "../Model";
 import http from "../http-common";
 import { useSnackbar } from "notistack";
 import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
+import { PageTitle } from "../index";
 
 class PostSearchProps {
     app: App;
@@ -31,6 +36,7 @@ function PostSearch({ app }: PostSearchProps) {
     const [modCount, setModCount] = useState(0);
     const location = useLocation();
     const search = location.search;
+    const query = extractQueryFromSearch(search);
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
 
@@ -58,6 +64,7 @@ function PostSearch({ app }: PostSearchProps) {
 
     return (
         <div id="PostSearch">
+            <PageTitle title={query ? `Posts: ${query}` : "Posts"} />
             <PaginatedGridView
                 itemsProperty={posts}
                 onItemClickPath={(post) => "/post/" + post.pk}

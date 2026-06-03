@@ -40,7 +40,7 @@ import { AccountTree } from "@mui/icons-material";
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape, { ElementDefinition } from "cytoscape";
 import dagre from "cytoscape-dagre";
-import { StyledAutocomplete } from "../index";
+import { PageTitle, StyledAutocomplete } from "../index";
 import { TagEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
 import { QueryAutocompleteTextField } from "../components/QueryInput";
 
@@ -189,6 +189,7 @@ export function TagDetailPage({ app }: { app: App }) {
 
     return (
         <div id="TagDetailPage">
+            <PageTitle title={tag ? `Tag: ${tag.tag_name}` : undefined} />
             <div id="tag-detail-content-wrapper">
                 <div className="tag-editor">
                     <Paper elevation={2} className="form-paper">

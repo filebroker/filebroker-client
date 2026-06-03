@@ -27,6 +27,7 @@ import RemoveCircleOutlinedIcon from "@mui/icons-material/RemoveCircleOutlined";
 import DoneIcon from "@mui/icons-material/Done";
 import { ActionModal } from "../components/ActionModal";
 import GroupIcon from "@mui/icons-material/Group";
+import { PageTitle } from "../index";
 
 export interface GetCurrentUserGroupMembershipsResponse {
     total_count: number;
@@ -147,6 +148,7 @@ export function GroupMembershipList({ app }: { app: App }) {
 
     return (
         <div id="GroupMembershipList" className="full-page-component">
+            <PageTitle title="Groups" />
             <div className="full-page-content-wrapper">
                 <Paper elevation={2} className="form-paper">
                     <div className="form-paper-content">

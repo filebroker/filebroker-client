@@ -18,7 +18,7 @@ import zxcvbn from "zxcvbn";
 import { LoginResponse } from "./Login";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
-import { ReadOnlyTextField, StyledTextField } from "../index";
+import { PageTitle, ReadOnlyTextField, StyledTextField } from "../index";
 import { PostPicker } from "../components/PostPicker";
 import { AvatarCropper } from "../components/AvatarCropper";
 import urlJoin from "url-join";
@@ -239,6 +239,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
 
     return (
         <div id="Profile">
+            <PageTitle title="Profile" />
             <div className="form-container-center">
                 <Paper elevation={2} className="form-paper">
                     <div className="form-paper-content">

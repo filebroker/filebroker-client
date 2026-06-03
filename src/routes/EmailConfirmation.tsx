@@ -2,9 +2,10 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../App";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCircleNotch, faX } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import http from "../http-common";
 import { Paper } from "@mui/material";
+import { PageTitle } from "../index";
 
 export function EmailConfirmation({ app }: { app: App }) {
     let { token } = useParams();
@@ -59,6 +60,7 @@ export function EmailConfirmation({ app }: { app: App }) {
     return (
         <>
             <div id="EmailConfirmation">
+                <PageTitle title="Confirm Email" />
                 <div className="form-container-center">
                     <Paper elevation={2} className="form-paper">
                         <div className="form-paper-content">

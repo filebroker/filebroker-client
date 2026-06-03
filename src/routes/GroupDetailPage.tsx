@@ -50,7 +50,7 @@ import { faFloppyDisk } from "@fortawesome/free-regular-svg-icons";
 import { PostPicker } from "../components/PostPicker";
 import { AvatarCropper } from "../components/AvatarCropper";
 import urlJoin from "url-join";
-import { ReadOnlyTextField, StyledTextField } from "../index";
+import { PageTitle, ReadOnlyTextField, StyledTextField } from "../index";
 import { TagCreator, TagSelector } from "../components/TagEditor";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { UserGroupEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
@@ -516,6 +516,7 @@ export function GroupDetailPage({ app }: { app: App }) {
 
     return (
         <div id="GroupDetailPage" className="full-page-component">
+            <PageTitle title={group ? `Group: ${group.name}` : undefined} />
             <div className="full-page-content-wrapper">
                 <Paper elevation={2} className="form-paper">
                     {group ? (

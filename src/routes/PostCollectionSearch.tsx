@@ -4,7 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import App from "../App";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { PaginatedGridView } from "../components/PaginatedGridView";
-import { PostCollectionQueryObject, performSearchQuery } from "../Search";
+import {
+    PostCollectionQueryObject,
+    performSearchQuery,
+    extractQueryFromSearch,
+} from "../Search";
 import {
     DeletePostCollectionsResponse,
     PostCollectionDetailed,
@@ -12,6 +16,7 @@ import {
 import http from "../http-common";
 import { ActionModal } from "../components/ActionModal";
 import { useSnackbar } from "notistack";
+import { PageTitle } from "../index";
 
 class PostCollectionSearchProps {
     app: App;
@@ -30,6 +35,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
     const [modCount, setModCount] = useState(0);
     const location = useLocation();
     const search = location.search;
+    const query = extractQueryFromSearch(search);
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
 
@@ -63,6 +69,9 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
 
     return (
         <div id="PostCollectionSearch">
+            <PageTitle
+                title={query ? `Collections: ${query}` : "Collections"}
+            />
             <PaginatedGridView
                 itemsProperty={{
                     items: collections,

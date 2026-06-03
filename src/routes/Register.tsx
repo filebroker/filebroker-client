@@ -9,6 +9,7 @@ import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import { PageTitle } from "../index";
 
 export class UserRegistration {
     display_name: string;
@@ -130,6 +131,7 @@ function Register({ app }: RegisterProps) {
 
     return (
         <div id="Register">
+            <PageTitle title="Register" />
             <div className="form-container-center">
                 <Paper elevation={2} className="form-paper">
                     <form

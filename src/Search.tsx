@@ -5,6 +5,12 @@ import { S3Object, S3ObjectMetadata, UserPublic } from "./Model";
 import urlJoin from "url-join";
 import { JSX } from "react";
 
+export function extractQueryFromSearch(search: string): string {
+    let searchUrl = new URL(urlJoin(getApiUrl(), `/search${search}`));
+    let searchParams = new URLSearchParams(searchUrl.search);
+    return searchParams.get("query") ?? "";
+}
+
 export async function performSearchQuery(
     search: string,
     app: App,
@@ -12,9 +18,7 @@ export async function performSearchQuery(
     navigate: NavigateFunction,
     loadingModal: ModalContent | undefined = undefined
 ): Promise<SearchResult> {
-    let searchUrl = new URL(urlJoin(getApiUrl(), `/search${search}`));
-    let searchParams = new URLSearchParams(searchUrl.search);
-    let queryParam: string = searchParams.get("query") ?? "";
+    let queryParam: string = extractQueryFromSearch(search);
 
     let config;
     try {

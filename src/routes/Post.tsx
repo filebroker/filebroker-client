@@ -55,6 +55,7 @@ import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from "@mui/icons-material/Add";
 import { PostEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
+import { PageTitle } from "../index";
 
 class PostProps {
     app: App;
@@ -629,6 +630,9 @@ function Post({ app }: PostProps) {
 
     return (
         <div id="Post">
+            <PageTitle
+                title={post ? post.title || "Untitled Post" : undefined}
+            />
             <div id="post-container">
                 <div id="post-container-top-row">
                     <Button

@@ -20,6 +20,7 @@ import {
 import * as React from "react";
 import { ChipTypeMap } from "@mui/material/Chip";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 const root = ReactDOM.createRoot(
     document.getElementById("root") as HTMLElement
@@ -318,9 +319,21 @@ const DimensionAwareApp = () => {
     return <App isDesktop={matches} />;
 };
 
+export function PageTitle({ title }: { title?: string }) {
+    return (
+        <Helmet>
+            <title>{title ? `${title} - filebroker` : "filebroker"}</title>
+        </Helmet>
+    );
+}
+
 root.render(
     <ThemeProvider theme={MUI_THEME}>
-        <DimensionAwareApp />
+        <HelmetProvider>
+            <Helmet defaultTitle="filebroker" titleTemplate="%s - filebroker" />
+
+            <DimensionAwareApp />
+        </HelmetProvider>
     </ThemeProvider>
 );
 

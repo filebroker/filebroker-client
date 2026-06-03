@@ -39,6 +39,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faFloppyDisk } from "@fortawesome/free-regular-svg-icons";
 import {
+    PageTitle,
     ReadOnlyTextField,
     StyledAutocomplete,
     StyledTextField,
@@ -770,6 +771,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
 
     return (
         <div id="BrokerDetailPage" className="full-page-component">
+            <PageTitle title={broker ? `Broker: ${broker.name}` : undefined} />
             <div className="full-page-content-wrapper">
                 <Paper elevation={2} className="form-paper">
                     {broker?.disable_uploads && (

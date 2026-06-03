@@ -40,6 +40,7 @@ import { TabPanel, a11yProps } from "./TabPanel";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { formatBytes } from "../Util";
 import VisibilitySelect from "./VisibilitySelect";
+import { PageTitle } from "../index";
 
 class UploadDialogueProps {
     app: App;
@@ -337,6 +338,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
     return (
         <div className="modal-form">
+            <PageTitle title="Upload" />
             <p>
                 {isUploadingFolder
                     ? "Create posts for each file in the uploaded folder"
