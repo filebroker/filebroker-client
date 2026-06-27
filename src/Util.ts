@@ -36,3 +36,17 @@ export function formatBytes(bytes: number, decimals = 2) {
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
+
+export function formatDurationString(duration: string): string {
+    const match = duration.match(/^(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?$/);
+
+    if (!match) {
+        // Unexpected format (e.g. mm:ss), leave it unchanged.
+        return duration;
+    }
+
+    const [, hours, minutes, seconds] = match;
+    return hours === "00"
+        ? `${minutes}:${seconds}`
+        : `${hours}:${minutes}:${seconds}`;
+}

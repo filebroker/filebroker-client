@@ -61,7 +61,11 @@ import RemoveModeratorIcon from "@mui/icons-material/RemoveModerator";
 import RemoveCircleOutlinedIcon from "@mui/icons-material/RemoveCircleOutlined";
 import { ActionModal } from "../components/ActionModal";
 import { PostQueryObject, SearchResult } from "../Search";
-import { PreviewGrid } from "../components/PaginatedGridView";
+import {
+    getMediaDurationDisplayForItem,
+    getMediaTypeIconForItem,
+    PreviewGrid,
+} from "../components/PaginatedGridView";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 
@@ -2085,6 +2089,12 @@ export function BrokerDetailPage({ app }: { app: App }) {
                         items={posts}
                         searchLink={`/posts?query=${encodeURIComponent(`@broker=${broker.pk}`)}`}
                         onItemClickPath={(item) => `/post/${item.pk}`}
+                        getMediaTypeIcon={(item) =>
+                            getMediaTypeIconForItem(item)
+                        }
+                        getMediaDurationDisplay={(item) =>
+                            getMediaDurationDisplayForItem(item)
+                        }
                     />
                 )}
             </div>

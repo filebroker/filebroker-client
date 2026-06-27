@@ -23,7 +23,11 @@ import "./PostCollection.css";
 import { Button, IconButton, TextField } from "@mui/material";
 import { TagCreator, TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
-import { PaginatedGridView } from "../components/PaginatedGridView";
+import {
+    getMediaDurationDisplayForItem,
+    getMediaTypeIconForItem,
+    PaginatedGridView,
+} from "../components/PaginatedGridView";
 import { PostCollectionItemQueryObject, performSearchQuery } from "../Search";
 import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { ActionModal } from "../components/ActionModal";
@@ -522,6 +526,8 @@ export function PostCollection({ app }: { app: App }) {
                             thumbnail_object_key:
                                 item.post.thumbnail_object_key,
                             source: item,
+                            s3_object: item.post.s3_object,
+                            s3_object_metadata: item.post.s3_object_metadata,
                         };
                     },
                 }}
@@ -531,6 +537,10 @@ export function PostCollection({ app }: { app: App }) {
                 pagePath={"/collection/" + postCollection?.pk}
                 fullCount={fullCount}
                 pageCount={pageCount}
+                getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
+                getMediaDurationDisplay={(item) =>
+                    getMediaDurationDisplayForItem(item)
+                }
                 isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {

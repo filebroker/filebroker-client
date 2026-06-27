@@ -21,6 +21,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCircleNotch,
     faClockRotateLeft,
+    faFolderOpen,
     faPenToSquare,
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
@@ -35,7 +36,11 @@ import {
     PostQueryObject,
     SearchResult,
 } from "../Search";
-import { PreviewGrid } from "../components/PaginatedGridView";
+import {
+    getMediaDurationDisplayForItem,
+    getMediaTypeIconForItem,
+    PreviewGrid,
+} from "../components/PaginatedGridView";
 import { AccountTree } from "@mui/icons-material";
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape, { ElementDefinition } from "cytoscape";
@@ -566,6 +571,12 @@ export function TagDetailPage({ app }: { app: App }) {
                         items={posts}
                         searchLink={`/posts?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`}
                         onItemClickPath={(item) => `/post/${item.pk}`}
+                        getMediaTypeIcon={(item) =>
+                            getMediaTypeIconForItem(item)
+                        }
+                        getMediaDurationDisplay={(item) =>
+                            getMediaDurationDisplayForItem(item)
+                        }
                     />
                 )}
                 {tag && collections.length > 0 && (
@@ -574,6 +585,7 @@ export function TagDetailPage({ app }: { app: App }) {
                         items={collections}
                         searchLink={`/collections?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`}
                         onItemClickPath={(item) => `/collection/${item.pk}`}
+                        getMediaTypeIcon={(_item) => faFolderOpen}
                     />
                 )}
             </div>

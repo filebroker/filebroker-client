@@ -28,9 +28,11 @@ import "./PaginatedGridView.css";
 import { useState } from "react";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
+import { faMusic, faImage, faVideo } from "@fortawesome/free-solid-svg-icons";
 import SelectAllIcon from "@mui/icons-material/SelectAll";
 import DeselectIcon from "@mui/icons-material/Deselect";
-import { UserPublic } from "../Model";
+import { S3Object, S3ObjectMetadata, UserPublic } from "../Model";
+import { formatDurationString } from "../Util";
 
 export interface PaginatedGridViewItem {
     pk: number;
@@ -38,6 +40,8 @@ export interface PaginatedGridViewItem {
     title?: string | null | undefined;
     thumbnail_url?: string | null | undefined;
     thumbnail_object_key?: string | null | undefined;
+    s3_object?: S3Object | null | undefined;
+    s3_object_metadata?: S3ObjectMetadata | null | undefined;
 }
 
 export interface TransformedPaginatedGridViewItem extends PaginatedGridViewItem {
@@ -66,6 +70,36 @@ export interface GridItemAction {
     disabled?: boolean;
 }
 
+export function getMediaTypeIconForItem(
+    item: PaginatedGridViewItem
+): IconDefinition | undefined {
+    const mimeType = item.s3_object?.mime_type;
+    if (mimeType) {
+        if (mimeType.startsWith("image/")) {
+            return faImage;
+        } else if (mimeType.startsWith("video/")) {
+            return faVideo;
+        } else if (mimeType.startsWith("audio/")) {
+            return faMusic;
+        }
+    }
+
+    return undefined;
+}
+
+export function getMediaDurationDisplayForItem(
+    item: PaginatedGridViewItem
+): string | undefined {
+    const durationString = item.s3_object_metadata?.duration;
+    if (durationString) {
+        // only display duration for video and audio items
+        const mimeType = item.s3_object?.mime_type;
+        if (mimeType?.startsWith("video/") || mimeType?.startsWith("audio/")) {
+            return formatDurationString(durationString);
+        }
+    }
+}
+
 export function PaginatedGridView({
     itemsProperty,
     onItemClickPath,
@@ -74,6 +108,8 @@ export function PaginatedGridView({
     fullCount,
     pageCount,
     gridItemActions = undefined,
+    getMediaTypeIcon = undefined,
+    getMediaDurationDisplay = undefined,
     isDesktop = true,
 }: {
     itemsProperty: PaginatedGridViewItem[] | PaginatedGridViewItemFunction<any>;
@@ -83,6 +119,14 @@ export function PaginatedGridView({
     fullCount: number | null;
     pageCount: number | null;
     gridItemActions?: GridItemAction[] | undefined;
+    getMediaTypeIcon?:
+        | ((
+              item: TransformedPaginatedGridViewItem
+          ) => IconDefinition | undefined)
+        | undefined;
+    getMediaDurationDisplay?:
+        | ((item: TransformedPaginatedGridViewItem) => string | undefined)
+        | undefined;
     isDesktop?: boolean;
 }) {
     const location = useLocation();
@@ -100,6 +144,8 @@ export function PaginatedGridView({
                 thumbnail_url: item.thumbnail_url,
                 thumbnail_object_key: item.thumbnail_object_key,
                 source: item,
+                s3_object: item.s3_object,
+                s3_object_metadata: item.s3_object_metadata,
             };
         });
     } else if (itemsProperty && itemsProperty.hasOwnProperty("items")) {
@@ -156,6 +202,10 @@ export function PaginatedGridView({
                                 "logo512.png"
                             );
                         }
+
+                        const mediaTypeIcon = getMediaTypeIcon?.(item);
+                        const duration = getMediaDurationDisplay?.(item);
+
                         return (
                             <ImageListItem key={item.pk}>
                                 <Button
@@ -227,6 +277,20 @@ export function PaginatedGridView({
                                                     )}
                                                     className="thumb-img"
                                                 />
+
+                                                {mediaTypeIcon && (
+                                                    <span className="thumbnail_media_icon">
+                                                        <FontAwesomeSvgIcon
+                                                            fontSize="inherit"
+                                                            icon={mediaTypeIcon}
+                                                        />
+                                                    </span>
+                                                )}
+                                                {duration && (
+                                                    <span className="thumbnail_duration_badge">
+                                                        {duration}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div
@@ -545,11 +609,19 @@ export function PreviewGrid({
     title,
     searchLink,
     onItemClickPath,
+    getMediaTypeIcon = undefined,
+    getMediaDurationDisplay = undefined,
 }: {
     items: PaginatedGridViewItem[];
     title: string;
     searchLink: string;
     onItemClickPath: (item: PaginatedGridViewItem) => string;
+    getMediaTypeIcon?:
+        | ((item: PaginatedGridViewItem) => IconDefinition | undefined)
+        | undefined;
+    getMediaDurationDisplay?:
+        | ((item: PaginatedGridViewItem) => string | undefined)
+        | undefined;
 }) {
     return (
         <Paper elevation={2} className="post-preview-container">
@@ -582,6 +654,9 @@ export function PreviewGrid({
                     } else {
                         thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
                     }
+
+                    const mediaTypeIcon = getMediaTypeIcon?.(item);
+                    const duration = getMediaDurationDisplay?.(item);
 
                     return (
                         <ImageListItem key={item.pk}>
@@ -619,6 +694,19 @@ export function PreviewGrid({
                                                 )}
                                                 className="thumb-img"
                                             />
+                                            {mediaTypeIcon && (
+                                                <span className="thumbnail_media_icon">
+                                                    <FontAwesomeSvgIcon
+                                                        fontSize="inherit"
+                                                        icon={mediaTypeIcon}
+                                                    />
+                                                </span>
+                                            )}
+                                            {duration && (
+                                                <span className="thumbnail_duration_badge">
+                                                    {duration}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div

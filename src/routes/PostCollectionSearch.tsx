@@ -17,6 +17,7 @@ import http from "../http-common";
 import { ActionModal } from "../components/ActionModal";
 import { useSnackbar } from "notistack";
 import { PageTitle } from "../index";
+import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 
 class PostCollectionSearchProps {
     app: App;
@@ -91,6 +92,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                 pagePath="/collections"
                 fullCount={fullCount}
                 pageCount={pageCount}
+                getMediaTypeIcon={(_item) => faFolderOpen}
                 isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {

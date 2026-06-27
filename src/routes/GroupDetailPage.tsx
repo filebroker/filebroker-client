@@ -43,6 +43,7 @@ import {
     faCircleInfo,
     faCircleNotch,
     faClockRotateLeft,
+    faFolderOpen,
     faPenToSquare,
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
@@ -82,7 +83,11 @@ import {
     PostQueryObject,
     SearchResult,
 } from "../Search";
-import { PreviewGrid } from "../components/PaginatedGridView";
+import {
+    getMediaDurationDisplayForItem,
+    getMediaTypeIconForItem,
+    PreviewGrid,
+} from "../components/PaginatedGridView";
 
 export interface GetUserGroupMembersResponse {
     total_count: number;
@@ -1948,6 +1953,12 @@ export function GroupDetailPage({ app }: { app: App }) {
                         items={posts}
                         searchLink={`/posts?query=${encodeURIComponent(`.shared_with_group(${group.pk})`)}`}
                         onItemClickPath={(item) => `/post/${item.pk}`}
+                        getMediaTypeIcon={(item) =>
+                            getMediaTypeIconForItem(item)
+                        }
+                        getMediaDurationDisplay={(item) =>
+                            getMediaDurationDisplayForItem(item)
+                        }
                     />
                 )}
                 {group && collections.length > 0 && (
@@ -1956,6 +1967,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                         items={collections}
                         searchLink={`/collections?query=${encodeURIComponent(`.shared_with_group(${group.pk})`)}`}
                         onItemClickPath={(item) => `/collection/${item.pk}`}
+                        getMediaTypeIcon={(_item) => faFolderOpen}
                     />
                 )}
             </div>
