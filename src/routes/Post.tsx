@@ -46,7 +46,7 @@ import {
 import { TagCreator, TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import urlJoin from "url-join";
-import { MusicPlayer } from "../components/MusicPlayer";
+import { MusicPlayer, MusicPlayerHandle } from "../components/MusicPlayer";
 import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { useSnackbar } from "notistack";
 import { ActionModal } from "../components/ActionModal";
@@ -330,7 +330,11 @@ function Post({ app }: PostProps) {
         });
     };
 
-    function getComponentForData(post: PostDetailed): ReactElement | undefined {
+    const musicPlayerRef = useRef<MusicPlayerHandle>(null);
+
+    const getComponentForData = (
+        post: PostDetailed
+    ): ReactElement | undefined => {
         if (post.s3_object != null) {
             let dataUrl =
                 getApiUrl() + "get-object/" + post.s3_object.object_key;
@@ -357,12 +361,16 @@ function Post({ app }: PostProps) {
                 }
                 return (
                     <MusicPlayer
+                        ref={musicPlayerRef}
                         src={post.s3_object_presigned_url || dataUrl}
                         metaSrc={dataUrl}
                         metaTitle={post.s3_object_metadata.title}
                         metaAlbum={post.s3_object_metadata.album}
                         metaArtist={post.s3_object_metadata.artist}
                         coverUrl={post.thumbnail_url || thumbnailUrl}
+                        onSoundLoaded={(_sound) =>
+                            musicPlayerRef.current?.play()
+                        }
                     />
                 );
             } else if (post.s3_object.mime_type.startsWith("video")) {
@@ -436,7 +444,7 @@ function Post({ app }: PostProps) {
                 );
             }
         }
-    }
+    };
 
     let component;
     let postInformation;
