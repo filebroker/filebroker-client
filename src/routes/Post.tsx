@@ -368,9 +368,7 @@ function Post({ app }: PostProps) {
                         metaAlbum={post.s3_object_metadata.album}
                         metaArtist={post.s3_object_metadata.artist}
                         coverUrl={post.thumbnail_url || thumbnailUrl}
-                        onSoundLoaded={(_sound) =>
-                            musicPlayerRef.current?.play()
-                        }
+                        autoPlay
                     />
                 );
             } else if (post.s3_object.mime_type.startsWith("video")) {

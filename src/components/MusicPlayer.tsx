@@ -57,6 +57,7 @@ export const MusicPlayer = forwardRef<
         metaAlbum?: string;
         metaArtist?: string;
         coverUrl?: string;
+        autoPlay?: boolean;
         onSoundLoaded?: (sound: Howl | null) => void;
     }
 >(
@@ -68,6 +69,7 @@ export const MusicPlayer = forwardRef<
             metaAlbum,
             metaArtist,
             coverUrl,
+            autoPlay,
             onSoundLoaded,
         },
         ref
@@ -91,6 +93,9 @@ export const MusicPlayer = forwardRef<
         const [artist, setArtist] = useState(metaArtist ?? "");
         const [pictureBlobUrl, setPictureBlobUrl] = useState("");
         const pictureBlobUrlRef = useRef("");
+
+        const userPausedRef = useRef(false);
+        const hasAutoPlayedRef = useRef(false);
 
         const [time, setTime] = useState({
             min: 0,
@@ -171,8 +176,18 @@ export const MusicPlayer = forwardRef<
             if (+seconds > 0) {
                 sound?.seek(+seconds);
             }
-            if (isPlaying && !sound?.playing()) {
-                play();
+            if (sound && !sound.playing()) {
+                if (isPlaying) {
+                    play();
+                } else if (
+                    autoPlay &&
+                    !hasAutoPlayedRef.current &&
+                    !userPausedRef.current
+                ) {
+                    hasAutoPlayedRef.current = true;
+                    play();
+                    setIsPlaying(true);
+                }
             }
             const interval = setInterval(() => {
                 if (sound) {
@@ -244,9 +259,11 @@ export const MusicPlayer = forwardRef<
 
         const onPlayPause = () => {
             if (isPlaying) {
+                userPausedRef.current = true;
                 pause();
                 setIsPlaying(false);
             } else {
+                userPausedRef.current = false;
                 play();
                 setIsPlaying(true);
             }
@@ -266,29 +283,28 @@ export const MusicPlayer = forwardRef<
             ref,
             () => ({
                 play() {
-                    if (!isPlaying) {
-                        play();
-                        setIsPlaying(true);
-                    }
+                    userPausedRef.current = false;
+                    play();
+                    setIsPlaying(true);
                 },
                 pause() {
-                    if (isPlaying) {
-                        pause();
-                        setIsPlaying(false);
-                    }
+                    userPausedRef.current = true;
+                    pause();
+                    setIsPlaying(false);
                 },
                 toggle() {
                     onPlayPause();
                 },
                 stop() {
+                    userPausedRef.current = true;
                     stop();
                     setIsPlaying(false);
                 },
                 isPlaying() {
-                    return isPlaying;
+                    return sound?.playing() ?? isPlaying;
                 },
             }),
-            [isPlaying, play, pause, stop]
+            [isPlaying, sound, play, pause, stop]
         );
 
         return (
