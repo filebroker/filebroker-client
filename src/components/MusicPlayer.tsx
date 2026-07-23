@@ -64,10 +64,23 @@ export const MusicPlayer = forwardRef<
     const [play, { pause, stop, duration, sound }] = useSound(src, {
         volume: muted ? 0 : volume / 100,
         soundEnabled: !muted,
+        onplay: () => {
+            setIsPlaying(true);
+        },
+        onpause: () => {
+            setIsPlaying(false);
+        },
+        onstop: () => {
+            setIsPlaying(false);
+        },
         onend: () => {
             setIsPlaying(false);
             setSeconds("0");
             onSoundEnd?.(sound);
+        },
+        onplayerror: (_id: any, error: any) => {
+            console.error("Music player failed to play:", error);
+            setIsPlaying(false);
         },
         // enable HTML5 streaming and avoid web audio API memory leak issues (howler issue #914)
         html5: true,
@@ -164,7 +177,6 @@ export const MusicPlayer = forwardRef<
             } else if (autoPlay && !hasAutoPlayedRef.current && !userPausedRef.current) {
                 hasAutoPlayedRef.current = true;
                 play();
-                setIsPlaying(true);
             }
         }
         const interval = setInterval(() => {
@@ -237,11 +249,9 @@ export const MusicPlayer = forwardRef<
         if (isPlaying) {
             userPausedRef.current = true;
             pause();
-            setIsPlaying(false);
         } else {
             userPausedRef.current = false;
             play();
-            setIsPlaying(true);
         }
     };
 
@@ -257,12 +267,10 @@ export const MusicPlayer = forwardRef<
             play() {
                 userPausedRef.current = false;
                 play();
-                setIsPlaying(true);
             },
             pause() {
                 userPausedRef.current = true;
                 pause();
-                setIsPlaying(false);
             },
             toggle() {
                 onPlayPause();
@@ -270,7 +278,6 @@ export const MusicPlayer = forwardRef<
             stop() {
                 userPausedRef.current = true;
                 stop();
-                setIsPlaying(false);
             },
             isPlaying() {
                 return sound?.playing() ?? isPlaying;
