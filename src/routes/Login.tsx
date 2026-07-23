@@ -38,12 +38,28 @@ export class LoginResponse {
     token: string;
     expiration_secs: number;
     user: User;
+    preferences: UserPreferences | null;
 
-    constructor(token: string, expiration_secs: number, user: User) {
+    constructor(
+        token: string,
+        expiration_secs: number,
+        user: User,
+        preferences: UserPreferences | null
+    ) {
         this.token = token;
         this.expiration_secs = expiration_secs;
         this.user = user;
+        this.preferences = preferences;
     }
+}
+
+export interface UserPreferences {
+    fk_user: number;
+    advanced_query_mode: boolean;
+    auto_play_audio: boolean;
+    auto_play_video: boolean;
+    auto_play_audio_in_collection: boolean;
+    auto_play_video_in_collection: boolean;
 }
 
 class LoginProps {
@@ -55,6 +71,21 @@ class LoginProps {
 }
 
 function Login({ app }: LoginProps) {
+    return (
+        <div id="Login">
+            <div className="form-container-center">
+                <Paper elevation={2} className="form-paper">
+                    <LoginForm app={app} />
+                </Paper>
+            </div>
+        </div>
+    );
+}
+
+export function LoginForm({
+    app,
+    modal,
+}: LoginProps & { modal?: ModalContent | undefined }) {
     const [password, setPassword] = useState("");
     const [userName, setUserName] = useState("");
     const [loginFailed, setLoginFailed] = useState(false);
@@ -65,7 +96,7 @@ function Login({ app }: LoginProps) {
     const { state }: any = useLocation();
 
     async function login() {
-        const modal = app.openLoadingModal();
+        const loadingModal = app.openLoadingModal();
         try {
             let response = await http.post<LoginResponse>(
                 "/login",
@@ -84,10 +115,13 @@ function Login({ app }: LoginProps) {
             } else {
                 navigate("/", { replace: true });
             }
-            modal.close();
+            loadingModal.close();
+            if (modal) {
+                modal.close(response.data);
+            }
         } catch (e: any) {
             setLoginDisabled(false);
-            modal.close();
+            loadingModal.close();
             if (e?.response?.status >= 500) {
                 console.log("Login failed: " + e);
                 app.openModal(
@@ -115,125 +149,117 @@ function Login({ app }: LoginProps) {
     }, [password, userName]);
 
     return (
-        <div id="Login">
-            <div className="form-container-center">
-                <Paper elevation={2} className="form-paper">
-                    <form
-                        className="form-paper-content"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            setLoginDisabled(true);
-                            login();
-                        }}
-                    >
-                        <h1>Login</h1>
-                        <p>
-                            Or{" "}
-                            <Link className="underscore-button" to="/register">
-                                register
-                            </Link>{" "}
-                            for a new account
-                        </p>
-                        <TextField
-                            label="User Name"
-                            variant="outlined"
-                            value={userName}
-                            error={loginFailed}
-                            helperText={loginFailed && "Invalid Credentials"}
-                            fullWidth
-                            onChange={(e) => setUserName(e.currentTarget.value)}
-                            slotProps={{
-                                htmlInput: {
-                                    maxLength: 32,
-                                },
-                            }}
-                        />
-                        <TextField
-                            label="Password"
-                            variant="outlined"
-                            type="password"
-                            value={password}
-                            error={loginFailed}
-                            helperText={loginFailed && "Invalid Credentials"}
-                            fullWidth
-                            onChange={(e) => setPassword(e.currentTarget.value)}
-                            slotProps={{
-                                htmlInput: {
-                                    maxLength: 255,
-                                },
-                            }}
-                        />
-                        {showCaptcha && (
-                            <HCaptcha
-                                sitekey={
-                                    import.meta.env.REACT_APP_CAPTCHA_SITEKEY!
-                                }
-                                onVerify={setCaptchaToken}
-                                theme="dark"
-                                onExpire={() => setCaptchaToken(null)}
-                                onChalExpired={() => setCaptchaToken(null)}
-                                onError={() => setCaptchaToken(null)}
+        <form
+            className="form-paper-content"
+            onSubmit={(e) => {
+                e.preventDefault();
+                setLoginDisabled(true);
+                login();
+            }}
+        >
+            <h1>Login</h1>
+            <p>
+                Or{" "}
+                <Link className="underscore-button" to="/register">
+                    register
+                </Link>{" "}
+                for a new account
+            </p>
+            <TextField
+                label="User Name"
+                variant="outlined"
+                value={userName}
+                error={loginFailed}
+                helperText={loginFailed && "Invalid Credentials"}
+                fullWidth
+                onChange={(e) => setUserName(e.currentTarget.value)}
+                slotProps={{
+                    htmlInput: {
+                        maxLength: 32,
+                    },
+                }}
+            />
+            <TextField
+                label="Password"
+                variant="outlined"
+                type="password"
+                value={password}
+                error={loginFailed}
+                helperText={loginFailed && "Invalid Credentials"}
+                fullWidth
+                onChange={(e) => setPassword(e.currentTarget.value)}
+                slotProps={{
+                    htmlInput: {
+                        maxLength: 255,
+                    },
+                }}
+            />
+            {showCaptcha && (
+                <HCaptcha
+                    sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                    onVerify={setCaptchaToken}
+                    theme="dark"
+                    onExpire={() => setCaptchaToken(null)}
+                    onChalExpired={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                />
+            )}
+            <Button
+                type="submit"
+                disabled={
+                    loginDisabled ||
+                    userName.length === 0 ||
+                    password.length === 0 ||
+                    loginFailed ||
+                    (showCaptcha && !captchaToken)
+                }
+                size="large"
+                variant="contained"
+                startIcon={
+                    <FontAwesomeSvgIcon
+                        fontSize="inherit"
+                        icon={faRightToBracket}
+                    />
+                }
+            >
+                Login
+            </Button>
+            <button
+                className="underscore-button"
+                type="button"
+                onClick={(e) => {
+                    e.preventDefault();
+                    app.openModal(
+                        "Reset Password",
+                        (modal) => (
+                            <ResetPasswordForm
+                                app={app}
+                                modal={modal}
+                                initialUserName={userName}
                             />
-                        )}
-                        <Button
-                            type="submit"
-                            disabled={
-                                loginDisabled ||
-                                userName.length === 0 ||
-                                password.length === 0 ||
-                                loginFailed ||
-                                (showCaptcha && !captchaToken)
+                        ),
+                        (result: any) => {
+                            if (result) {
+                                app.handleLogin(result);
+                                setLoginDisabled(false);
+                                setLoginFailed(false);
+                                if (state && state.from) {
+                                    navigate(state.from, {
+                                        replace: true,
+                                    });
+                                } else {
+                                    navigate("/", {
+                                        replace: true,
+                                    });
+                                }
                             }
-                            size="large"
-                            variant="contained"
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faRightToBracket}
-                                />
-                            }
-                        >
-                            Login
-                        </Button>
-                        <button
-                            className="underscore-button"
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                app.openModal(
-                                    "Reset Password",
-                                    (modal) => (
-                                        <ResetPasswordForm
-                                            app={app}
-                                            modal={modal}
-                                            initialUserName={userName}
-                                        />
-                                    ),
-                                    (result: any) => {
-                                        if (result) {
-                                            app.handleLogin(result);
-                                            setLoginDisabled(false);
-                                            setLoginFailed(false);
-                                            if (state && state.from) {
-                                                navigate(state.from, {
-                                                    replace: true,
-                                                });
-                                            } else {
-                                                navigate("/", {
-                                                    replace: true,
-                                                });
-                                            }
-                                        }
-                                    }
-                                );
-                            }}
-                        >
-                            Forgot Password?
-                        </button>
-                    </form>
-                </Paper>
-            </div>
-        </div>
+                        }
+                    );
+                }}
+            >
+                Forgot Password?
+            </button>
+        </form>
     );
 }
 

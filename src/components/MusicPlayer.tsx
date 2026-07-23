@@ -59,6 +59,7 @@ export const MusicPlayer = forwardRef<
         coverUrl?: string;
         autoPlay?: boolean;
         onSoundLoaded?: (sound: Howl | null) => void;
+        onSoundEnd?: (sound: Howl | null) => void;
     }
 >(
     (
@@ -71,6 +72,7 @@ export const MusicPlayer = forwardRef<
             coverUrl,
             autoPlay,
             onSoundLoaded,
+            onSoundEnd,
         },
         ref
     ) => {
@@ -84,6 +86,8 @@ export const MusicPlayer = forwardRef<
             soundEnabled: !muted,
             onend: () => {
                 setIsPlaying(false);
+                setSeconds("0");
+                onSoundEnd?.(sound);
             },
             // enable HTML5 streaming and avoid web audio API memory leak issues (howler issue #914)
             html5: true,

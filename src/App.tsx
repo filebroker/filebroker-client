@@ -11,7 +11,11 @@ import "@filebroker/react-widgets/lib/styles.css";
 import "./App.css";
 import http from "./http-common";
 import PostSearch from "./routes/PostSearch";
-import Login, { LoginResponse } from "./routes/Login";
+import Login, {
+    LoginForm,
+    LoginResponse,
+    UserPreferences,
+} from "./routes/Login";
 import { ProfilePage } from "./routes/ProfilePage";
 import Register from "./routes/Register";
 import Post from "./routes/Post";
@@ -130,6 +134,14 @@ function RouteChangeHandler({
     return null;
 }
 
+export interface PatchUserPreferencesRequest {
+    advanced_query_mode?: boolean | undefined;
+    auto_play_audio?: boolean | undefined;
+    auto_play_video?: boolean | undefined;
+    auto_play_audio_in_collection?: boolean | undefined;
+    auto_play_video_in_collection?: boolean | undefined;
+}
+
 export class App extends React.Component<
     { isDesktop: boolean },
     {
@@ -137,6 +149,7 @@ export class App extends React.Component<
         user: User | null;
         loginExpiry: number | null;
         modalStack: ModalContent[];
+        userPreferences: UserPreferences | null;
     }
 > {
     pendingLogin: Promise<AxiosResponse<LoginResponse, any>> | null;
@@ -160,6 +173,7 @@ export class App extends React.Component<
             user: null,
             loginExpiry: null,
             modalStack: [],
+            userPreferences: null,
         };
 
         this.handleLogin = this.handleLogin.bind(this);
@@ -388,7 +402,7 @@ export class App extends React.Component<
         }
     }
 
-    handleLogin(loginResponse: LoginResponse | null) {
+    handleLogin(loginResponse: LoginResponse | null | undefined) {
         let loginExpiry;
         if (loginResponse) {
             let now = Date.now();
@@ -399,11 +413,13 @@ export class App extends React.Component<
         }
 
         this.setState(
-            {
+            (state) => ({
                 jwt: loginResponse?.token ?? null,
                 user: loginResponse?.user ?? null,
                 loginExpiry: loginExpiry,
-            },
+                userPreferences:
+                    loginResponse?.preferences ?? state.userPreferences,
+            }),
             () => {
                 this.pendingLogin = null;
             }
@@ -422,6 +438,118 @@ export class App extends React.Component<
         this.setState({
             user: user,
         });
+    }
+
+    getUserPreferences(): UserPreferences | null {
+        return this.state.userPreferences;
+    }
+
+    updateUserPreferences(request: PatchUserPreferencesRequest) {
+        this.withAuthorization((config) => {
+            http.patch<UserPreferences>(
+                "/patch-user-preferences",
+                request,
+                config
+            )
+                .then((response) => this.setUserPreferences(response.data))
+                .catch((e) =>
+                    console.error("Failed to path user preferences:", e)
+                );
+        }, true);
+    }
+
+    setUserPreferences(preferences: UserPreferences) {
+        this.setState({
+            userPreferences: preferences,
+        });
+    }
+
+    getAuthConfigForJwt(
+        jwt: string
+    ): { headers: { authorization: string } } | undefined {
+        return {
+            headers: {
+                authorization: `Bearer ${jwt}`,
+            },
+        };
+    }
+
+    withAuthorization(
+        cb: (
+            config: { headers: { authorization: string } } | undefined
+        ) => void,
+        require: boolean = true
+    ) {
+        if (
+            this.state.loginExpiry == null ||
+            this.state.jwt == null ||
+            this.state.loginExpiry < Date.now()
+        ) {
+            let promise;
+            if (this.pendingLogin != null) {
+                promise = this.pendingLogin;
+            } else {
+                promise = http.post<LoginResponse>("/try-refresh-login", null, {
+                    withCredentials: true,
+                });
+                this.pendingLogin = promise;
+            }
+            promise
+                .then((loginResponse) => {
+                    this.handleLogin(loginResponse.data);
+                    if (!loginResponse.data) {
+                        if (require) {
+                            this.openModal(
+                                "",
+                                (modal) => (
+                                    <LoginForm app={this} modal={modal} />
+                                ),
+                                (loginResponse: LoginResponse) => {
+                                    this.handleLogin(loginResponse);
+                                    if (loginResponse) {
+                                        cb(
+                                            this.getAuthConfigForJwt(
+                                                loginResponse.token
+                                            )
+                                        );
+                                    }
+                                }
+                            );
+                            throw new Error(
+                                "Failed to try refresh login with empty response"
+                            );
+                        } else {
+                            return undefined;
+                        }
+                    }
+                    cb(this.getAuthConfigForJwt(loginResponse.data.token));
+                })
+                .catch((e) => {
+                    console.log("Failed to refresh login: " + e);
+                    if (!require) {
+                        return undefined;
+                    }
+                    if (e.response?.status === 401) {
+                        this.openModal(
+                            "",
+                            (modal) => <LoginForm app={this} modal={modal} />,
+                            (loginResponse: LoginResponse) => {
+                                this.handleLogin(loginResponse);
+                                if (loginResponse) {
+                                    cb(
+                                        this.getAuthConfigForJwt(
+                                            loginResponse.token
+                                        )
+                                    );
+                                }
+                            }
+                        );
+                    }
+                    throw e;
+                });
+        } else {
+            cb(this.getAuthConfigForJwt(this.state.jwt));
+        }
     }
 
     async getAuthorization(

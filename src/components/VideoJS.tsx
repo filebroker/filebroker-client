@@ -7,7 +7,7 @@ import type Player from "video.js/dist/types/player";
 export const VideoJS = (props: any) => {
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
     const playerRef = React.useRef<Player | null>(null);
-    const { options, onReady } = props;
+    const { options, onReady, onEnded } = props;
 
     React.useEffect(() => {
         // Make sure Video.js player is only initialized once
@@ -24,6 +24,10 @@ export const VideoJS = (props: any) => {
                     onReady && onReady(player);
                 }
             ));
+
+            player.on("ended", () => {
+                onEnded?.(player);
+            });
 
             // You could update an existing player in the `else` block here
             // on prop change, for example:

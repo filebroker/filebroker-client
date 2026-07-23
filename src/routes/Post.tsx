@@ -36,12 +36,14 @@ import {
     UserGroup,
 } from "../Model";
 import {
+    Box,
     Button,
     ButtonGroup,
     FormControlLabel,
     IconButton,
     Switch,
     TextField,
+    Tooltip,
 } from "@mui/material";
 import { TagCreator, TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
@@ -56,6 +58,8 @@ import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from "@mui/icons-material/Add";
 import { PostEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
 import { PageTitle } from "../index";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
 
 class PostProps {
     app: App;
@@ -67,6 +71,9 @@ class PostProps {
 
 function Post({ app }: PostProps) {
     let { collection_id, id } = useParams();
+    const basePostPath = collection_id
+        ? "/collection/" + collection_id + "/post/"
+        : "/post/";
     const [post, setPost] = useState<PostDetailed | null>(null);
     const location = useLocation();
     const search = location.search;
@@ -136,6 +143,58 @@ function Post({ app }: PostProps) {
         resizeObservers.current.push(resizeObserver);
     };
 
+    const [autoplayEnabled, setAutoplayEnabled] = useState(false);
+    const autoplayEnabledRef = useRef(autoplayEnabled);
+    const autoplayPreferenceUpdateTimeoutRef = useRef<ReturnType<
+        typeof setTimeout
+    > | null>(null);
+    useEffect(() => {
+        return () => {
+            if (autoplayPreferenceUpdateTimeoutRef.current) {
+                clearTimeout(autoplayPreferenceUpdateTimeoutRef.current);
+            }
+        };
+    }, []);
+    useEffect(() => {
+        autoplayEnabledRef.current = autoplayEnabled;
+    }, [autoplayEnabled]);
+    const handleSetAutoplayEnabledChange = (
+        post: PostDetailed,
+        enabled: boolean
+    ) => {
+        setAutoplayEnabled(enabled);
+
+        if (autoplayPreferenceUpdateTimeoutRef.current) {
+            clearTimeout(autoplayPreferenceUpdateTimeoutRef.current);
+        }
+
+        autoplayPreferenceUpdateTimeoutRef.current = setTimeout(() => {
+            if (isAudio(post)) {
+                if (collection_id) {
+                    app.updateUserPreferences({
+                        auto_play_audio_in_collection: enabled,
+                    });
+                } else {
+                    app.updateUserPreferences({
+                        auto_play_audio: enabled,
+                    });
+                }
+            } else if (isVideo(post)) {
+                if (collection_id) {
+                    app.updateUserPreferences({
+                        auto_play_video_in_collection: enabled,
+                    });
+                } else {
+                    app.updateUserPreferences({
+                        auto_play_video: enabled,
+                    });
+                }
+            }
+
+            autoplayPreferenceUpdateTimeoutRef.current = null;
+        }, 1000);
+    };
+
     function updatePost(postDetailed: PostDetailed | null) {
         setPost(postDetailed);
         setTags(
@@ -162,6 +221,15 @@ function Post({ app }: PostProps) {
         );
     }
 
+    const isAudio = (post: PostDetailed) => {
+        const mimeType = post.s3_object.mime_type;
+        return mimeType.startsWith("audio/");
+    };
+    const isVideo = (post: PostDetailed) => {
+        const mimeType = post.s3_object.mime_type;
+        return mimeType.startsWith("video/");
+    };
+
     useEffect(() => {
         updatePost(null);
         let fetch = async () => {
@@ -180,6 +248,32 @@ function Post({ app }: PostProps) {
                     config
                 );
                 updatePost(post.data);
+
+                if (isAudio(post.data)) {
+                    const preferences = app.getUserPreferences();
+                    if (collection_id) {
+                        setAutoplayEnabled(
+                            preferences?.auto_play_audio_in_collection ?? false
+                        );
+                    } else {
+                        setAutoplayEnabled(
+                            preferences?.auto_play_audio ?? false
+                        );
+                    }
+                } else if (isVideo(post.data)) {
+                    const preferences = app.getUserPreferences();
+                    if (collection_id) {
+                        setAutoplayEnabled(
+                            preferences?.auto_play_video_in_collection ?? false
+                        );
+                    } else {
+                        setAutoplayEnabled(
+                            preferences?.auto_play_video ?? false
+                        );
+                    }
+                } else {
+                    setAutoplayEnabled(false);
+                }
 
                 if (config) {
                     let currentUserGroups = await http.get<UserGroup[]>(
@@ -332,6 +426,19 @@ function Post({ app }: PostProps) {
 
     const musicPlayerRef = useRef<MusicPlayerHandle>(null);
 
+    const autoNavigateNextOnEnd = (post: PostDetailed) => {
+        if (autoplayEnabledRef.current && post.next_post) {
+            let searchParams = new URLSearchParams(search);
+            searchParams.set("page", post.next_post.page.toString());
+            let location: Partial<Location> = {
+                pathname: basePostPath + post.next_post.pk,
+                search: searchParams.toString(),
+                key: post.next_post.pk.toString(),
+            };
+            navigate(location);
+        }
+    };
+
     const getComponentForData = (
         post: PostDetailed
     ): ReactElement | undefined => {
@@ -369,6 +476,7 @@ function Post({ app }: PostProps) {
                         metaArtist={post.s3_object_metadata.artist}
                         coverUrl={post.thumbnail_url || thumbnailUrl}
                         autoPlay
+                        onSoundEnd={() => autoNavigateNextOnEnd(post)}
                     />
                 );
             } else if (post.s3_object.mime_type.startsWith("video")) {
@@ -437,7 +545,8 @@ function Post({ app }: PostProps) {
                         <VideoJS
                             options={videoJsOptions}
                             onReady={handlePlayerReady}
-                        ></VideoJS>
+                            onEnded={() => autoNavigateNextOnEnd(post)}
+                        />
                     </div>
                 );
             }
@@ -584,9 +693,6 @@ function Post({ app }: PostProps) {
             </>
         );
 
-        let basePostPath = collection_id
-            ? "/collection/" + collection_id + "/post/"
-            : "/post/";
         if (post.prev_post) {
             let searchParams = new URLSearchParams(search);
             searchParams.set("page", post.prev_post.page.toString());
@@ -672,6 +778,68 @@ function Post({ app }: PostProps) {
                         <></>
                     )}
                     <div id="navigate-buttons">
+                        {post &&
+                            post.next_post &&
+                            (isAudio(post) || isVideo(post)) && (
+                                <Tooltip
+                                    title={
+                                        autoplayEnabled
+                                            ? "Disable autoplay"
+                                            : "Enable autoplay"
+                                    }
+                                    arrow
+                                >
+                                    <Switch
+                                        checked={autoplayEnabled}
+                                        onChange={(_e, checked) => {
+                                            handleSetAutoplayEnabledChange(
+                                                post,
+                                                checked
+                                            );
+                                        }}
+                                        icon={
+                                            <Box
+                                                sx={{
+                                                    width: 20,
+                                                    height: 20,
+                                                    borderRadius: "50%",
+                                                    bgcolor: "white",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                <PauseIcon
+                                                    fontSize="inherit"
+                                                    sx={{
+                                                        color: "var(--bs-body-bg)",
+                                                    }}
+                                                />
+                                            </Box>
+                                        }
+                                        checkedIcon={
+                                            <Box
+                                                sx={{
+                                                    width: 20,
+                                                    height: 20,
+                                                    borderRadius: "50%",
+                                                    bgcolor: "white",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                <PlayArrowIcon
+                                                    fontSize="inherit"
+                                                    sx={{
+                                                        color: "var(--bs-body-bg)",
+                                                    }}
+                                                />
+                                            </Box>
+                                        }
+                                    />
+                                </Tooltip>
+                            )}
                         {prevLink}
                         {nextLink}
                     </div>
