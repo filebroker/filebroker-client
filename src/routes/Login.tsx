@@ -67,7 +67,11 @@ function Login({ app }: LoginProps) {
     );
 }
 
-export function LoginForm({ app, modal }: LoginProps & { modal?: ModalContent | undefined }) {
+export function LoginForm({
+    app,
+    modal,
+    redirectOnLogin,
+}: LoginProps & { modal?: ModalContent | undefined; redirectOnLogin?: boolean }) {
     const [password, setPassword] = useState("");
     const [userName, setUserName] = useState("");
     const [loginFailed, setLoginFailed] = useState(false);
@@ -88,10 +92,12 @@ export function LoginForm({ app, modal }: LoginProps & { modal?: ModalContent | 
             app.handleLogin(response.data);
             setLoginDisabled(false);
             setLoginFailed(false);
-            if (state && state.from) {
-                navigate(state.from, { replace: true });
-            } else {
-                navigate("/", { replace: true });
+            if (redirectOnLogin) {
+                if (state && state.from) {
+                    navigate(state.from, { replace: true });
+                } else {
+                    navigate("/", { replace: true });
+                }
             }
             loadingModal.close();
             if (modal) {

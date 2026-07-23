@@ -376,7 +376,7 @@ export class App extends React.Component<
 
     withAuthorization(
         cb: (config: { headers: { authorization: string } } | undefined) => void,
-        require: boolean = true
+        showLoginFormIfLoggedOut: boolean = true
     ) {
         if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
@@ -392,7 +392,7 @@ export class App extends React.Component<
                 .then((loginResponse) => {
                     this.handleLogin(loginResponse.data);
                     if (!loginResponse.data) {
-                        if (require) {
+                        if (showLoginFormIfLoggedOut) {
                             this.openModal(
                                 "",
                                 (modal) => <LoginForm app={this} modal={modal} />,
@@ -400,20 +400,22 @@ export class App extends React.Component<
                                     this.handleLogin(loginResponse);
                                     if (loginResponse) {
                                         cb(this.getAuthConfigForJwt(loginResponse.token));
+                                    } else {
+                                        cb(undefined);
                                     }
                                 }
                             );
-                            throw new Error("Failed to try refresh login with empty response");
                         } else {
-                            return undefined;
+                            cb(undefined);
                         }
+                    } else {
+                        cb(this.getAuthConfigForJwt(loginResponse.data.token));
                     }
-                    cb(this.getAuthConfigForJwt(loginResponse.data.token));
                 })
                 .catch((e) => {
                     console.log("Failed to refresh login: " + e);
-                    if (!require) {
-                        return undefined;
+                    if (!showLoginFormIfLoggedOut) {
+                        cb(undefined);
                     }
                     if (e.response?.status === 401) {
                         this.openModal(
@@ -423,11 +425,14 @@ export class App extends React.Component<
                                 this.handleLogin(loginResponse);
                                 if (loginResponse) {
                                     cb(this.getAuthConfigForJwt(loginResponse.token));
+                                } else {
+                                    cb(undefined);
                                 }
                             }
                         );
+                    } else {
+                        cb(undefined);
                     }
-                    throw e;
                 });
         } else {
             cb(this.getAuthConfigForJwt(this.state.jwt));

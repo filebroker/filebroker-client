@@ -183,50 +183,74 @@ function Post({ app }: PostProps) {
 
     useEffect(() => {
         updatePost(null);
-        let fetch = async () => {
-            try {
-                let config = await app.getAuthorization(location, navigate, false);
+        const fetch = async () => {
+            let config = await app.getAuthorization(location, navigate, false);
+            await fetchAuthorized(config);
+        };
 
-                let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
-                let post = await http.get<PostDetailed>(`${basePath}/${id}${search}`, config);
-                updatePost(post.data);
+        const fetchAuthorized = async (config: { headers: { authorization: string } } | undefined) => {
+            let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
+            let post = await http.get<PostDetailed>(`${basePath}/${id}${search}`, config);
+            updatePost(post.data);
 
-                if (isAudio(post.data)) {
-                    const preferences = app.getUserPreferences();
-                    if (collection_id) {
-                        setAutoplayEnabled(preferences?.auto_play_audio_in_collection ?? false);
-                    } else {
-                        setAutoplayEnabled(preferences?.auto_play_audio ?? false);
-                    }
-                } else if (isVideo(post.data)) {
-                    const preferences = app.getUserPreferences();
-                    if (collection_id) {
-                        setAutoplayEnabled(preferences?.auto_play_video_in_collection ?? false);
-                    } else {
-                        setAutoplayEnabled(preferences?.auto_play_video ?? false);
-                    }
+            if (isAudio(post.data)) {
+                const preferences = app.getUserPreferences();
+                if (collection_id) {
+                    setAutoplayEnabled(preferences?.auto_play_audio_in_collection ?? false);
                 } else {
-                    setAutoplayEnabled(false);
+                    setAutoplayEnabled(preferences?.auto_play_audio ?? false);
                 }
+            } else if (isVideo(post.data)) {
+                const preferences = app.getUserPreferences();
+                if (collection_id) {
+                    setAutoplayEnabled(preferences?.auto_play_video_in_collection ?? false);
+                } else {
+                    setAutoplayEnabled(preferences?.auto_play_video ?? false);
+                }
+            } else {
+                setAutoplayEnabled(false);
+            }
 
-                if (config) {
-                    let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
-                    setCurrentUserGroups(currentUserGroups.data);
-                }
-            } catch (e: any) {
-                if (e.response?.status === 403) {
-                    app.openModal("Error", <p>This post is unavailable.</p>);
-                } else if (e.response?.status === 401) {
-                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
-                }
-                console.error(e);
+            if (config) {
+                let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
+                setCurrentUserGroups(currentUserGroups.data);
             }
         };
 
         const modal = app.openLoadingModal();
         fetch()
             .then(() => modal.close())
-            .catch(() => modal.close());
+            .catch((e) => {
+                if (e.response?.status === 403 || e.response?.status === 401) {
+                    app.withAuthorization((config) => {
+                        if (config) {
+                            fetchAuthorized(config)
+                                .then(() => modal.close())
+                                .catch((e) => {
+                                    console.error(e);
+                                    if (e.response?.status === 403) {
+                                        app.openModal("Error", <p>This post is unavailable.</p>);
+                                    } else if (e.response?.status === 401) {
+                                        app.openModal(
+                                            "Error",
+                                            <p>Your credentials have expired, try refreshing the page.</p>
+                                        );
+                                    }
+                                });
+                        } else {
+                            modal.close();
+                            if (e.response?.status === 403) {
+                                app.openModal("Error", <p>This post is unavailable.</p>);
+                            } else if (e.response?.status === 401) {
+                                app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                            }
+                        }
+                    }, true);
+                } else {
+                    modal.close();
+                    console.error(e);
+                }
+            });
     }, [id]);
 
     useEffect(() => {
