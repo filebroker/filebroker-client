@@ -6,12 +6,7 @@ export const validateEmail = (email: string) => {
         );
 };
 
-export function replaceStringRange(
-    s: string,
-    start: number,
-    end: number,
-    substitute: string
-) {
+export function replaceStringRange(s: string, start: number, end: number, substitute: string) {
     return s.substring(0, start) + substitute + s.substring(end);
 }
 
@@ -20,17 +15,7 @@ export function formatBytes(bytes: number, decimals = 2) {
 
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
-    const sizes = [
-        "Bytes",
-        "KiB",
-        "MiB",
-        "GiB",
-        "TiB",
-        "PiB",
-        "EiB",
-        "ZiB",
-        "YiB",
-    ];
+    const sizes = ["Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
 
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
@@ -46,7 +31,5 @@ export function formatDurationString(duration: string): string {
     }
 
     const [, hours, minutes, seconds] = match;
-    return hours === "00"
-        ? `${minutes}:${seconds}`
-        : `${hours}:${minutes}:${seconds}`;
+    return hours === "00" ? `${minutes}:${seconds}` : `${hours}:${minutes}:${seconds}`;
 }

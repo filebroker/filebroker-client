@@ -38,22 +38,13 @@ import {
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { faFloppyDisk } from "@fortawesome/free-regular-svg-icons";
-import {
-    PageTitle,
-    ReadOnlyTextField,
-    StyledAutocomplete,
-    StyledTextField,
-} from "../index";
+import { PageTitle, ReadOnlyTextField, StyledAutocomplete, StyledTextField } from "../index";
 import StorageIcon from "@mui/icons-material/Storage";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { enqueueSnackbar } from "notistack";
 import CloudIcon from "@mui/icons-material/Cloud";
 import { a11yProps, TabPanel } from "../components/TabPanel";
-import {
-    Direction,
-    PaginatedTable,
-    PaginatedTableHandle,
-} from "../components/PaginatedTable";
+import { Direction, PaginatedTable, PaginatedTableHandle } from "../components/PaginatedTable";
 import { formatBytes } from "../Util";
 import DataUsageIcon from "@mui/icons-material/DataUsage";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
@@ -61,11 +52,7 @@ import RemoveModeratorIcon from "@mui/icons-material/RemoveModerator";
 import RemoveCircleOutlinedIcon from "@mui/icons-material/RemoveCircleOutlined";
 import { ActionModal } from "../components/ActionModal";
 import { PostQueryObject, SearchResult } from "../Search";
-import {
-    getMediaDurationDisplayForItem,
-    getMediaTypeIconForItem,
-    PreviewGrid,
-} from "../components/PaginatedGridView";
+import { getMediaDurationDisplayForItem, getMediaTypeIconForItem, PreviewGrid } from "../components/PaginatedGridView";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 
@@ -117,8 +104,8 @@ export function BrokerAccessCreator({
         let fetch = async () => {
             let config = await app.getAuthorization(location, navigate);
 
-            http.get<UserGroup[]>("/get-current-user-groups", config).then(
-                (result) => setCurrentUserGroups(result.data)
+            http.get<UserGroup[]>("/get-current-user-groups", config).then((result) =>
+                setCurrentUserGroups(result.data)
             );
         };
 
@@ -144,10 +131,7 @@ export function BrokerAccessCreator({
     const [isGroupInvalid, setIsGroupInvalid] = useState(false);
     const [isUserInvalid, setIsUserInvalid] = useState(false);
     useEffect(() => {
-        setIsQuotaInvalid(
-            (quota != null && quota < 0.001) ||
-                (quota == null && activeTab === 2)
-        );
+        setIsQuotaInvalid((quota != null && quota < 0.001) || (quota == null && activeTab === 2));
     }, [quota, activeTab]);
     useEffect(() => {
         setIsGroupInvalid(selectedGroup == null && activeTab === 0);
@@ -169,36 +153,25 @@ export function BrokerAccessCreator({
                         >
                             <Tab label="Collective Access" {...a11yProps(0)} />
                             <Tab label="User Access" {...a11yProps(1)} />
-                            {app.getUser()?.is_admin && (
-                                <Tab label="Public Access" {...a11yProps(2)} />
-                            )}
+                            {app.getUser()?.is_admin && <Tab label="Public Access" {...a11yProps(2)} />}
                         </Tabs>
                     </Box>
                     <TabPanel value={activeTab} index={0}>
                         <FormGroup className="form-container">
                             <p>
-                                Grant access to members of the selected group to
-                                upload files to this broker. The quota limits
-                                the amount of storage space available to each
-                                user within the group, no quota means unlimited
-                                storage.
+                                Grant access to members of the selected group to upload files to this broker. The quota
+                                limits the amount of storage space available to each user within the group, no quota
+                                means unlimited storage.
                             </p>
                             <StyledAutocomplete
                                 label="Group"
                                 options={currentUserGroups}
                                 getOptionLabel={(option) => option.name}
                                 value={selectedGroup}
-                                onChange={(
-                                    _event: any,
-                                    newValue: UserGroup | null
-                                ) => setSelectedGroup(newValue)}
+                                onChange={(_event: any, newValue: UserGroup | null) => setSelectedGroup(newValue)}
                                 inputValue={groupInput}
-                                onInputChange={(_event, newInputValue) =>
-                                    setGroupInput(newInputValue)
-                                }
-                                isOptionEqualToValue={(option, value) =>
-                                    option.pk === value.pk
-                                }
+                                onInputChange={(_event, newInputValue) => setGroupInput(newInputValue)}
+                                isOptionEqualToValue={(option, value) => option.pk === value.pk}
                                 renderOption={(props, option) => (
                                     <ListItem {...props}>
                                         <ListItemText primary={option.name} />
@@ -218,9 +191,7 @@ export function BrokerAccessCreator({
                                 label="Quota (GB)"
                                 value={quota ?? ""}
                                 onChange={(e) =>
-                                    e.target.value === ""
-                                        ? setQuota(null)
-                                        : setQuota(Number(e.target.value))
+                                    e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))
                                 }
                                 error={isQuotaInvalid}
                                 helperText={
@@ -234,11 +205,7 @@ export function BrokerAccessCreator({
                                     control={
                                         <Checkbox
                                             checked={isAdminAccess}
-                                            onChange={(e) =>
-                                                setIsAdminAccess(
-                                                    e.currentTarget.checked
-                                                )
-                                            }
+                                            onChange={(e) => setIsAdminAccess(e.currentTarget.checked)}
                                             sx={{
                                                 "&.Mui-disabled": {
                                                     color: "text.primary",
@@ -249,10 +216,9 @@ export function BrokerAccessCreator({
                                     label="Admin Access"
                                     sx={{
                                         opacity: 1,
-                                        "& .MuiFormControlLabel-label.Mui-disabled":
-                                            {
-                                                color: "text.primary",
-                                            },
+                                        "& .MuiFormControlLabel-label.Mui-disabled": {
+                                            color: "text.primary",
+                                        },
                                     }}
                                 />
                                 <Tooltip
@@ -260,9 +226,7 @@ export function BrokerAccessCreator({
                                     placement="right"
                                     arrow
                                 >
-                                    <FontAwesomeIcon
-                                        icon={faTriangleExclamation}
-                                    />
+                                    <FontAwesomeIcon icon={faTriangleExclamation} />
                                 </Tooltip>
                             </div>
                         </FormGroup>
@@ -270,13 +234,10 @@ export function BrokerAccessCreator({
                     <TabPanel value={activeTab} index={1}>
                         <FormGroup className="form-container">
                             <p>
-                                Grant access to the user with the provided user
-                                name (unique user ID, not display name). The
-                                quota limits the amount of storage space
-                                available to the given user, no quota means
-                                unlimited storage. If a user is member of a
-                                group that has access, the user-specific access
-                                overrides the group access.
+                                Grant access to the user with the provided user name (unique user ID, not display name).
+                                The quota limits the amount of storage space available to the given user, no quota means
+                                unlimited storage. If a user is member of a group that has access, the user-specific
+                                access overrides the group access.
                             </p>
                             <TextField
                                 label="User Name"
@@ -296,9 +257,7 @@ export function BrokerAccessCreator({
                                 label="Quota (GB)"
                                 value={quota}
                                 onChange={(e) =>
-                                    e.target.value === ""
-                                        ? setQuota(null)
-                                        : setQuota(Number(e.target.value))
+                                    e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))
                                 }
                                 error={isQuotaInvalid}
                                 helperText={
@@ -312,11 +271,7 @@ export function BrokerAccessCreator({
                                     control={
                                         <Checkbox
                                             checked={isAdminAccess}
-                                            onChange={(e) =>
-                                                setIsAdminAccess(
-                                                    e.currentTarget.checked
-                                                )
-                                            }
+                                            onChange={(e) => setIsAdminAccess(e.currentTarget.checked)}
                                             sx={{
                                                 "&.Mui-disabled": {
                                                     color: "text.primary",
@@ -327,10 +282,9 @@ export function BrokerAccessCreator({
                                     label="Admin Access"
                                     sx={{
                                         opacity: 1,
-                                        "& .MuiFormControlLabel-label.Mui-disabled":
-                                            {
-                                                color: "text.primary",
-                                            },
+                                        "& .MuiFormControlLabel-label.Mui-disabled": {
+                                            color: "text.primary",
+                                        },
                                     }}
                                 />
                                 <Tooltip
@@ -338,9 +292,7 @@ export function BrokerAccessCreator({
                                     placement="right"
                                     arrow
                                 >
-                                    <FontAwesomeIcon
-                                        icon={faTriangleExclamation}
-                                    />
+                                    <FontAwesomeIcon icon={faTriangleExclamation} />
                                 </Tooltip>
                             </div>
                         </FormGroup>
@@ -348,19 +300,15 @@ export function BrokerAccessCreator({
                     <TabPanel value={activeTab} index={2}>
                         <FormGroup className="form-container">
                             <p>
-                                BEWARE: This grants access to all registered
-                                users, intended to be a free access tier. Be
-                                careful setting quota, unlimited is not allowed
-                                here (as are admin privileges).
+                                BEWARE: This grants access to all registered users, intended to be a free access tier.
+                                Be careful setting quota, unlimited is not allowed here (as are admin privileges).
                             </p>
                             <TextField
                                 type="number"
                                 label="Quota (GB)"
                                 value={quota}
                                 onChange={(e) =>
-                                    e.target.value === ""
-                                        ? setQuota(null)
-                                        : setQuota(Number(e.target.value))
+                                    e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value))
                                 }
                                 error={isQuotaInvalid}
                                 helperText={
@@ -382,87 +330,56 @@ export function BrokerAccessCreator({
                                 isUserInvalid ||
                                 (activeTab === 1 && !Boolean(userName))
                             }
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faFloppyDisk}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                             onClick={async () => {
                                 const loadingModal = app.openLoadingModal();
                                 try {
-                                    const config = await app.getAuthorization(
-                                        location,
-                                        navigate
-                                    );
+                                    const config = await app.getAuthorization(location, navigate);
 
                                     let user;
                                     if (userName) {
                                         try {
-                                            const res =
-                                                await http.get<UserPublic>(
-                                                    `/get-user-public-name/${encodeURIComponent(userName)}`
-                                                );
+                                            const res = await http.get<UserPublic>(
+                                                `/get-user-public-name/${encodeURIComponent(userName)}`
+                                            );
                                             user = res.data;
                                         } catch (e) {
-                                            console.error(
-                                                "Failed to load user data",
-                                                e
-                                            );
+                                            console.error("Failed to load user data", e);
                                             setIsUserInvalid(true);
                                             return;
                                         }
                                     }
 
-                                    const response =
-                                        await http.post<BrokerAccess>(
-                                            `/create-broker-access/${broker.pk}`,
-                                            {
-                                                user_pk: user
-                                                    ? user.pk
-                                                    : undefined,
-                                                user_group_pk:
-                                                    selectedGroup !== null
-                                                        ? selectedGroup.pk
-                                                        : undefined,
-                                                quota:
-                                                    quota !== null
-                                                        ? gibToBytes(quota)
-                                                        : undefined,
-                                                is_admin: isAdminAccess,
-                                            },
-                                            config
-                                        );
+                                    const response = await http.post<BrokerAccess>(
+                                        `/create-broker-access/${broker.pk}`,
+                                        {
+                                            user_pk: user ? user.pk : undefined,
+                                            user_group_pk: selectedGroup !== null ? selectedGroup.pk : undefined,
+                                            quota: quota !== null ? gibToBytes(quota) : undefined,
+                                            is_admin: isAdminAccess,
+                                        },
+                                        config
+                                    );
                                     enqueueSnackbar({
                                         message: "Broker access created",
                                         variant: "success",
                                     });
                                     modal?.close(response.data);
                                 } catch (e: any) {
-                                    console.error(
-                                        "Failed to create broker access",
-                                        e
-                                    );
+                                    console.error("Failed to create broker access", e);
                                     if (e.response?.status === 401) {
                                         enqueueSnackbar({
-                                            message:
-                                                "Your credentials have expired, try refreshing the page.",
+                                            message: "Your credentials have expired, try refreshing the page.",
                                             variant: "error",
                                         });
-                                    } else if (
-                                        e?.response?.data?.error_code === 400024
-                                    ) {
+                                    } else if (e?.response?.data?.error_code === 400024) {
                                         app.openModal(
                                             "Error",
-                                            <p>
-                                                Broker access for this user or
-                                                group already exists
-                                            </p>
+                                            <p>Broker access for this user or group already exists</p>
                                         );
                                     } else {
                                         enqueueSnackbar({
-                                            message:
-                                                "An error occurred creating broker access, please try again",
+                                            message: "An error occurred creating broker access, please try again",
                                             variant: "error",
                                         });
                                     }
@@ -497,10 +414,7 @@ export function ChangeQuotaForm({
     const [quota, setQuota] = useState<number | null>(null);
     const [isQuotaInvalid, setIsQuotaInvalid] = useState(false);
     useEffect(() => {
-        setIsQuotaInvalid(
-            (quota != null && quota < 0.001) ||
-                (quota == null && brokerAccess.is_public)
-        );
+        setIsQuotaInvalid((quota != null && quota < 0.001) || (quota == null && brokerAccess.is_public));
     }, [quota, broker, brokerAccess]);
 
     return (
@@ -510,11 +424,7 @@ export function ChangeQuotaForm({
                     type="number"
                     label="Quota (GB)"
                     value={quota}
-                    onChange={(e) =>
-                        e.target.value === ""
-                            ? setQuota(null)
-                            : setQuota(Number(e.target.value))
-                    }
+                    onChange={(e) => (e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value)))}
                     error={isQuotaInvalid}
                     helperText={
                         isQuotaInvalid
@@ -528,26 +438,15 @@ export function ChangeQuotaForm({
                     <Button
                         color="secondary"
                         disabled={isQuotaInvalid}
-                        startIcon={
-                            <FontAwesomeSvgIcon
-                                fontSize="inherit"
-                                icon={faFloppyDisk}
-                            />
-                        }
+                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                         onClick={async () => {
                             const loadingModal = app.openLoadingModal();
                             try {
-                                const config = await app.getAuthorization(
-                                    location,
-                                    navigate
-                                );
+                                const config = await app.getAuthorization(location, navigate);
                                 const response = await http.post<BrokerAccess>(
                                     `/change-broker-access-quota/${broker.pk}/${brokerAccess.pk}`,
                                     {
-                                        quota:
-                                            quota !== null
-                                                ? gibToBytes(quota)
-                                                : undefined,
+                                        quota: quota !== null ? gibToBytes(quota) : undefined,
                                     },
                                     config
                                 );
@@ -559,14 +458,12 @@ export function ChangeQuotaForm({
                             } catch (e: any) {
                                 if (e.response?.status === 401) {
                                     enqueueSnackbar({
-                                        message:
-                                            "Your credentials have expired, try refreshing the page.",
+                                        message: "Your credentials have expired, try refreshing the page.",
                                         variant: "error",
                                     });
                                 } else {
                                     enqueueSnackbar({
-                                        message:
-                                            "An error occurred updating quota, please try again",
+                                        message: "An error occurred updating quota, please try again",
                                         variant: "error",
                                     });
                                 }
@@ -605,51 +502,30 @@ export function ChangeTotalQuotaForm({
         <Paper elevation={2} className="fieldset-paper">
             <div className="form-paper-content">
                 <p>
-                    Change the total amount of data users can store on this
-                    broker. Broker owner and admins are exempt from this
-                    restriction, but their uploads still count towards the
-                    quota.
+                    Change the total amount of data users can store on this broker. Broker owner and admins are exempt
+                    from this restriction, but their uploads still count towards the quota.
                 </p>
                 <TextField
                     type="number"
                     label="Quota (GB)"
                     value={quota}
-                    onChange={(e) =>
-                        e.target.value === ""
-                            ? setQuota(null)
-                            : setQuota(Number(e.target.value))
-                    }
+                    onChange={(e) => (e.target.value === "" ? setQuota(null) : setQuota(Number(e.target.value)))}
                     error={isQuotaInvalid}
-                    helperText={
-                        isQuotaInvalid
-                            ? "Quota must be empty or greater than 0."
-                            : undefined
-                    }
+                    helperText={isQuotaInvalid ? "Quota must be empty or greater than 0." : undefined}
                 />
                 <div className="form-paper-button-row">
                     <Button
                         color="secondary"
                         disabled={isQuotaInvalid}
-                        startIcon={
-                            <FontAwesomeSvgIcon
-                                fontSize="inherit"
-                                icon={faFloppyDisk}
-                            />
-                        }
+                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                         onClick={async () => {
                             const loadingModal = app.openLoadingModal();
                             try {
-                                const config = await app.getAuthorization(
-                                    location,
-                                    navigate
-                                );
+                                const config = await app.getAuthorization(location, navigate);
                                 const response = await http.post<Broker>(
                                     `/edit-broker/${broker.pk}`,
                                     {
-                                        total_quota:
-                                            quota !== null
-                                                ? gibToBytes(quota)
-                                                : null,
+                                        total_quota: quota !== null ? gibToBytes(quota) : null,
                                     },
                                     config
                                 );
@@ -661,14 +537,12 @@ export function ChangeTotalQuotaForm({
                             } catch (e: any) {
                                 if (e.response?.status === 401) {
                                     enqueueSnackbar({
-                                        message:
-                                            "Your credentials have expired, try refreshing the page.",
+                                        message: "Your credentials have expired, try refreshing the page.",
                                         variant: "error",
                                     });
                                 } else {
                                     enqueueSnackbar({
-                                        message:
-                                            "An error occurred updating quota, please try again",
+                                        message: "An error occurred updating quota, please try again",
                                         variant: "error",
                                     });
                                 }
@@ -693,10 +567,8 @@ export function BrokerDetailPage({ app }: { app: App }) {
     const [broker, setBroker] = useState<BrokerDetailed | null>(null);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
-    const [removeDuplicateFiles, setRemoveDuplicateFiles] =
-        useState<boolean>(false);
-    const [enablePresignedGet, setEnablePresignedGet] =
-        useState<boolean>(false);
+    const [removeDuplicateFiles, setRemoveDuplicateFiles] = useState<boolean>(false);
+    const [enablePresignedGet, setEnablePresignedGet] = useState<boolean>(false);
     const [bucket, setBucket] = useState("");
     const [endpoint, setEndpoint] = useState("");
     const [accessKey, setAccessKey] = useState("");
@@ -734,10 +606,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
         const loadingModal = app.openLoadingModal();
         try {
             const config = await app.getAuthorization(location, navigate);
-            const response = await http.get<BrokerDetailed>(
-                `/get-broker/${id}`,
-                config
-            );
+            const response = await http.get<BrokerDetailed>(`/get-broker/${id}`, config);
             updateBroker(response.data);
         } finally {
             loadingModal.close();
@@ -752,11 +621,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
     const loadPosts = async () => {
         if (broker) {
             try {
-                const config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                const config = await app.getAuthorization(location, navigate, false);
                 const response = await http.get<SearchResult>(
                     `/search?query=${encodeURIComponent(`@broker=${broker.pk} %limit(5)`)}`,
                     config
@@ -789,15 +654,12 @@ export function BrokerDetailPage({ app }: { app: App }) {
                             }}
                         >
                             <FontAwesomeIcon icon={faTriangleExclamation} />
-                            Uploads are currently disabled for this broker. Only
-                            the broker owner and admins can upload files.
+                            Uploads are currently disabled for this broker. Only the broker owner and admins can upload
+                            files.
                         </Typography>
                     )}
                     {broker ? (
-                        <div
-                            className="form-paper"
-                            style={{ flexDirection: "row" }}
-                        >
+                        <div className="form-paper" style={{ flexDirection: "row" }}>
                             <div
                                 className="form-paper-content"
                                 style={{
@@ -815,9 +677,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                     value={name}
                                     fullWidth
                                     disabled={!editMode}
-                                    onChange={(e) =>
-                                        setName(e.currentTarget.value)
-                                    }
+                                    onChange={(e) => setName(e.currentTarget.value)}
                                     slotProps={{
                                         htmlInput: {
                                             maxLength: 255,
@@ -832,9 +692,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                     fullWidth
                                     multiline
                                     maxRows={5}
-                                    onChange={(e) =>
-                                        setDescription(e.currentTarget.value)
-                                    }
+                                    onChange={(e) => setDescription(e.currentTarget.value)}
                                     slotProps={{
                                         htmlInput: {
                                             maxLength: 30000,
@@ -848,11 +706,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                 checked={removeDuplicateFiles}
                                                 disabled={!editMode}
                                                 readOnly={!editMode}
-                                                onChange={(e) =>
-                                                    setRemoveDuplicateFiles(
-                                                        e.currentTarget.checked
-                                                    )
-                                                }
+                                                onChange={(e) => setRemoveDuplicateFiles(e.currentTarget.checked)}
                                                 sx={{
                                                     "&.Mui-disabled": {
                                                         color: "text.primary",
@@ -863,10 +717,9 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         label="Merge Duplicate Files"
                                         sx={{
                                             opacity: 1,
-                                            "& .MuiFormControlLabel-label.Mui-disabled":
-                                                {
-                                                    color: "text.primary",
-                                                },
+                                            "& .MuiFormControlLabel-label.Mui-disabled": {
+                                                color: "text.primary",
+                                            },
                                         }}
                                     />
                                     <Tooltip
@@ -884,11 +737,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                 checked={enablePresignedGet}
                                                 disabled={!editMode}
                                                 readOnly={!editMode}
-                                                onChange={(e) =>
-                                                    setEnablePresignedGet(
-                                                        e.currentTarget.checked
-                                                    )
-                                                }
+                                                onChange={(e) => setEnablePresignedGet(e.currentTarget.checked)}
                                                 sx={{
                                                     "&.Mui-disabled": {
                                                         color: "text.primary",
@@ -899,10 +748,9 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         label="Enable Presigned Get"
                                         sx={{
                                             opacity: 1,
-                                            "& .MuiFormControlLabel-label.Mui-disabled":
-                                                {
-                                                    color: "text.primary",
-                                                },
+                                            "& .MuiFormControlLabel-label.Mui-disabled": {
+                                                color: "text.primary",
+                                            },
                                         }}
                                     />
                                     <Tooltip
@@ -913,21 +761,14 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         <FontAwesomeIcon icon={faCircleInfo} />
                                     </Tooltip>
                                 </div>
-                                <div
-                                    className="flex-row"
-                                    hidden={app.getUser()?.is_admin !== true}
-                                >
+                                <div className="flex-row" hidden={app.getUser()?.is_admin !== true}>
                                     <FormControlLabel
                                         control={
                                             <Checkbox
                                                 checked={isSystemBucket}
                                                 disabled={!editMode}
                                                 readOnly={!editMode}
-                                                onChange={(e) =>
-                                                    setIsSystemBucket(
-                                                        e.currentTarget.checked
-                                                    )
-                                                }
+                                                onChange={(e) => setIsSystemBucket(e.currentTarget.checked)}
                                                 sx={{
                                                     "&.Mui-disabled": {
                                                         color: "text.primary",
@@ -938,10 +779,9 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         label="Is System Bucket"
                                         sx={{
                                             opacity: 1,
-                                            "& .MuiFormControlLabel-label.Mui-disabled":
-                                                {
-                                                    color: "text.primary",
-                                                },
+                                            "& .MuiFormControlLabel-label.Mui-disabled": {
+                                                color: "text.primary",
+                                            },
                                         }}
                                     />
                                     <Tooltip
@@ -954,20 +794,12 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                 </div>
                                 <div
                                     className={
-                                        "form-paper-button-row" +
-                                        (editMode
-                                            ? " form-paper-button--expanded"
-                                            : "")
+                                        "form-paper-button-row" + (editMode ? " form-paper-button--expanded" : "")
                                     }
                                 >
                                     {editMode ? (
                                         <Button
-                                            startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faXmark}
-                                                />
-                                            }
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
                                             onClick={() => setEditMode(false)}
                                         >
                                             Cancel
@@ -976,15 +808,10 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         <div className="button-row">
                                             <Button
                                                 startIcon={
-                                                    <FontAwesomeSvgIcon
-                                                        fontSize="inherit"
-                                                        icon={faPenToSquare}
-                                                    />
+                                                    <FontAwesomeSvgIcon fontSize="inherit" icon={faPenToSquare} />
                                                 }
                                                 hidden={!broker.is_admin}
-                                                onClick={() =>
-                                                    setEditMode(true)
-                                                }
+                                                onClick={() => setEditMode(true)}
                                             >
                                                 Edit
                                             </Button>
@@ -992,55 +819,34 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                     )}
                                     <Button
                                         color="secondary"
-                                        startIcon={
-                                            <FontAwesomeSvgIcon
-                                                fontSize="inherit"
-                                                icon={faFloppyDisk}
-                                            />
-                                        }
+                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                                         hidden={!editMode}
                                         onClick={async () => {
-                                            const loadingModal =
-                                                app.openLoadingModal();
+                                            const loadingModal = app.openLoadingModal();
                                             try {
-                                                const config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                const response =
-                                                    await http.post<Broker>(
-                                                        `/edit-broker/${id}`,
-                                                        {
-                                                            name: name,
-                                                            description:
-                                                                description,
-                                                            remove_duplicate_files:
-                                                                removeDuplicateFiles,
-                                                            enable_presigned_get:
-                                                                enablePresignedGet,
-                                                            is_system_bucket:
-                                                                app.getUser()
-                                                                    ?.is_admin ===
-                                                                true
-                                                                    ? isSystemBucket
-                                                                    : undefined,
-                                                        },
-                                                        config
-                                                    );
+                                                const config = await app.getAuthorization(location, navigate);
+                                                const response = await http.post<Broker>(
+                                                    `/edit-broker/${id}`,
+                                                    {
+                                                        name: name,
+                                                        description: description,
+                                                        remove_duplicate_files: removeDuplicateFiles,
+                                                        enable_presigned_get: enablePresignedGet,
+                                                        is_system_bucket:
+                                                            app.getUser()?.is_admin === true
+                                                                ? isSystemBucket
+                                                                : undefined,
+                                                    },
+                                                    config
+                                                );
                                                 updateBroker(response.data);
                                                 enqueueSnackbar({
                                                     message: "Broker updated",
                                                     variant: "success",
                                                 });
                                             } catch (e: any) {
-                                                console.error(
-                                                    "Failed to update broker",
-                                                    e
-                                                );
-                                                if (
-                                                    e.response?.status === 401
-                                                ) {
+                                                console.error("Failed to update broker", e);
+                                                if (e.response?.status === 401) {
                                                     enqueueSnackbar({
                                                         message:
                                                             "Your credentials have expired, try refreshing the page.",
@@ -1048,8 +854,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                     });
                                                 } else {
                                                     enqueueSnackbar({
-                                                        message:
-                                                            "An error occurred editing broker, please try again",
+                                                        message: "An error occurred editing broker, please try again",
                                                         variant: "error",
                                                     });
                                                 }
@@ -1064,14 +869,8 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                 </div>
                             </div>
                             {broker.is_admin && (
-                                <Paper
-                                    elevation={4}
-                                    sx={{ minWidth: "fit-content" }}
-                                >
-                                    <div
-                                        className="form-paper-content"
-                                        style={{ padding: "20px" }}
-                                    >
+                                <Paper elevation={4} sx={{ minWidth: "fit-content" }}>
+                                    <div className="form-paper-content" style={{ padding: "20px" }}>
                                         <h5>
                                             <CloudIcon /> Bucket Connection
                                         </h5>
@@ -1081,9 +880,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             value={bucket}
                                             fullWidth
                                             disabled={!bucketEditMode}
-                                            onChange={(e) =>
-                                                setBucket(e.currentTarget.value)
-                                            }
+                                            onChange={(e) => setBucket(e.currentTarget.value)}
                                             slotProps={{
                                                 htmlInput: {
                                                     maxLength: 255,
@@ -1091,20 +888,12 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             }}
                                         />
                                         <StyledTextField
-                                            label={
-                                                isAwsRegion
-                                                    ? "AWS Region"
-                                                    : "Endpoint URL"
-                                            }
+                                            label={isAwsRegion ? "AWS Region" : "Endpoint URL"}
                                             variant="outlined"
                                             value={endpoint}
                                             fullWidth
                                             disabled={!bucketEditMode}
-                                            onChange={(e) =>
-                                                setEndpoint(
-                                                    e.currentTarget.value
-                                                )
-                                            }
+                                            onChange={(e) => setEndpoint(e.currentTarget.value)}
                                             slotProps={{
                                                 htmlInput: {
                                                     maxLength: 255,
@@ -1117,11 +906,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             value={accessKey}
                                             fullWidth
                                             disabled={!bucketEditMode}
-                                            onChange={(e) =>
-                                                setAccessKey(
-                                                    e.currentTarget.value
-                                                )
-                                            }
+                                            onChange={(e) => setAccessKey(e.currentTarget.value)}
                                             slotProps={{
                                                 htmlInput: {
                                                     maxLength: 255,
@@ -1135,11 +920,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             value={secretKey}
                                             fullWidth
                                             disabled={!bucketEditMode}
-                                            onChange={(e) =>
-                                                setSecretKey(
-                                                    e.currentTarget.value
-                                                )
-                                            }
+                                            onChange={(e) => setSecretKey(e.currentTarget.value)}
                                             slotProps={{
                                                 htmlInput: {
                                                     maxLength: 255,
@@ -1152,18 +933,9 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                 control={
                                                     <Checkbox
                                                         checked={isAwsRegion}
-                                                        disabled={
-                                                            !bucketEditMode
-                                                        }
-                                                        readOnly={
-                                                            !bucketEditMode
-                                                        }
-                                                        onChange={(e) =>
-                                                            setIsAwsRegion(
-                                                                e.currentTarget
-                                                                    .checked
-                                                            )
-                                                        }
+                                                        disabled={!bucketEditMode}
+                                                        readOnly={!bucketEditMode}
+                                                        onChange={(e) => setIsAwsRegion(e.currentTarget.checked)}
                                                         sx={{
                                                             "&.Mui-disabled": {
                                                                 color: "text.primary",
@@ -1174,10 +946,9 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                 label="Is AWS Region"
                                                 sx={{
                                                     opacity: 1,
-                                                    "& .MuiFormControlLabel-label.Mui-disabled":
-                                                        {
-                                                            color: "text.primary",
-                                                        },
+                                                    "& .MuiFormControlLabel-label.Mui-disabled": {
+                                                        color: "text.primary",
+                                                    },
                                                 }}
                                             />
                                             <Tooltip
@@ -1185,30 +956,19 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                 placement="right"
                                                 arrow
                                             >
-                                                <FontAwesomeIcon
-                                                    icon={faCircleInfo}
-                                                />
+                                                <FontAwesomeIcon icon={faCircleInfo} />
                                             </Tooltip>
                                         </div>
                                         <div
                                             className={
                                                 "form-paper-button-row" +
-                                                (bucketEditMode
-                                                    ? " form-paper-button--expanded"
-                                                    : "")
+                                                (bucketEditMode ? " form-paper-button--expanded" : "")
                                             }
                                         >
                                             {bucketEditMode ? (
                                                 <Button
-                                                    startIcon={
-                                                        <FontAwesomeSvgIcon
-                                                            fontSize="inherit"
-                                                            icon={faXmark}
-                                                        />
-                                                    }
-                                                    onClick={() =>
-                                                        setBucketEditMode(false)
-                                                    }
+                                                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
+                                                    onClick={() => setBucketEditMode(false)}
                                                 >
                                                     Cancel
                                                 </Button>
@@ -1218,87 +978,51 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                         startIcon={
                                                             <FontAwesomeSvgIcon
                                                                 fontSize="inherit"
-                                                                icon={
-                                                                    faPenToSquare
-                                                                }
+                                                                icon={faPenToSquare}
                                                             />
                                                         }
-                                                        hidden={
-                                                            !broker.is_admin
-                                                        }
-                                                        onClick={() =>
-                                                            setBucketEditMode(
-                                                                true
-                                                            )
-                                                        }
+                                                        hidden={!broker.is_admin}
+                                                        onClick={() => setBucketEditMode(true)}
                                                     >
                                                         Edit
                                                     </Button>
                                                     <Button
                                                         startIcon={
-                                                            <FontAwesomeSvgIcon
-                                                                fontSize="inherit"
-                                                                icon={faPlug}
-                                                            />
+                                                            <FontAwesomeSvgIcon fontSize="inherit" icon={faPlug} />
                                                         }
                                                         onClick={async () => {
-                                                            const loadingModal =
-                                                                app.openLoadingModal();
+                                                            const loadingModal = app.openLoadingModal();
                                                             try {
-                                                                const config =
-                                                                    await app.getAuthorization(
-                                                                        location,
-                                                                        navigate
-                                                                    );
+                                                                const config = await app.getAuthorization(
+                                                                    location,
+                                                                    navigate
+                                                                );
                                                                 const response =
                                                                     await http.post<VerifyBucketConnectionResponse>(
                                                                         `/verify-bucket-connection/${id}`,
                                                                         {},
                                                                         config
                                                                     );
-                                                                if (
-                                                                    response
-                                                                        .data
-                                                                        .is_valid
-                                                                ) {
+                                                                if (response.data.is_valid) {
                                                                     app.openModal(
                                                                         "Success",
                                                                         <p>
-                                                                            The
-                                                                            S3
-                                                                            config
-                                                                            is
-                                                                            valid.
-                                                                            Connection
-                                                                            to
-                                                                            bucket{" "}
-                                                                            {
-                                                                                broker?.bucket
-                                                                            }{" "}
-                                                                            established.
+                                                                            The S3 config is valid. Connection to bucket{" "}
+                                                                            {broker?.bucket} established.
                                                                         </p>
                                                                     );
                                                                 } else {
                                                                     showBucketConnectionError(
                                                                         app,
-                                                                        response
-                                                                            .data
-                                                                            .error_message
+                                                                        response.data.error_message
                                                                     );
                                                                 }
                                                             } catch (e) {
-                                                                console.error(
-                                                                    "Failed to test broker connection",
-                                                                    e
-                                                                );
-                                                                enqueueSnackbar(
-                                                                    {
-                                                                        message:
-                                                                            "Failed to test broker connection",
-                                                                        variant:
-                                                                            "error",
-                                                                    }
-                                                                );
+                                                                console.error("Failed to test broker connection", e);
+                                                                enqueueSnackbar({
+                                                                    message: "Failed to test broker connection",
+                                                                    variant: "error",
+                                                                });
                                                             } finally {
                                                                 loadingModal.close();
                                                             }
@@ -1311,77 +1035,44 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             <Button
                                                 color="secondary"
                                                 startIcon={
-                                                    <FontAwesomeSvgIcon
-                                                        fontSize="inherit"
-                                                        icon={faFloppyDisk}
-                                                    />
+                                                    <FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />
                                                 }
                                                 hidden={!bucketEditMode}
                                                 onClick={async () => {
-                                                    const loadingModal =
-                                                        app.openLoadingModal();
+                                                    const loadingModal = app.openLoadingModal();
                                                     try {
-                                                        const config =
-                                                            await app.getAuthorization(
-                                                                location,
-                                                                navigate
-                                                            );
-                                                        const response =
-                                                            await http.post<Broker>(
-                                                                `/edit-broket-bucket/${id}`,
-                                                                {
-                                                                    bucket: bucket,
-                                                                    endpoint:
-                                                                        endpoint,
-                                                                    access_key:
-                                                                        accessKey,
-                                                                    secret_key:
-                                                                        secretKey,
-                                                                    is_aws_region:
-                                                                        isAwsRegion,
-                                                                },
-                                                                config
-                                                            );
-                                                        updateBroker(
-                                                            response.data
+                                                        const config = await app.getAuthorization(location, navigate);
+                                                        const response = await http.post<Broker>(
+                                                            `/edit-broket-bucket/${id}`,
+                                                            {
+                                                                bucket: bucket,
+                                                                endpoint: endpoint,
+                                                                access_key: accessKey,
+                                                                secret_key: secretKey,
+                                                                is_aws_region: isAwsRegion,
+                                                            },
+                                                            config
                                                         );
+                                                        updateBroker(response.data);
                                                         enqueueSnackbar({
-                                                            message:
-                                                                "Broker updated",
+                                                            message: "Broker updated",
                                                             variant: "success",
                                                         });
                                                     } catch (e: any) {
-                                                        console.error(
-                                                            "Failed to update broker",
-                                                            e
-                                                        );
-                                                        if (
-                                                            e.response
-                                                                ?.status === 401
-                                                        ) {
+                                                        console.error("Failed to update broker", e);
+                                                        if (e.response?.status === 401) {
                                                             enqueueSnackbar({
                                                                 message:
                                                                     "Your credentials have expired, try refreshing the page.",
-                                                                variant:
-                                                                    "error",
+                                                                variant: "error",
                                                             });
-                                                        } else if (
-                                                            e?.response?.data
-                                                                ?.error_code ===
-                                                            400007
-                                                        ) {
-                                                            showBucketConnectionError(
-                                                                app,
-                                                                e?.response
-                                                                    ?.data
-                                                                    ?.message
-                                                            );
+                                                        } else if (e?.response?.data?.error_code === 400007) {
+                                                            showBucketConnectionError(app, e?.response?.data?.message);
                                                         } else {
                                                             enqueueSnackbar({
                                                                 message:
                                                                     "An error occurred editing broker, please try again",
-                                                                variant:
-                                                                    "error",
+                                                                variant: "error",
                                                             });
                                                         }
                                                     } finally {
@@ -1399,11 +1090,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                         </div>
                     ) : (
                         <div>
-                            <FontAwesomeIcon
-                                icon={faCircleNotch}
-                                spin
-                                size="6x"
-                            />
+                            <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
                         </div>
                     )}
                     {broker && (
@@ -1433,35 +1120,19 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                 <ReadOnlyTextField
                                     label="Owner"
                                     variant="standard"
-                                    value={
-                                        broker.owner.display_name ??
-                                        broker.owner.user_name
-                                    }
+                                    value={broker.owner.display_name ?? broker.owner.user_name}
                                 />
                             </div>
                             {broker.is_admin && (
-                                <div
-                                    className="button-row"
-                                    style={{ marginTop: "10px" }}
-                                >
+                                <div className="button-row" style={{ marginTop: "10px" }}>
                                     <Button
-                                        startIcon={
-                                            broker.disable_uploads ? (
-                                                <LockOpenIcon />
-                                            ) : (
-                                                <LockIcon />
-                                            )
-                                        }
+                                        startIcon={broker.disable_uploads ? <LockOpenIcon /> : <LockIcon />}
                                         onClick={() =>
                                             app.openModal(
-                                                broker.disable_uploads
-                                                    ? "Enable Uploads"
-                                                    : "Disable Uploads",
+                                                broker.disable_uploads ? "Enable Uploads" : "Disable Uploads",
                                                 (actionModal) => (
                                                     <ActionModal
-                                                        modalContent={
-                                                            actionModal
-                                                        }
+                                                        modalContent={actionModal}
                                                         text={
                                                             broker.disable_uploads
                                                                 ? "Resume allowing uploads from users with access"
@@ -1471,49 +1142,33 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                             {
                                                                 name: "Ok",
                                                                 fn: async () => {
-                                                                    const loadingModal =
-                                                                        app.openLoadingModal();
+                                                                    const loadingModal = app.openLoadingModal();
                                                                     try {
-                                                                        const config =
-                                                                            await app.getAuthorization(
-                                                                                location,
-                                                                                navigate
-                                                                            );
-                                                                        const response =
-                                                                            await http.post<Broker>(
-                                                                                `/edit-broker/${broker.pk}`,
-                                                                                {
-                                                                                    disable_uploads:
-                                                                                        !broker.disable_uploads,
-                                                                                },
-                                                                                config
-                                                                            );
-                                                                        updateBroker(
-                                                                            response.data
+                                                                        const config = await app.getAuthorization(
+                                                                            location,
+                                                                            navigate
                                                                         );
-                                                                        enqueueSnackbar(
+                                                                        const response = await http.post<Broker>(
+                                                                            `/edit-broker/${broker.pk}`,
                                                                             {
-                                                                                message:
-                                                                                    broker.disable_uploads
-                                                                                        ? "Uploads Enabled"
-                                                                                        : "Uploads Disabled",
-                                                                                variant:
-                                                                                    "success",
-                                                                            }
+                                                                                disable_uploads:
+                                                                                    !broker.disable_uploads,
+                                                                            },
+                                                                            config
                                                                         );
+                                                                        updateBroker(response.data);
+                                                                        enqueueSnackbar({
+                                                                            message: broker.disable_uploads
+                                                                                ? "Uploads Enabled"
+                                                                                : "Uploads Disabled",
+                                                                            variant: "success",
+                                                                        });
                                                                     } catch (e) {
-                                                                        console.error(
-                                                                            "Failed to update broker",
-                                                                            e
-                                                                        );
-                                                                        enqueueSnackbar(
-                                                                            {
-                                                                                message:
-                                                                                    "Failed to update broker",
-                                                                                variant:
-                                                                                    "error",
-                                                                            }
-                                                                        );
+                                                                        console.error("Failed to update broker", e);
+                                                                        enqueueSnackbar({
+                                                                            message: "Failed to update broker",
+                                                                            variant: "error",
+                                                                        });
                                                                     } finally {
                                                                         loadingModal.close();
                                                                     }
@@ -1525,9 +1180,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             )
                                         }
                                     >
-                                        {broker.disable_uploads
-                                            ? "Enable Uploads"
-                                            : "Disable Uploads"}
+                                        {broker.disable_uploads ? "Enable Uploads" : "Disable Uploads"}
                                     </Button>
                                     <Button
                                         startIcon={<DataUsageIcon />}
@@ -1538,9 +1191,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                     <ChangeTotalQuotaForm
                                                         broker={broker}
                                                         app={app}
-                                                        modal={
-                                                            changeTotalQuotaModal
-                                                        }
+                                                        modal={changeTotalQuotaModal}
                                                     />
                                                 ),
                                                 (result) => {
@@ -1563,8 +1214,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                         className="broker-tabs-wrapper"
                         style={{
                             width: "60%",
-                            minWidth:
-                                "max(25vh, min(375px, calc(100vw - 40px)))",
+                            minWidth: "max(25vh, min(375px, calc(100vw - 40px)))",
                         }}
                     >
                         <Paper elevation={2} className="fieldset-paper">
@@ -1579,18 +1229,10 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         variant="scrollable"
                                         scrollButtons="auto"
                                         value={activeTab}
-                                        onChange={(_e, val: number) =>
-                                            setActiveTab(val)
-                                        }
+                                        onChange={(_e, val: number) => setActiveTab(val)}
                                     >
-                                        <Tab
-                                            label="Broker Access"
-                                            {...a11yProps(0)}
-                                        />
-                                        <Tab
-                                            label="Audit Logs"
-                                            {...a11yProps(1)}
-                                        />
+                                        <Tab label="Broker Access" {...a11yProps(0)} />
+                                        <Tab label="Audit Logs" {...a11yProps(1)} />
                                     </Tabs>
                                 </Box>
                                 <TabPanel value={activeTab} index={0}>
@@ -1601,76 +1243,47 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             {
                                                 id: "granted_user",
                                                 name: "User",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
-                                                    brokerAccess.granted_user
-                                                        ?.display_name ??
-                                                    brokerAccess.granted_user
-                                                        ?.user_name,
+                                                renderCellValue: (brokerAccess) =>
+                                                    brokerAccess.granted_user?.display_name ??
+                                                    brokerAccess.granted_user?.user_name,
                                                 allowSorting: true,
                                             },
                                             {
                                                 id: "user_group.name",
                                                 name: "Group",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
-                                                    brokerAccess.granted_group
-                                                        ?.name,
+                                                renderCellValue: (brokerAccess) => brokerAccess.granted_group?.name,
                                                 allowSorting: true,
                                             },
                                             {
                                                 id: "write",
                                                 name: "Admin Access",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
-                                                    brokerAccess.write
-                                                        ? "Yes"
-                                                        : "No",
+                                                renderCellValue: (brokerAccess) => (brokerAccess.write ? "Yes" : "No"),
                                             },
                                             {
                                                 id: "quota",
                                                 name: "Quota Per User",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
-                                                    brokerAccess.quota
-                                                        ? formatBytes(
-                                                              brokerAccess.quota
-                                                          )
-                                                        : "∞",
+                                                renderCellValue: (brokerAccess) =>
+                                                    brokerAccess.quota ? formatBytes(brokerAccess.quota) : "∞",
                                             },
                                             {
                                                 id: "used_bytes",
                                                 name: "Bytes Used By Access",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
+                                                renderCellValue: (brokerAccess) =>
                                                     `${formatBytes(brokerAccess.used_quota)} (${formatBytes(brokerAccess.used_bytes)} total)`,
                                             },
                                             {
                                                 id: "granted_by",
                                                 name: "Granted By",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
-                                                    brokerAccess.granted_by
-                                                        .display_name ??
-                                                    brokerAccess.granted_by
-                                                        .user_name,
+                                                renderCellValue: (brokerAccess) =>
+                                                    brokerAccess.granted_by.display_name ??
+                                                    brokerAccess.granted_by.user_name,
                                                 allowSorting: true,
                                             },
                                             {
                                                 id: "creation_timestamp",
                                                 name: "Granted At",
-                                                renderCellValue: (
-                                                    brokerAccess
-                                                ) =>
-                                                    new Date(
-                                                        brokerAccess.creation_timestamp
-                                                    ).toLocaleString(),
+                                                renderCellValue: (brokerAccess) =>
+                                                    new Date(brokerAccess.creation_timestamp).toLocaleString(),
                                                 allowSorting: true,
                                             },
                                         ]}
@@ -1678,26 +1291,17 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             page,
                                             rowsPerPage,
                                             orderBy: string | undefined,
-                                            orderDirection:
-                                                | Direction
-                                                | undefined
+                                            orderDirection: Direction | undefined
                                         ) => {
-                                            let config =
-                                                await app.getAuthorization(
-                                                    location,
-                                                    navigate
-                                                );
-                                            let response =
-                                                await http.get<GetBrokerAccessResponse>(
-                                                    `/get-broker-access/${broker!!.pk}?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "user_group.name"}`,
-                                                    config
-                                                );
+                                            let config = await app.getAuthorization(location, navigate);
+                                            let response = await http.get<GetBrokerAccessResponse>(
+                                                `/get-broker-access/${broker!!.pk}?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "user_group.name"}`,
+                                                config
+                                            );
 
                                             return {
-                                                totalCount:
-                                                    response.data.total_count,
-                                                data: response.data
-                                                    .broker_access,
+                                                totalCount: response.data.total_count,
+                                                data: response.data.broker_access,
                                             };
                                         }}
                                         rowActions={[
@@ -1709,12 +1313,8 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                         (changeQuotaModal) => (
                                                             <ChangeQuotaForm
                                                                 broker={broker}
-                                                                brokerAccess={
-                                                                    brokerAccess
-                                                                }
-                                                                modal={
-                                                                    changeQuotaModal
-                                                                }
+                                                                brokerAccess={brokerAccess}
+                                                                modal={changeQuotaModal}
                                                                 app={app}
                                                             />
                                                         ),
@@ -1733,16 +1333,13 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                         "Grant Admin Rights",
                                                         (modal) => (
                                                             <ActionModal
-                                                                modalContent={
-                                                                    modal
-                                                                }
+                                                                modalContent={modal}
                                                                 text={`Grant admin rights to ${getBrokerAccessDisplayLabel(brokerAccess)}. BEWARE: Granting admin privileges means that the selected user or admins of the selected groups will be able to view broker credentials, edit broker details and bucket configuration and grant access to other groups and users.`}
                                                                 actions={[
                                                                     {
                                                                         name: "Ok",
                                                                         fn: async () => {
-                                                                            const loadingModal =
-                                                                                app.openLoadingModal();
+                                                                            const loadingModal = app.openLoadingModal();
                                                                             try {
                                                                                 const config =
                                                                                     await app.getAuthorization(
@@ -1757,39 +1354,24 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                                                         },
                                                                                         config
                                                                                     );
-                                                                                enqueueSnackbar(
-                                                                                    {
-                                                                                        message:
-                                                                                            "Admin rights granted",
-                                                                                        variant:
-                                                                                            "success",
-                                                                                    }
-                                                                                );
+                                                                                enqueueSnackbar({
+                                                                                    message: "Admin rights granted",
+                                                                                    variant: "success",
+                                                                                });
                                                                                 return response.data;
                                                                             } catch (e: any) {
-                                                                                if (
-                                                                                    e
-                                                                                        .response
-                                                                                        ?.status ===
-                                                                                    401
-                                                                                ) {
-                                                                                    enqueueSnackbar(
-                                                                                        {
-                                                                                            message:
-                                                                                                "Your credentials have expired, try refreshing the page.",
-                                                                                            variant:
-                                                                                                "error",
-                                                                                        }
-                                                                                    );
+                                                                                if (e.response?.status === 401) {
+                                                                                    enqueueSnackbar({
+                                                                                        message:
+                                                                                            "Your credentials have expired, try refreshing the page.",
+                                                                                        variant: "error",
+                                                                                    });
                                                                                 } else {
-                                                                                    enqueueSnackbar(
-                                                                                        {
-                                                                                            message:
-                                                                                                "An error occurred granting admin rights, please try again",
-                                                                                            variant:
-                                                                                                "error",
-                                                                                        }
-                                                                                    );
+                                                                                    enqueueSnackbar({
+                                                                                        message:
+                                                                                            "An error occurred granting admin rights, please try again",
+                                                                                        variant: "error",
+                                                                                    });
                                                                                 }
                                                                             } finally {
                                                                                 loadingModal.close();
@@ -1805,13 +1387,9 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                             }
                                                         }
                                                     ),
-                                                icon: (
-                                                    <AdminPanelSettingsIcon />
-                                                ),
+                                                icon: <AdminPanelSettingsIcon />,
                                                 disableForRow: (brokerAccess) =>
-                                                    brokerAccess.write ===
-                                                        true ||
-                                                    brokerAccess.is_public,
+                                                    brokerAccess.write === true || brokerAccess.is_public,
                                             },
                                             {
                                                 label: "Revoke Admin Rights",
@@ -1820,16 +1398,13 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                         "Revoke Admin Rights",
                                                         (modal) => (
                                                             <ActionModal
-                                                                modalContent={
-                                                                    modal
-                                                                }
+                                                                modalContent={modal}
                                                                 text={`Revoke admin rights from ${getBrokerAccessDisplayLabel(brokerAccess)}.`}
                                                                 actions={[
                                                                     {
                                                                         name: "Ok",
                                                                         fn: async () => {
-                                                                            const loadingModal =
-                                                                                app.openLoadingModal();
+                                                                            const loadingModal = app.openLoadingModal();
                                                                             try {
                                                                                 const config =
                                                                                     await app.getAuthorization(
@@ -1844,39 +1419,24 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                                                         },
                                                                                         config
                                                                                     );
-                                                                                enqueueSnackbar(
-                                                                                    {
-                                                                                        message:
-                                                                                            "Admin rights revoked",
-                                                                                        variant:
-                                                                                            "success",
-                                                                                    }
-                                                                                );
+                                                                                enqueueSnackbar({
+                                                                                    message: "Admin rights revoked",
+                                                                                    variant: "success",
+                                                                                });
                                                                                 return response.data;
                                                                             } catch (e: any) {
-                                                                                if (
-                                                                                    e
-                                                                                        .response
-                                                                                        ?.status ===
-                                                                                    401
-                                                                                ) {
-                                                                                    enqueueSnackbar(
-                                                                                        {
-                                                                                            message:
-                                                                                                "Your credentials have expired, try refreshing the page.",
-                                                                                            variant:
-                                                                                                "error",
-                                                                                        }
-                                                                                    );
+                                                                                if (e.response?.status === 401) {
+                                                                                    enqueueSnackbar({
+                                                                                        message:
+                                                                                            "Your credentials have expired, try refreshing the page.",
+                                                                                        variant: "error",
+                                                                                    });
                                                                                 } else {
-                                                                                    enqueueSnackbar(
-                                                                                        {
-                                                                                            message:
-                                                                                                "An error occurred revoking admin rights, please try again",
-                                                                                            variant:
-                                                                                                "error",
-                                                                                        }
-                                                                                    );
+                                                                                    enqueueSnackbar({
+                                                                                        message:
+                                                                                            "An error occurred revoking admin rights, please try again",
+                                                                                        variant: "error",
+                                                                                    });
                                                                                 }
                                                                             } finally {
                                                                                 loadingModal.close();
@@ -1893,9 +1453,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                         }
                                                     ),
                                                 icon: <RemoveModeratorIcon />,
-                                                disableForRow: (brokerAccess) =>
-                                                    brokerAccess.write ===
-                                                    false,
+                                                disableForRow: (brokerAccess) => brokerAccess.write === false,
                                             },
                                             {
                                                 label: "Revoke Access",
@@ -1904,16 +1462,13 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                         "Revoke Access",
                                                         (modal) => (
                                                             <ActionModal
-                                                                modalContent={
-                                                                    modal
-                                                                }
+                                                                modalContent={modal}
                                                                 text={`Revoke access from ${getBrokerAccessDisplayLabel(brokerAccess)}.`}
                                                                 actions={[
                                                                     {
                                                                         name: "Ok",
                                                                         fn: async () => {
-                                                                            const loadingModal =
-                                                                                app.openLoadingModal();
+                                                                            const loadingModal = app.openLoadingModal();
                                                                             try {
                                                                                 const config =
                                                                                     await app.getAuthorization(
@@ -1925,14 +1480,10 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                                                         `/delete-broker-access/${broker.pk}/${brokerAccess.pk}`,
                                                                                         config
                                                                                     );
-                                                                                enqueueSnackbar(
-                                                                                    {
-                                                                                        message:
-                                                                                            "Access revoked",
-                                                                                        variant:
-                                                                                            "success",
-                                                                                    }
-                                                                                );
+                                                                                enqueueSnackbar({
+                                                                                    message: "Access revoked",
+                                                                                    variant: "success",
+                                                                                });
                                                                                 return response.data;
                                                                             } finally {
                                                                                 loadingModal.close();
@@ -1948,9 +1499,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                                             }
                                                         }
                                                     ),
-                                                icon: (
-                                                    <RemoveCircleOutlinedIcon />
-                                                ),
+                                                icon: <RemoveCircleOutlinedIcon />,
                                                 color: "error",
                                             },
                                         ]}
@@ -1963,12 +1512,7 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         }}
                                     >
                                         <Button
-                                            startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faAdd}
-                                                />
-                                            }
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faAdd} />}
                                             onClick={() =>
                                                 app.openModal(
                                                     "Create Access",
@@ -1991,20 +1535,13 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                         </Button>
                                     </div>
                                     <p>
-                                        No linked user or group means that the
-                                        broker access is public. Storage usage
-                                        shows number of bytes uploaded to this
-                                        broker by the linked user or users that
-                                        are members of the linked group, if the
-                                        user is member of multiple groups that
-                                        have access, the storage usage counts
-                                        towards all of those group accesses.
-                                        Bytes used by pubic group access counts
-                                        all uploads by users that are not
-                                        members of any group with access. If a
-                                        user is member of a group that has
-                                        access, the user-specific access
-                                        overrides the group access.
+                                        No linked user or group means that the broker access is public. Storage usage
+                                        shows number of bytes uploaded to this broker by the linked user or users that
+                                        are members of the linked group, if the user is member of multiple groups that
+                                        have access, the storage usage counts towards all of those group accesses. Bytes
+                                        used by pubic group access counts all uploads by users that are not members of
+                                        any group with access. If a user is member of a group that has access, the
+                                        user-specific access overrides the group access.
                                     </p>
                                 </TabPanel>
                                 <TabPanel value={activeTab} index={1}>
@@ -2013,67 +1550,46 @@ export function BrokerDetailPage({ app }: { app: App }) {
                                             {
                                                 id: "user",
                                                 name: "User",
-                                                renderCellValue: (log) =>
-                                                    log.user.display_name ??
-                                                    log.user.user_name,
+                                                renderCellValue: (log) => log.user.display_name ?? log.user.user_name,
                                             },
                                             {
                                                 id: "action",
                                                 name: "Action",
-                                                renderCellValue: (log) =>
-                                                    log.action,
+                                                renderCellValue: (log) => log.action,
                                             },
                                             {
                                                 id: "target_group",
                                                 name: "Target Group",
-                                                renderCellValue: (log) =>
-                                                    log.target_group?.name,
+                                                renderCellValue: (log) => log.target_group?.name,
                                             },
                                             {
                                                 id: "target_user",
                                                 name: "Target User",
                                                 renderCellValue: (log) =>
-                                                    log.target_user
-                                                        ?.display_name ??
-                                                    log.target_user?.user_name,
+                                                    log.target_user?.display_name ?? log.target_user?.user_name,
                                             },
                                             {
                                                 id: "new_quota",
                                                 name: "New Quota",
                                                 renderCellValue: (log) =>
-                                                    log.new_quota
-                                                        ? formatBytes(
-                                                              log.new_quota
-                                                          )
-                                                        : undefined,
+                                                    log.new_quota ? formatBytes(log.new_quota) : undefined,
                                             },
                                             {
                                                 id: "timestamp",
                                                 name: "Timestamp",
                                                 renderCellValue: (log) =>
-                                                    new Date(
-                                                        log.creation_timestamp
-                                                    ).toLocaleString(),
+                                                    new Date(log.creation_timestamp).toLocaleString(),
                                             },
                                         ]}
-                                        loadDataFn={async (
-                                            page,
-                                            rowsPerPage
-                                        ) => {
-                                            let config =
-                                                await app.getAuthorization(
-                                                    location,
-                                                    navigate
-                                                );
-                                            let response =
-                                                await http.get<GetBrokerAuditLogsResponse>(
-                                                    `/get-broker-audit-logs/${broker!!.pk}?page=${page}&limit=${rowsPerPage}`,
-                                                    config
-                                                );
+                                        loadDataFn={async (page, rowsPerPage) => {
+                                            let config = await app.getAuthorization(location, navigate);
+                                            let response = await http.get<GetBrokerAuditLogsResponse>(
+                                                `/get-broker-audit-logs/${broker!!.pk}?page=${page}&limit=${rowsPerPage}`,
+                                                config
+                                            );
 
                                             return {
-                                                totalCount:
-                                                    response.data.total_count,
+                                                totalCount: response.data.total_count,
                                                 data: response.data.audit_logs,
                                             };
                                         }}
@@ -2089,12 +1605,8 @@ export function BrokerDetailPage({ app }: { app: App }) {
                         items={posts}
                         searchLink={`/posts?query=${encodeURIComponent(`@broker=${broker.pk}`)}`}
                         onItemClickPath={(item) => `/post/${item.pk}`}
-                        getMediaTypeIcon={(item) =>
-                            getMediaTypeIconForItem(item)
-                        }
-                        getMediaDurationDisplay={(item) =>
-                            getMediaDurationDisplayForItem(item)
-                        }
+                        getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
+                        getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                     />
                 )}
             </div>
@@ -2102,17 +1614,13 @@ export function BrokerDetailPage({ app }: { app: App }) {
     );
 }
 
-export function showBucketConnectionError(
-    app: App,
-    errorMessage: string | null | undefined
-) {
+export function showBucketConnectionError(app: App, errorMessage: string | null | undefined) {
     app.openModal(
         "Error",
         <div>
             <p>
-                The provided S3 config is invalid, make sure the endpoint is
-                reachable, the bucket and region are valid and the provided
-                credentials have access to the bucket.
+                The provided S3 config is invalid, make sure the endpoint is reachable, the bucket and region are valid
+                and the provided credentials have access to the bucket.
             </p>
             <div style={{ marginBottom: "1rem" }}>
                 Error:
@@ -2136,15 +1644,9 @@ export function showBucketConnectionError(
     );
 }
 
-function getBrokerAccessDisplayLabel(
-    brokerAccess: BrokerAccessInnerJoined
-): string {
+function getBrokerAccessDisplayLabel(brokerAccess: BrokerAccessInnerJoined): string {
     if (brokerAccess.granted_user) {
-        return (
-            "user " +
-            (brokerAccess.granted_user.display_name ??
-                brokerAccess.granted_user.user_name)
-        );
+        return "user " + (brokerAccess.granted_user.display_name ?? brokerAccess.granted_user.user_name);
     } else if (brokerAccess.granted_group) {
         return "group " + brokerAccess.granted_group.name;
     } else {

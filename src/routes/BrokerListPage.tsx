@@ -1,11 +1,7 @@
 import App from "../App";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useRef } from "react";
-import {
-    Direction,
-    PaginatedTable,
-    PaginatedTableHandle,
-} from "../components/PaginatedTable";
+import { Direction, PaginatedTable, PaginatedTableHandle } from "../components/PaginatedTable";
 import { Button, Paper, Typography } from "@mui/material";
 import { BrokerDetailed } from "../Model";
 import { formatBytes } from "../Util";
@@ -55,25 +51,18 @@ export default function BrokerListPage({ app }: { app: App }) {
                                     id: "quota_bytes",
                                     name: "Quota Per User",
                                     renderCellValue: (broker) =>
-                                        broker.quota_bytes
-                                            ? formatBytes(broker.quota_bytes)
-                                            : "∞",
+                                        broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞",
                                 },
                                 {
                                     id: "owner",
                                     name: "Owner",
-                                    renderCellValue: (broker) =>
-                                        broker.owner.display_name ??
-                                        broker.owner.user_name,
+                                    renderCellValue: (broker) => broker.owner.display_name ?? broker.owner.user_name,
                                     allowSorting: true,
                                 },
                                 {
                                     id: "creation_timestamp",
                                     name: "Created At",
-                                    renderCellValue: (broker) =>
-                                        new Date(
-                                            broker.creation_timestamp
-                                        ).toLocaleString(),
+                                    renderCellValue: (broker) => new Date(broker.creation_timestamp).toLocaleString(),
                                     allowSorting: true,
                                 },
                             ]}
@@ -83,15 +72,11 @@ export default function BrokerListPage({ app }: { app: App }) {
                                 orderBy: string | undefined,
                                 orderDirection: Direction | undefined
                             ) => {
-                                let config = await app.getAuthorization(
-                                    location,
-                                    navigate
+                                let config = await app.getAuthorization(location, navigate);
+                                let response = await http.get<GetBrokersResponse>(
+                                    `/get-brokers?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : ""}`,
+                                    config
                                 );
-                                let response =
-                                    await http.get<GetBrokersResponse>(
-                                        `/get-brokers?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : ""}`,
-                                        config
-                                    );
 
                                 return {
                                     totalCount: response.data.total_count,
@@ -117,20 +102,12 @@ export default function BrokerListPage({ app }: { app: App }) {
                         />
                         <div className="form-paper-button-row">
                             <Button
-                                startIcon={
-                                    <FontAwesomeSvgIcon
-                                        fontSize="inherit"
-                                        icon={faAdd}
-                                    />
-                                }
+                                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faAdd} />}
                                 onClick={() =>
                                     app.openModal(
                                         "Create Broker",
                                         (createBrokerModal) => (
-                                            <CreateBrokerDialogue
-                                                app={app}
-                                                modal={createBrokerModal}
-                                            />
+                                            <CreateBrokerDialogue app={app} modal={createBrokerModal} />
                                         ),
                                         (result) => {
                                             if (result) {

@@ -38,9 +38,7 @@ export function AddToCollectionDialogue({
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [queryLoading, setQueryLoading] = useState(false);
-    const [selectableCollections, setSelectableCollections] = useState<
-        PostCollectionQueryObject[]
-    >([]);
+    const [selectableCollections, setSelectableCollections] = useState<PostCollectionQueryObject[]>([]);
     const [listPage, setListPage] = useState(0);
     const [pageCount, setPageCount] = useState<number | null>(null);
     const { enqueueSnackbar } = useSnackbar();
@@ -88,10 +86,7 @@ export function AddToCollectionDialogue({
     return (
         <div id="AddToCollectionDialogue">
             <div id="add-to-collection-title">
-                <p>
-                    Add {postQuery ? "all found" : postPks.length} posts to
-                    collection:
-                </p>
+                <p>Add {postQuery ? "all found" : postPks.length} posts to collection:</p>
             </div>
             <div id="add-to-collection-search-box">
                 <QueryAutocompleteSearchBox
@@ -143,10 +138,7 @@ export function AddToCollectionDialogue({
                             id={"add-to-collection-list-item-" + collection.pk}
                         >
                             <ListItemButton
-                                id={
-                                    "add-to-collection-list-item-btn-" +
-                                    collection.pk
-                                }
+                                id={"add-to-collection-list-item-btn-" + collection.pk}
                                 sx={{
                                     paddingTop: "0",
                                     paddingBottom: "0",
@@ -164,55 +156,37 @@ export function AddToCollectionDialogue({
                                                     {
                                                         name: "Ok",
                                                         fn: async () => {
-                                                            const loadingModal =
-                                                                app.openLoadingModal();
+                                                            const loadingModal = app.openLoadingModal();
                                                             try {
-                                                                const config =
-                                                                    await app.getAuthorization(
-                                                                        location,
-                                                                        navigate
-                                                                    );
+                                                                const config = await app.getAuthorization(
+                                                                    location,
+                                                                    navigate
+                                                                );
                                                                 try {
                                                                     const response =
                                                                         await http.post<PostCollectionDetailed>(
                                                                             `/edit-collection/${collection.pk}`,
                                                                             {
-                                                                                added_post_pks:
-                                                                                    postPks,
-                                                                                added_post_query:
-                                                                                    postQuery,
-                                                                                duplicate_mode:
-                                                                                    "reject",
+                                                                                added_post_pks: postPks,
+                                                                                added_post_query: postQuery,
+                                                                                duplicate_mode: "reject",
                                                                             },
                                                                             config
                                                                         );
-                                                                    enqueueSnackbar(
-                                                                        {
-                                                                            message: `Added ${postQuery ? "all found posts" : `${postPks.length} post${postPks.length !== 1 ? "s" : ""}`} to collection`,
-                                                                            variant:
-                                                                                "success",
-                                                                        }
-                                                                    );
+                                                                    enqueueSnackbar({
+                                                                        message: `Added ${postQuery ? "all found posts" : `${postPks.length} post${postPks.length !== 1 ? "s" : ""}`} to collection`,
+                                                                        variant: "success",
+                                                                    });
                                                                     loadingModal.close();
                                                                     return response.data;
                                                                 } catch (e: any) {
                                                                     loadingModal.close();
-                                                                    if (
-                                                                        e
-                                                                            ?.response
-                                                                            ?.data
-                                                                            ?.error_code ===
-                                                                        400018
-                                                                    ) {
+                                                                    if (e?.response?.data?.error_code === 400018) {
                                                                         app.openModal(
                                                                             "Duplicates detected",
-                                                                            (
-                                                                                duplicatesModal
-                                                                            ) => (
+                                                                            (duplicatesModal) => (
                                                                                 <ActionModal
-                                                                                    modalContent={
-                                                                                        duplicatesModal
-                                                                                    }
+                                                                                    modalContent={duplicatesModal}
                                                                                     text={`Found ${e?.response?.data?.duplicate_post_collection_items?.length?.toString() ?? ""} duplicates. Select 'ignore' to add those items anyway or 'skip' to skip all duplicates.`}
                                                                                     actions={[
                                                                                         {
@@ -240,22 +214,18 @@ export function AddToCollectionDialogue({
                                                                                                             config
                                                                                                         );
                                                                                                     loadingModal.close();
-                                                                                                    enqueueSnackbar(
-                                                                                                        {
-                                                                                                            message: `Added ${postQuery ? "all found posts" : `${postPks.length} post${postPks.length !== 1 ? "s" : ""}`} to collection`,
-                                                                                                            variant:
-                                                                                                                "success",
-                                                                                                        }
-                                                                                                    );
+                                                                                                    enqueueSnackbar({
+                                                                                                        message: `Added ${postQuery ? "all found posts" : `${postPks.length} post${postPks.length !== 1 ? "s" : ""}`} to collection`,
+                                                                                                        variant:
+                                                                                                            "success",
+                                                                                                    });
                                                                                                     modal?.close(
                                                                                                         response.data
                                                                                                     );
                                                                                                     return response.data;
                                                                                                 } catch (e: any) {
                                                                                                     loadingModal.close();
-                                                                                                    errorHandler(
-                                                                                                        e
-                                                                                                    );
+                                                                                                    errorHandler(e);
                                                                                                 }
                                                                                             },
                                                                                         },
@@ -284,22 +254,18 @@ export function AddToCollectionDialogue({
                                                                                                             config
                                                                                                         );
                                                                                                     loadingModal.close();
-                                                                                                    enqueueSnackbar(
-                                                                                                        {
-                                                                                                            message: `Added post(s) to collection`,
-                                                                                                            variant:
-                                                                                                                "success",
-                                                                                                        }
-                                                                                                    );
+                                                                                                    enqueueSnackbar({
+                                                                                                        message: `Added post(s) to collection`,
+                                                                                                        variant:
+                                                                                                            "success",
+                                                                                                    });
                                                                                                     modal?.close(
                                                                                                         response.data
                                                                                                     );
                                                                                                     return response.data;
                                                                                                 } catch (e: any) {
                                                                                                     loadingModal.close();
-                                                                                                    errorHandler(
-                                                                                                        e
-                                                                                                    );
+                                                                                                    errorHandler(e);
                                                                                                 }
                                                                                             },
                                                                                         },
@@ -308,9 +274,7 @@ export function AddToCollectionDialogue({
                                                                             )
                                                                         );
                                                                     } else {
-                                                                        errorHandler(
-                                                                            e
-                                                                        );
+                                                                        errorHandler(e);
                                                                     }
                                                                 }
                                                             } catch (e: any) {
@@ -330,38 +294,20 @@ export function AddToCollectionDialogue({
                                 }
                             >
                                 {collection.thumbnail_object_key && (
-                                    <ListItemAvatar
-                                        id={
-                                            "add-to-collection-list-item-avatar-" +
-                                            collection.pk
-                                        }
-                                    >
+                                    <ListItemAvatar id={"add-to-collection-list-item-avatar-" + collection.pk}>
                                         <Avatar
                                             variant="rounded"
-                                            id={
-                                                "add-to-collection-list-item-avatar-avatar-" +
-                                                collection.pk
-                                            }
-                                            src={urlJoin(
-                                                getApiUrl(),
-                                                "get-object",
-                                                collection.thumbnail_object_key
-                                            )}
+                                            id={"add-to-collection-list-item-avatar-avatar-" + collection.pk}
+                                            src={urlJoin(getApiUrl(), "get-object", collection.thumbnail_object_key)}
                                         />
                                     </ListItemAvatar>
                                 )}
                                 <ListItemText
-                                    id={
-                                        "add-to-collection-list-item-text-" +
-                                        collection.pk
-                                    }
+                                    id={"add-to-collection-list-item-text-" + collection.pk}
                                     primary={collection.title}
                                     secondary={
                                         <Typography variant="caption">
-                                            {collection.create_user
-                                                .display_name ??
-                                                collection.create_user
-                                                    .user_name}
+                                            {collection.create_user.display_name ?? collection.create_user.user_name}
                                         </Typography>
                                     }
                                 />

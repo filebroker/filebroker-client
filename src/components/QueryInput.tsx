@@ -1,10 +1,6 @@
 import { Combobox } from "@filebroker/react-widgets/lib/cjs";
 import React, { useEffect, useState } from "react";
-import {
-    AnalyzeQueryRequest,
-    AnalyzeQueryResponse,
-    QueryAutocompleteSuggestion,
-} from "../Model";
+import { AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion } from "../Model";
 import http from "../http-common";
 import { replaceStringRange } from "../Util";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,13 +14,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
 
-export function GlobalQueryInput({
-    hideOnHome,
-    autoFocus,
-}: {
-    hideOnHome?: boolean;
-    autoFocus?: boolean;
-}) {
+export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boolean; autoFocus?: boolean }) {
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
@@ -81,13 +71,11 @@ export function GlobalQueryInput({
                 // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
                 // retrieve it via id and blur
                 if (hideOnHome) {
-                    document
-                        .querySelectorAll("[id^=rw_][id$=_input]")
-                        .forEach((el) => {
-                            if (el instanceof HTMLElement) {
-                                el.blur();
-                            }
-                        });
+                    document.querySelectorAll("[id^=rw_][id$=_input]").forEach((el) => {
+                        if (el instanceof HTMLElement) {
+                            el.blur();
+                        }
+                    });
                 }
             }}
         >
@@ -97,8 +85,7 @@ export function GlobalQueryInput({
                 scope={scope}
                 autoFocus={autoFocus}
                 renderInput={(params) => {
-                    const startAdornment =
-                        params.slotProps?.input?.startAdornment;
+                    const startAdornment = params.slotProps?.input?.startAdornment;
 
                     return (
                         <StyledTextField
@@ -126,14 +113,8 @@ export function GlobalQueryInput({
                                         </div>
                                     ) : undefined,
                                     endAdornment: (
-                                        <InputAdornment
-                                            position="end"
-                                            sx={{ marginRight: "-30px" }}
-                                        >
-                                            <IconButton
-                                                type="submit"
-                                                size="small"
-                                            >
+                                        <InputAdornment position="end" sx={{ marginRight: "-30px" }}>
+                                            <IconButton type="submit" size="small">
                                                 <SearchIcon />
                                             </IconButton>
                                         </InputAdornment>
@@ -219,8 +200,7 @@ export function QueryAutocomplete({
     autoFocus?: boolean;
     renderInput: (params: AutocompleteRenderInputParams) => React.ReactNode;
 }) {
-    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] =
-        useState<QueryAutocompleteSuggestion[]>([]);
+    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
 
     const handleQueryChange = (cursorPos: number, query: string) => {
         setQueryAutocompleteSuggestions([]);
@@ -265,12 +245,7 @@ export function QueryAutocomplete({
                 } else if (val) {
                     let prevVal = queryString;
                     let targetLocation = val.target_location;
-                    let newVal = replaceStringRange(
-                        prevVal,
-                        targetLocation.start,
-                        targetLocation.end + 1,
-                        val.text
-                    );
+                    let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, val.text);
                     setQueryString(newVal);
                     setQueryAutocompleteSuggestions([]);
                 }
@@ -294,8 +269,7 @@ export function QueryAutocompleteSuggestionCombobox({
     disabled?: boolean;
     placeholder?: string;
 }) {
-    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] =
-        useState<QueryAutocompleteSuggestion[]>([]);
+    const [queryAutocompleteSuggestions, setQueryAutocompleteSuggestions] = useState<QueryAutocompleteSuggestion[]>([]);
 
     const handleQueryChange = (cursorPos: number, query: string) => {
         setQueryAutocompleteSuggestions([]);
@@ -321,21 +295,12 @@ export function QueryAutocompleteSuggestionCombobox({
             onChange={(value, event) => {
                 if (typeof value === "string") {
                     setQueryString(value);
-                    let inputElement = event.originalEvent!!
-                        .currentTarget as HTMLInputElement;
-                    handleQueryChange(
-                        inputElement.selectionStart || value.length,
-                        value
-                    );
+                    let inputElement = event.originalEvent!!.currentTarget as HTMLInputElement;
+                    handleQueryChange(inputElement.selectionStart || value.length, value);
                 } else {
                     let prevVal = event.lastValue as string;
                     let targetLocation = value.target_location;
-                    let newVal = replaceStringRange(
-                        prevVal,
-                        targetLocation.start,
-                        targetLocation.end + 1,
-                        value.text
-                    );
+                    let newVal = replaceStringRange(prevVal, targetLocation.start, targetLocation.end + 1, value.text);
                     setQueryString(newVal);
                     setQueryAutocompleteSuggestions([]);
                 }
@@ -388,8 +353,7 @@ export function QueryAutocompleteSearchBox({
                 scope={scope}
                 disabled={isLoading}
                 renderInput={(params) => {
-                    const startAdornment =
-                        params.slotProps?.input?.startAdornment;
+                    const startAdornment = params.slotProps?.input?.startAdornment;
 
                     return (
                         <StyledTextField
@@ -419,21 +383,12 @@ export function QueryAutocompleteSearchBox({
                                         <InputAdornment
                                             position="end"
                                             sx={{
-                                                marginRight: isLoading
-                                                    ? ""
-                                                    : "-30px",
+                                                marginRight: isLoading ? "" : "-30px",
                                             }}
                                         >
-                                            <IconButton
-                                                type="submit"
-                                                size="small"
-                                                disabled={isLoading}
-                                            >
+                                            <IconButton type="submit" size="small" disabled={isLoading}>
                                                 {isLoading ? (
-                                                    <FontAwesomeIcon
-                                                        icon={faCircleNotch}
-                                                        spin
-                                                    />
+                                                    <FontAwesomeIcon icon={faCircleNotch} spin />
                                                 ) : (
                                                     <SearchIcon />
                                                 )}

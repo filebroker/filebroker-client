@@ -16,14 +16,10 @@ export const VideoJS = (props: any) => {
 
             if (!videoElement) return;
 
-            const player = (playerRef.current = videojs(
-                videoElement,
-                options,
-                () => {
-                    videojs.log("player is ready");
-                    onReady && onReady(player);
-                }
-            ));
+            const player = (playerRef.current = videojs(videoElement, options, () => {
+                videojs.log("player is ready");
+                onReady && onReady(player);
+            }));
 
             player.on("ended", () => {
                 onEnded?.(player);

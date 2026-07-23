@@ -6,10 +6,7 @@ export type FontAwesomeSvgIconProps = SvgIconProps & {
     icon: IconDefinition;
 };
 
-export const FontAwesomeSvgIcon = React.forwardRef<
-    SVGSVGElement,
-    FontAwesomeSvgIconProps
->((props, ref) => {
+export const FontAwesomeSvgIcon = React.forwardRef<SVGSVGElement, FontAwesomeSvgIconProps>((props, ref) => {
     const { icon, ...rest } = props;
 
     const {
@@ -21,13 +18,7 @@ export const FontAwesomeSvgIcon = React.forwardRef<
             {typeof svgPathData === "string" ? (
                 <path d={svgPathData} />
             ) : (
-                svgPathData.map((d, i) => (
-                    <path
-                        key={i}
-                        style={{ opacity: i === 0 ? 0.4 : 1 }}
-                        d={d}
-                    />
-                ))
+                svgPathData.map((d, i) => <path key={i} style={{ opacity: i === 0 ? 0.4 : 1 }} d={d} />)
             )}
         </SvgIcon>
     );

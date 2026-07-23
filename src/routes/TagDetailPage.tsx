@@ -2,21 +2,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../App";
 import http from "../http-common";
 import React, { useEffect, useState } from "react";
-import {
-    getIconForTagCategory,
-    Tag,
-    TagCategory,
-    TagDetailed,
-    TagEdge,
-} from "../Model";
-import {
-    Button,
-    IconButton,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    Paper,
-} from "@mui/material";
+import { getIconForTagCategory, Tag, TagCategory, TagDetailed, TagEdge } from "../Model";
+import { Button, IconButton, ListItem, ListItemIcon, ListItemText, Paper } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCircleNotch,
@@ -31,16 +18,8 @@ import "./TagDetailPage.css";
 import { TagSelector } from "../components/TagEditor";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { enqueueSnackbar } from "notistack";
-import {
-    PostCollectionQueryObject,
-    PostQueryObject,
-    SearchResult,
-} from "../Search";
-import {
-    getMediaDurationDisplayForItem,
-    getMediaTypeIconForItem,
-    PreviewGrid,
-} from "../components/PaginatedGridView";
+import { PostCollectionQueryObject, PostQueryObject, SearchResult } from "../Search";
+import { getMediaDurationDisplayForItem, getMediaTypeIconForItem, PreviewGrid } from "../components/PaginatedGridView";
 import { AccountTree } from "@mui/icons-material";
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape, { ElementDefinition } from "cytoscape";
@@ -84,16 +63,13 @@ export function TagDetailPage({ app }: { app: App }) {
     const [aliasPks, setAliasPks] = useState<number[]>([]);
     const [tagCategoryInput, setTagCategoryInput] = useState<string>("");
     const [tagCategory, setTagCategory] = useState<TagCategory | null>(null);
-    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState(
-        tag?.auto_match_condition_post ?? ""
+    const [autoMatchConditionPost, setAutoMatchConditionPost] = useState(tag?.auto_match_condition_post ?? "");
+    const [autoMatchConditionCollection, setAutoMatchConditionCollection] = useState(
+        tag?.auto_match_condition_collection ?? ""
     );
-    const [autoMatchConditionCollection, setAutoMatchConditionCollection] =
-        useState(tag?.auto_match_condition_collection ?? "");
 
     const [posts, setPosts] = useState<PostQueryObject[]>([]);
-    const [collections, setCollections] = useState<PostCollectionQueryObject[]>(
-        []
-    );
+    const [collections, setCollections] = useState<PostCollectionQueryObject[]>([]);
 
     const [ancestors, setAncestors] = useState<TagHierarchyNode[]>([]);
     const [descendants, setDescendants] = useState<TagHierarchyNode[]>([]);
@@ -108,9 +84,7 @@ export function TagDetailPage({ app }: { app: App }) {
         setAliasPks(tag?.aliases?.map((a) => a.pk) ?? []);
         setTagCategory(tag?.tag_category ?? null);
         setAutoMatchConditionPost(tag?.auto_match_condition_post ?? "");
-        setAutoMatchConditionCollection(
-            tag?.auto_match_condition_collection ?? ""
-        );
+        setAutoMatchConditionCollection(tag?.auto_match_condition_collection ?? "");
     };
 
     const loadTag = async () => {
@@ -138,11 +112,7 @@ export function TagDetailPage({ app }: { app: App }) {
     const loadPosts = async () => {
         if (tag) {
             try {
-                const config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                const config = await app.getAuthorization(location, navigate, false);
                 const response = await http.get<SearchResult>(
                     `/search?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`,
                     config
@@ -156,11 +126,7 @@ export function TagDetailPage({ app }: { app: App }) {
     const loadCollections = async () => {
         if (tag) {
             try {
-                const config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                const config = await app.getAuthorization(location, navigate, false);
                 const response = await http.get<SearchResult>(
                     `/search/collection?query=${encodeURIComponent(`\`${tag.tag_name}\` %limit(5)`)}`,
                     config
@@ -174,9 +140,7 @@ export function TagDetailPage({ app }: { app: App }) {
     const loadHierarchy = async () => {
         if (tag) {
             try {
-                const response = await http.get<GetTagHierarchyResponse>(
-                    `/get-tag-hierarchy/${id}`
-                );
+                const response = await http.get<GetTagHierarchyResponse>(`/get-tag-hierarchy/${id}`);
                 setAncestors(response.data.ancestors);
                 setDescendants(response.data.descendants);
             } catch (e: any) {
@@ -202,32 +166,25 @@ export function TagDetailPage({ app }: { app: App }) {
                             <div className="form-paper-content">
                                 <div className="form-paper-content-top-btn-row">
                                     <IconButton
-                                        hidden={
-                                            ancestors.length === 0 &&
-                                            descendants.length === 0
-                                        }
+                                        hidden={ancestors.length === 0 && descendants.length === 0}
                                         onClick={() => {
                                             const handled: number[] = [];
-                                            const elements: ElementDefinition[] =
-                                                [
-                                                    {
-                                                        data: {
-                                                            id: tag.pk.toString(),
-                                                            label: tag.tag_name,
-                                                        },
-                                                        selectable: false,
+                                            const elements: ElementDefinition[] = [
+                                                {
+                                                    data: {
+                                                        id: tag.pk.toString(),
+                                                        label: tag.tag_name,
                                                     },
-                                                ];
+                                                    selectable: false,
+                                                },
+                                            ];
                                             ancestors.forEach((a) => {
-                                                if (
-                                                    !handled.includes(a.tag.pk)
-                                                ) {
+                                                if (!handled.includes(a.tag.pk)) {
                                                     handled.push(a.tag.pk);
                                                     elements.push({
                                                         data: {
                                                             id: a.tag.pk.toString(),
-                                                            label: a.tag
-                                                                .tag_name,
+                                                            label: a.tag.tag_name,
                                                         },
                                                         selectable: false,
                                                     });
@@ -243,15 +200,12 @@ export function TagDetailPage({ app }: { app: App }) {
                                                 }
                                             });
                                             descendants.forEach((d) => {
-                                                if (
-                                                    !handled.includes(d.tag.pk)
-                                                ) {
+                                                if (!handled.includes(d.tag.pk)) {
                                                     handled.push(d.tag.pk);
                                                     elements.push({
                                                         data: {
                                                             id: d.tag.pk.toString(),
-                                                            label: d.tag
-                                                                .tag_name,
+                                                            label: d.tag.tag_name,
                                                         },
                                                         selectable: false,
                                                     });
@@ -280,27 +234,20 @@ export function TagDetailPage({ app }: { app: App }) {
                                                         }}
                                                         stylesheet={[
                                                             {
-                                                                selector:
-                                                                    "node",
+                                                                selector: "node",
                                                                 style: {
                                                                     label: "data(label)",
                                                                     color: "white",
-                                                                    "text-valign":
-                                                                        "center",
-                                                                    "text-halign":
-                                                                        "center",
-                                                                    "font-size":
-                                                                        "12px",
+                                                                    "text-valign": "center",
+                                                                    "text-halign": "center",
+                                                                    "font-size": "12px",
                                                                 },
                                                             },
                                                             {
-                                                                selector:
-                                                                    "edge",
+                                                                selector: "edge",
                                                                 style: {
-                                                                    "target-arrow-shape":
-                                                                        "triangle",
-                                                                    "curve-style":
-                                                                        "bezier",
+                                                                    "target-arrow-shape": "triangle",
+                                                                    "curve-style": "bezier",
                                                                 },
                                                             },
                                                         ]}
@@ -335,29 +282,19 @@ export function TagDetailPage({ app }: { app: App }) {
                                         label="Category"
                                         options={tagCategories}
                                         value={tagCategory}
-                                        onChange={(
-                                            _event: any,
-                                            newValue: TagCategory | null
-                                        ) => setTagCategory(newValue)}
-                                        inputValue={tagCategoryInput}
-                                        onInputChange={(
-                                            _event: any,
-                                            newInputValue: string
-                                        ) => setTagCategoryInput(newInputValue)}
-                                        readOnly={!editMode}
-                                        isOptionEqualToValue={(option, value) =>
-                                            option.id === value.id
+                                        onChange={(_event: any, newValue: TagCategory | null) =>
+                                            setTagCategory(newValue)
                                         }
+                                        inputValue={tagCategoryInput}
+                                        onInputChange={(_event: any, newInputValue: string) =>
+                                            setTagCategoryInput(newInputValue)
+                                        }
+                                        readOnly={!editMode}
+                                        isOptionEqualToValue={(option, value) => option.id === value.id}
                                         renderOption={(props, option) => (
                                             <ListItem {...props}>
-                                                <ListItemIcon>
-                                                    {getIconForTagCategory(
-                                                        option.id
-                                                    )}
-                                                </ListItemIcon>
-                                                <ListItemText
-                                                    primary={option.label}
-                                                />
+                                                <ListItemIcon>{getIconForTagCategory(option.id)}</ListItemIcon>
+                                                <ListItemText primary={option.label} />
                                             </ListItem>
                                         )}
                                     />
@@ -366,9 +303,7 @@ export function TagDetailPage({ app }: { app: App }) {
                                     <div className="material-row-flex">
                                         <QueryAutocompleteTextField
                                             queryString={autoMatchConditionPost}
-                                            setQueryString={(v) =>
-                                                setAutoMatchConditionPost(v)
-                                            }
+                                            setQueryString={(v) => setAutoMatchConditionPost(v)}
                                             label="Auto Match Condition Post"
                                             scope="tag_auto_match_post"
                                             disabled={!editMode}
@@ -378,14 +313,8 @@ export function TagDetailPage({ app }: { app: App }) {
                                 {app.getUser()?.is_admin && (
                                     <div className="material-row-flex">
                                         <QueryAutocompleteTextField
-                                            queryString={
-                                                autoMatchConditionCollection
-                                            }
-                                            setQueryString={(v) =>
-                                                setAutoMatchConditionCollection(
-                                                    v
-                                                )
-                                            }
+                                            queryString={autoMatchConditionCollection}
+                                            setQueryString={(v) => setAutoMatchConditionCollection(v)}
                                             label="Auto Match Condition Collection"
                                             scope="tag_auto_match_collection"
                                             disabled={!editMode}
@@ -394,20 +323,12 @@ export function TagDetailPage({ app }: { app: App }) {
                                 )}
                                 <div
                                     className={
-                                        "form-paper-button-row" +
-                                        (editMode
-                                            ? " form-paper-button--expanded"
-                                            : "")
+                                        "form-paper-button-row" + (editMode ? " form-paper-button--expanded" : "")
                                     }
                                 >
                                     {editMode ? (
                                         <Button
-                                            startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faXmark}
-                                                />
-                                            }
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
                                             onClick={() => setEditMode(false)}
                                         >
                                             Cancel
@@ -416,41 +337,27 @@ export function TagDetailPage({ app }: { app: App }) {
                                         <div className="button-row">
                                             <Button
                                                 startIcon={
-                                                    <FontAwesomeSvgIcon
-                                                        fontSize="inherit"
-                                                        icon={faPenToSquare}
-                                                    />
+                                                    <FontAwesomeSvgIcon fontSize="inherit" icon={faPenToSquare} />
                                                 }
                                                 hidden={!app.isLoggedIn()}
-                                                onClick={() =>
-                                                    setEditMode(true)
-                                                }
+                                                onClick={() => setEditMode(true)}
                                             >
                                                 Edit
                                             </Button>
                                             <Button
                                                 startIcon={
-                                                    <FontAwesomeSvgIcon
-                                                        fontSize="inherit"
-                                                        icon={faClockRotateLeft}
-                                                    />
+                                                    <FontAwesomeSvgIcon fontSize="inherit" icon={faClockRotateLeft} />
                                                 }
                                                 hidden={!app.isLoggedIn()}
                                                 onClick={() =>
                                                     app.openModal(
                                                         "History",
                                                         (modal) => (
-                                                            <TagEditHistoryDialogue
-                                                                app={app}
-                                                                tag={tag}
-                                                                modal={modal}
-                                                            />
+                                                            <TagEditHistoryDialogue app={app} tag={tag} modal={modal} />
                                                         ),
                                                         (result) => {
                                                             if (result) {
-                                                                updateTag(
-                                                                    result
-                                                                );
+                                                                updateTag(result);
                                                             }
                                                         }
                                                     )
@@ -462,75 +369,45 @@ export function TagDetailPage({ app }: { app: App }) {
                                     )}
                                     <Button
                                         color="secondary"
-                                        startIcon={
-                                            <FontAwesomeSvgIcon
-                                                fontSize="inherit"
-                                                icon={faFloppyDisk}
-                                            />
-                                        }
+                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                                         hidden={!editMode}
                                         onClick={async () => {
-                                            const loadingModal =
-                                                app.openLoadingModal();
+                                            const loadingModal = app.openLoadingModal();
                                             try {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.post<TagDetailed>(
-                                                        `/update-tag/${id}`,
-                                                        new UpdateTagRequest(
-                                                            null,
-                                                            parentPks,
-                                                            null,
-                                                            null,
-                                                            aliasPks,
-                                                            null,
-                                                            tagCategory?.id ??
-                                                                "",
-                                                            app.getUser()
-                                                                ?.is_admin
-                                                                ? autoMatchConditionPost
-                                                                : null,
-                                                            app.getUser()
-                                                                ?.is_admin
-                                                                ? autoMatchConditionCollection
-                                                                : null
-                                                        ),
-                                                        config
-                                                    );
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.post<TagDetailed>(
+                                                    `/update-tag/${id}`,
+                                                    new UpdateTagRequest(
+                                                        null,
+                                                        parentPks,
+                                                        null,
+                                                        null,
+                                                        aliasPks,
+                                                        null,
+                                                        tagCategory?.id ?? "",
+                                                        app.getUser()?.is_admin ? autoMatchConditionPost : null,
+                                                        app.getUser()?.is_admin ? autoMatchConditionCollection : null
+                                                    ),
+                                                    config
+                                                );
                                                 updateTag(response.data);
                                                 enqueueSnackbar({
                                                     message: "Tag edited",
                                                     variant: "success",
                                                 });
                                             } catch (e: any) {
-                                                let compilation_errors =
-                                                    e.response?.data
-                                                        ?.compilation_errors;
+                                                let compilation_errors = e.response?.data?.compilation_errors;
                                                 if (compilation_errors) {
                                                     app.openModal(
                                                         "Error",
                                                         <div>
-                                                            Failed to compile
-                                                            auto match
-                                                            condition:{" "}
-                                                            {compilation_errors[0]
-                                                                ?.msg ??
-                                                                "Unexpected Error"}
+                                                            Failed to compile auto match condition:{" "}
+                                                            {compilation_errors[0]?.msg ?? "Unexpected Error"}
                                                         </div>
                                                     );
                                                 } else {
-                                                    console.error(
-                                                        "Failed to update tag",
-                                                        e
-                                                    );
-                                                    if (
-                                                        e.response?.status ===
-                                                        401
-                                                    ) {
+                                                    console.error("Failed to update tag", e);
+                                                    if (e.response?.status === 401) {
                                                         enqueueSnackbar({
                                                             message:
                                                                 "Your credentials have expired, try refreshing the page.",
@@ -556,11 +433,7 @@ export function TagDetailPage({ app }: { app: App }) {
                             </div>
                         ) : (
                             <div>
-                                <FontAwesomeIcon
-                                    icon={faCircleNotch}
-                                    spin
-                                    size="6x"
-                                />
+                                <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
                             </div>
                         )}
                     </Paper>
@@ -571,12 +444,8 @@ export function TagDetailPage({ app }: { app: App }) {
                         items={posts}
                         searchLink={`/posts?query=${encodeURIComponent(`\`${tag.tag_name}\``)}`}
                         onItemClickPath={(item) => `/post/${item.pk}`}
-                        getMediaTypeIcon={(item) =>
-                            getMediaTypeIconForItem(item)
-                        }
-                        getMediaDurationDisplay={(item) =>
-                            getMediaDurationDisplayForItem(item)
-                        }
+                        getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
+                        getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                     />
                 )}
                 {tag && collections.length > 0 && (

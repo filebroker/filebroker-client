@@ -13,8 +13,7 @@ export function RedeemUserGroupInvite({ app }: { app: App }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [userGroupJoined, setUserGroupJoined] =
-        useState<UserGroupJoined | null>(null);
+    const [userGroupJoined, setUserGroupJoined] = useState<UserGroupJoined | null>(null);
     const [alreadyMember, setAlreadyMember] = useState(false);
     const [userBanned, setUserBanned] = useState(false);
     const [invalidInviteCode, setInvalidInviteCode] = useState(false);
@@ -24,11 +23,7 @@ export function RedeemUserGroupInvite({ app }: { app: App }) {
         const fetch = async () => {
             try {
                 let config = await app.getAuthorization(location, navigate);
-                const res = await http.post<UserGroupJoined>(
-                    `/redeem-user-group-invite/${invite_code}`,
-                    {},
-                    config
-                );
+                const res = await http.post<UserGroupJoined>(`/redeem-user-group-invite/${invite_code}`, {}, config);
                 setUserGroupJoined(res.data);
             } catch (e: any) {
                 if (e?.response?.data?.error_code === 400022) {
@@ -52,10 +47,7 @@ export function RedeemUserGroupInvite({ app }: { app: App }) {
         content = (
             <>
                 <FontAwesomeIcon icon={faCheck} size="6x" />
-                <p>
-                    You have successfully joined the group{" "}
-                    {userGroupJoined.group.name}.
-                </p>
+                <p>You have successfully joined the group {userGroupJoined.group.name}.</p>
             </>
         );
     } else if (alreadyMember) {

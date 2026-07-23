@@ -5,13 +5,7 @@ import App, { ModalContent, User } from "../App";
 import "./Login.css";
 import { Button, Paper, TextField, Tooltip } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faCheck,
-    faCircleInfo,
-    faKey,
-    faPaperPlane,
-    faRightToBracket,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faCircleInfo, faKey, faPaperPlane, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { emailRegex } from "./Register";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
@@ -23,11 +17,7 @@ class LoginRequest {
     password: string;
     captcha_token: string | null;
 
-    constructor(
-        user_name: string,
-        password: string,
-        captcha_token: string | null
-    ) {
+    constructor(user_name: string, password: string, captcha_token: string | null) {
         this.user_name = user_name;
         this.password = password;
         this.captcha_token = captcha_token;
@@ -40,12 +30,7 @@ export class LoginResponse {
     user: User;
     preferences: UserPreferences | null;
 
-    constructor(
-        token: string,
-        expiration_secs: number,
-        user: User,
-        preferences: UserPreferences | null
-    ) {
+    constructor(token: string, expiration_secs: number, user: User, preferences: UserPreferences | null) {
         this.token = token;
         this.expiration_secs = expiration_secs;
         this.user = user;
@@ -82,10 +67,7 @@ function Login({ app }: LoginProps) {
     );
 }
 
-export function LoginForm({
-    app,
-    modal,
-}: LoginProps & { modal?: ModalContent | undefined }) {
+export function LoginForm({ app, modal }: LoginProps & { modal?: ModalContent | undefined }) {
     const [password, setPassword] = useState("");
     const [userName, setUserName] = useState("");
     const [loginFailed, setLoginFailed] = useState(false);
@@ -100,11 +82,7 @@ export function LoginForm({
         try {
             let response = await http.post<LoginResponse>(
                 "/login",
-                new LoginRequest(
-                    userName,
-                    password,
-                    showCaptcha ? captchaToken : null
-                ),
+                new LoginRequest(userName, password, showCaptcha ? captchaToken : null),
                 { withCredentials: true }
             );
             app.handleLogin(response.data);
@@ -124,10 +102,7 @@ export function LoginForm({
             loadingModal.close();
             if (e?.response?.status >= 500) {
                 console.log("Login failed: " + e);
-                app.openModal(
-                    "Error",
-                    <p>An error occurred logging in, please try again.</p>
-                );
+                app.openModal("Error", <p>An error occurred logging in, please try again.</p>);
             } else if (e?.response?.data?.error_code === 400011) {
                 setShowCaptcha(true);
             } else {
@@ -215,12 +190,7 @@ export function LoginForm({
                 }
                 size="large"
                 variant="contained"
-                startIcon={
-                    <FontAwesomeSvgIcon
-                        fontSize="inherit"
-                        icon={faRightToBracket}
-                    />
-                }
+                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faRightToBracket} />}
             >
                 Login
             </Button>
@@ -231,13 +201,7 @@ export function LoginForm({
                     e.preventDefault();
                     app.openModal(
                         "Reset Password",
-                        (modal) => (
-                            <ResetPasswordForm
-                                app={app}
-                                modal={modal}
-                                initialUserName={userName}
-                            />
-                        ),
+                        (modal) => <ResetPasswordForm app={app} modal={modal} initialUserName={userName} />,
                         (result: any) => {
                             if (result) {
                                 app.handleLogin(result);
@@ -268,11 +232,7 @@ class SendPasswordResetRequest {
     email: string;
     captcha_token: string | null;
 
-    constructor(
-        user_name: string,
-        email: string,
-        captcha_token: string | null
-    ) {
+    constructor(user_name: string, email: string, captcha_token: string | null) {
         this.user_name = user_name;
         this.email = email;
         this.captcha_token = captcha_token;
@@ -285,12 +245,7 @@ class PasswordResetRequest {
     otp: string;
     new_password: string;
 
-    constructor(
-        user_name: string,
-        email: string,
-        otp: string,
-        new_password: string
-    ) {
+    constructor(user_name: string, email: string, otp: string, new_password: string) {
         this.user_name = user_name;
         this.email = email;
         this.otp = otp;
@@ -383,13 +338,7 @@ function ResetPasswordForm({
                         variant="outlined"
                         value={newPassword}
                         // use !! to force this to be a boolean instead of boolean | string
-                        error={
-                            !!(
-                                passwordConfirm &&
-                                newPassword &&
-                                newPassword !== passwordConfirm
-                            )
-                        }
+                        error={!!(passwordConfirm && newPassword && newPassword !== passwordConfirm)}
                         helperText={
                             passwordConfirm &&
                             newPassword &&
@@ -406,9 +355,7 @@ function ResetPasswordForm({
                         required
                         autoComplete="new-password"
                     />
-                    {newPassword && (
-                        <PasswordStrengthMeter passwordScore={passwordScore} />
-                    )}
+                    {newPassword && <PasswordStrengthMeter passwordScore={passwordScore} />}
                     <TextField
                         label="Confirm Password"
                         name="passwordNoFill2"
@@ -416,13 +363,7 @@ function ResetPasswordForm({
                         variant="outlined"
                         value={passwordConfirm}
                         // use !! to force this to be a boolean instead of boolean | string
-                        error={
-                            !!(
-                                passwordConfirm &&
-                                newPassword &&
-                                newPassword !== passwordConfirm
-                            )
-                        }
+                        error={!!(passwordConfirm && newPassword && newPassword !== passwordConfirm)}
                         helperText={
                             passwordConfirm &&
                             newPassword &&
@@ -430,9 +371,7 @@ function ResetPasswordForm({
                             "Passwords do not match"
                         }
                         fullWidth
-                        onChange={(e) =>
-                            setPasswordConfirm(e.currentTarget.value)
-                        }
+                        onChange={(e) => setPasswordConfirm(e.currentTarget.value)}
                         slotProps={{
                             htmlInput: {
                                 maxLength: 255,
@@ -447,9 +386,7 @@ function ResetPasswordForm({
                 <Button
                     size="large"
                     variant="contained"
-                    startIcon={
-                        <FontAwesomeSvgIcon fontSize="inherit" icon={faKey} />
-                    }
+                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faKey} />}
                     disabled={
                         !email ||
                         emailInvalid ||
@@ -465,42 +402,23 @@ function ResetPasswordForm({
                         try {
                             let response = await http.post<LoginResponse>(
                                 "reset-password",
-                                new PasswordResetRequest(
-                                    userName,
-                                    email,
-                                    otp,
-                                    newPassword
-                                ),
+                                new PasswordResetRequest(userName, email, otp, newPassword),
                                 { withCredentials: true }
                             );
                             loadingModal.close();
                             modal.close(response.data);
-                            app.openModal(
-                                "Success",
-                                <p>
-                                    Password has been reset and you are now
-                                    logged in.
-                                </p>
-                            );
+                            app.openModal("Success", <p>Password has been reset and you are now logged in.</p>);
                         } catch (e: any) {
                             loadingModal.close();
                             if (e?.response?.data?.error_code === 401001) {
                                 setInvalidCredentials(true);
-                            } else if (
-                                e?.response?.data?.error_code === 400013
-                            ) {
-                                app.openModal(
-                                    "Error",
-                                    <p>New password too weak.</p>
-                                );
+                            } else if (e?.response?.data?.error_code === 400013) {
+                                app.openModal("Error", <p>New password too weak.</p>);
                             } else {
                                 console.log("Password reset failed: " + e);
                                 app.openModal(
                                     "Error",
-                                    <p>
-                                        An error occurred resetting the
-                                        password, please try again.
-                                    </p>
+                                    <p>An error occurred resetting the password, please try again.</p>
                                 );
                             }
                         }
@@ -521,48 +439,29 @@ function ResetPasswordForm({
                     <Button
                         size="large"
                         variant="contained"
-                        startIcon={
-                            <FontAwesomeSvgIcon
-                                fontSize="inherit"
-                                icon={faPaperPlane}
-                            />
-                        }
-                        disabled={
-                            !email || emailInvalid || !userName || !captchaToken
-                        }
+                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faPaperPlane} />}
+                        disabled={!email || emailInvalid || !userName || !captchaToken}
                         onClick={async () => {
                             const loadingModal = app.openLoadingModal();
                             try {
                                 await http.post(
                                     "send-password-reset",
-                                    new SendPasswordResetRequest(
-                                        userName,
-                                        email,
-                                        captchaToken
-                                    )
+                                    new SendPasswordResetRequest(userName, email, captchaToken)
                                 );
                                 setEmailSent(true);
                                 loadingModal.close();
                                 app.openModal("Email Sent", (successModal) => (
                                     <div style={{ textAlign: "center" }}>
                                         <p>
-                                            If the provided email address
-                                            matches the verified email of the
-                                            provided user, an email with an OTP
-                                            has been sent.
-                                            <br></br>You can close this message
-                                            and enter the OTP as well as select
-                                            a new password.
+                                            If the provided email address matches the verified email of the provided
+                                            user, an email with an OTP has been sent.
+                                            <br></br>You can close this message and enter the OTP as well as select a
+                                            new password.
                                         </p>
                                         <Button
                                             size="large"
                                             variant="contained"
-                                            startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faCheck}
-                                                />
-                                            }
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faCheck} />}
                                             onClick={() => successModal.close()}
                                         >
                                             Ok
@@ -571,16 +470,8 @@ function ResetPasswordForm({
                                 ));
                             } catch (e) {
                                 loadingModal.close();
-                                console.error(
-                                    "Failed to send password reset mail: " + e
-                                );
-                                app.openModal(
-                                    "Error",
-                                    <p>
-                                        Failed to send password reset email.
-                                        Please try again.
-                                    </p>
-                                );
+                                console.error("Failed to send password reset mail: " + e);
+                                app.openModal("Error", <p>Failed to send password reset email. Please try again.</p>);
                             }
                         }}
                     >

@@ -1,21 +1,10 @@
 import React, { JSX } from "react";
-import {
-    BrowserRouter,
-    Location,
-    NavigateFunction,
-    Route,
-    Routes,
-    useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Location, NavigateFunction, Route, Routes, useLocation } from "react-router-dom";
 import "@filebroker/react-widgets/lib/styles.css";
 import "./App.css";
 import http from "./http-common";
 import PostSearch from "./routes/PostSearch";
-import Login, {
-    LoginForm,
-    LoginResponse,
-    UserPreferences,
-} from "./routes/Login";
+import Login, { LoginForm, LoginResponse, UserPreferences } from "./routes/Login";
 import { ProfilePage } from "./routes/ProfilePage";
 import Register from "./routes/Register";
 import Post from "./routes/Post";
@@ -24,14 +13,7 @@ import { AxiosResponse } from "axios";
 import { EmailConfirmation } from "./routes/EmailConfirmation";
 import PostCollectionSearch from "./routes/PostCollectionSearch";
 import { PostCollection } from "./routes/PostCollection";
-import {
-    Box,
-    CircularProgress,
-    Grow,
-    IconButton,
-    Modal,
-    Paper,
-} from "@mui/material";
+import { Box, CircularProgress, Grow, IconButton, Modal, Paper } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { TagGlossary } from "./routes/TagGlossary";
@@ -122,11 +104,7 @@ export class ModalContent {
     }
 }
 
-function RouteChangeHandler({
-    onChange,
-}: {
-    onChange: (pathname: string) => void;
-}) {
+function RouteChangeHandler({ onChange }: { onChange: (pathname: string) => void }) {
     const location = useLocation();
     React.useEffect(() => {
         onChange(location.pathname);
@@ -184,10 +162,8 @@ export class App extends React.Component<
     render(): React.ReactNode {
         const paperStyle = (preventStretch: boolean) => ({
             p: "32px",
-            height:
-                preventStretch || this.isDesktop() ? "fit-content" : "100dvh",
-            width:
-                preventStretch || this.isDesktop() ? "fit-content" : "100dvw",
+            height: preventStretch || this.isDesktop() ? "fit-content" : "100dvh",
+            width: preventStretch || this.isDesktop() ? "fit-content" : "100dvw",
             maxHeight: "100vh",
             maxWidth: "100vw",
             minWidth: preventStretch ? "fit-content" : "250px",
@@ -228,23 +204,13 @@ export class App extends React.Component<
                 >
                     {React.isValidElement(modal.content)
                         ? modal.content
-                        : (
-                              modal.content as unknown as (
-                                  modal: ModalContent
-                              ) => JSX.Element
-                          )(modal)}
+                        : (modal.content as unknown as (modal: ModalContent) => JSX.Element)(modal)}
                 </div>
             </Paper>
         );
 
         return (
-            <BrowserRouter
-                basename={
-                    import.meta.env.REACT_APP_PATH
-                        ? import.meta.env.REACT_APP_PATH
-                        : "/"
-                }
-            >
+            <BrowserRouter basename={import.meta.env.REACT_APP_PATH ? import.meta.env.REACT_APP_PATH : "/"}>
                 <SnackbarProvider
                     autoHideDuration={6000}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
@@ -279,10 +245,7 @@ export class App extends React.Component<
                                     {modal.disableTransition ? (
                                         modalPaper(modal)
                                     ) : (
-                                        <Grow
-                                            in={!modal.closed}
-                                            timeout={MODAL_TRANSITION_TIMEOUT}
-                                        >
+                                        <Grow in={!modal.closed} timeout={MODAL_TRANSITION_TIMEOUT}>
                                             {modalPaper(modal)}
                                         </Grow>
                                     )}
@@ -295,83 +258,29 @@ export class App extends React.Component<
 
                     <Routes>
                         <Route path="/" element={<Home></Home>}></Route>
-                        <Route
-                            path="/posts"
-                            element={<PostSearch app={this}></PostSearch>}
-                        ></Route>
-                        <Route
-                            path="/login"
-                            element={<Login app={this}></Login>}
-                        ></Route>
+                        <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
+                        <Route path="/login" element={<Login app={this}></Login>}></Route>
                         <Route
                             path="/profile"
-                            element={
-                                <ProfilePage
-                                    app={this}
-                                    initialUser={this.state.user}
-                                ></ProfilePage>
-                            }
+                            element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}
                         ></Route>
-                        <Route
-                            path="/register"
-                            element={<Register app={this}></Register>}
-                        ></Route>
-                        <Route
-                            path="/post/:id"
-                            element={<Post app={this}></Post>}
-                        ></Route>
+                        <Route path="/register" element={<Register app={this}></Register>}></Route>
+                        <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
                         <Route
                             path="/confirm-email/:token"
-                            element={
-                                <EmailConfirmation
-                                    app={this}
-                                ></EmailConfirmation>
-                            }
+                            element={<EmailConfirmation app={this}></EmailConfirmation>}
                         ></Route>
-                        <Route
-                            path="/collections"
-                            element={<PostCollectionSearch app={this} />}
-                        />
-                        <Route
-                            path="/collection/:id"
-                            element={<PostCollection app={this} />}
-                        />
-                        <Route
-                            path="/collection/:collection_id/post/:id"
-                            element={<Post app={this} />}
-                        />
-                        <Route
-                            path="/tags"
-                            element={<TagGlossary app={this} />}
-                        />
-                        <Route
-                            path="/tag/:id"
-                            element={<TagDetailPage app={this} />}
-                        />
-                        <Route
-                            path="/groups"
-                            element={<GroupMembershipList app={this} />}
-                        />
-                        <Route
-                            path="/group/:id"
-                            element={<GroupDetailPage app={this} />}
-                        />
-                        <Route
-                            path="/invite/:invite_code"
-                            element={<RedeemUserGroupInvite app={this} />}
-                        />
-                        <Route
-                            path="/brokers"
-                            element={<BrokerListPage app={this} />}
-                        />
-                        <Route
-                            path="/broker/:id"
-                            element={<BrokerDetailPage app={this} />}
-                        />
-                        <Route
-                            path="*"
-                            element={<NotFoundPage></NotFoundPage>}
-                        ></Route>
+                        <Route path="/collections" element={<PostCollectionSearch app={this} />} />
+                        <Route path="/collection/:id" element={<PostCollection app={this} />} />
+                        <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
+                        <Route path="/tags" element={<TagGlossary app={this} />} />
+                        <Route path="/tag/:id" element={<TagDetailPage app={this} />} />
+                        <Route path="/groups" element={<GroupMembershipList app={this} />} />
+                        <Route path="/group/:id" element={<GroupDetailPage app={this} />} />
+                        <Route path="/invite/:invite_code" element={<RedeemUserGroupInvite app={this} />} />
+                        <Route path="/brokers" element={<BrokerListPage app={this} />} />
+                        <Route path="/broker/:id" element={<BrokerDetailPage app={this} />} />
+                        <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
                     </Routes>
                 </SnackbarProvider>
             </BrowserRouter>
@@ -417,8 +326,7 @@ export class App extends React.Component<
                 jwt: loginResponse?.token ?? null,
                 user: loginResponse?.user ?? null,
                 loginExpiry: loginExpiry,
-                userPreferences:
-                    loginResponse?.preferences ?? state.userPreferences,
+                userPreferences: loginResponse?.preferences ?? state.userPreferences,
             }),
             () => {
                 this.pendingLogin = null;
@@ -446,15 +354,9 @@ export class App extends React.Component<
 
     updateUserPreferences(request: PatchUserPreferencesRequest) {
         this.withAuthorization((config) => {
-            http.patch<UserPreferences>(
-                "/patch-user-preferences",
-                request,
-                config
-            )
+            http.patch<UserPreferences>("/patch-user-preferences", request, config)
                 .then((response) => this.setUserPreferences(response.data))
-                .catch((e) =>
-                    console.error("Failed to path user preferences:", e)
-                );
+                .catch((e) => console.error("Failed to path user preferences:", e));
         }, true);
     }
 
@@ -464,9 +366,7 @@ export class App extends React.Component<
         });
     }
 
-    getAuthConfigForJwt(
-        jwt: string
-    ): { headers: { authorization: string } } | undefined {
+    getAuthConfigForJwt(jwt: string): { headers: { authorization: string } } | undefined {
         return {
             headers: {
                 authorization: `Bearer ${jwt}`,
@@ -475,16 +375,10 @@ export class App extends React.Component<
     }
 
     withAuthorization(
-        cb: (
-            config: { headers: { authorization: string } } | undefined
-        ) => void,
+        cb: (config: { headers: { authorization: string } } | undefined) => void,
         require: boolean = true
     ) {
-        if (
-            this.state.loginExpiry == null ||
-            this.state.jwt == null ||
-            this.state.loginExpiry < Date.now()
-        ) {
+        if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
             if (this.pendingLogin != null) {
                 promise = this.pendingLogin;
@@ -501,23 +395,15 @@ export class App extends React.Component<
                         if (require) {
                             this.openModal(
                                 "",
-                                (modal) => (
-                                    <LoginForm app={this} modal={modal} />
-                                ),
+                                (modal) => <LoginForm app={this} modal={modal} />,
                                 (loginResponse: LoginResponse) => {
                                     this.handleLogin(loginResponse);
                                     if (loginResponse) {
-                                        cb(
-                                            this.getAuthConfigForJwt(
-                                                loginResponse.token
-                                            )
-                                        );
+                                        cb(this.getAuthConfigForJwt(loginResponse.token));
                                     }
                                 }
                             );
-                            throw new Error(
-                                "Failed to try refresh login with empty response"
-                            );
+                            throw new Error("Failed to try refresh login with empty response");
                         } else {
                             return undefined;
                         }
@@ -536,11 +422,7 @@ export class App extends React.Component<
                             (loginResponse: LoginResponse) => {
                                 this.handleLogin(loginResponse);
                                 if (loginResponse) {
-                                    cb(
-                                        this.getAuthConfigForJwt(
-                                            loginResponse.token
-                                        )
-                                    );
+                                    cb(this.getAuthConfigForJwt(loginResponse.token));
                                 }
                             }
                         );
@@ -557,11 +439,7 @@ export class App extends React.Component<
         navigate: NavigateFunction,
         require: boolean = true
     ): Promise<{ headers: { authorization: string } } | undefined> {
-        if (
-            this.state.loginExpiry == null ||
-            this.state.jwt == null ||
-            this.state.loginExpiry < Date.now()
-        ) {
+        if (this.state.loginExpiry == null || this.state.jwt == null || this.state.loginExpiry < Date.now()) {
             let promise;
             if (this.pendingLogin != null) {
                 promise = this.pendingLogin;
@@ -580,9 +458,7 @@ export class App extends React.Component<
                             state: { from: location },
                             replace: true,
                         });
-                        throw new Error(
-                            "Failed to try refresh login with empty response"
-                        );
+                        throw new Error("Failed to try refresh login with empty response");
                     } else {
                         return undefined;
                     }

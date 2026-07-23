@@ -14,15 +14,9 @@ function normalizeBasePath(path: string | undefined): string {
 }
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, process.cwd(), [
-        "VITE_",
-        "REACT_APP_",
-        "PUBLIC_URL",
-    ]);
+    const env = loadEnv(mode, process.cwd(), ["VITE_", "REACT_APP_", "PUBLIC_URL"]);
 
-    const basePath = normalizeBasePath(
-        env.PUBLIC_URL || env.REACT_APP_PATH || env.VITE_APP_PATH
-    );
+    const basePath = normalizeBasePath(env.PUBLIC_URL || env.REACT_APP_PATH || env.VITE_APP_PATH);
 
     return {
         plugins: [react()],

@@ -7,13 +7,7 @@ import {
     faVolumeXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    forwardRef,
-    useEffect,
-    useImperativeHandle,
-    useRef,
-    useState,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import useSound from "use-sound";
 
 import "./MusicPlayer.css";
@@ -61,403 +55,344 @@ export const MusicPlayer = forwardRef<
         onSoundLoaded?: (sound: Howl | null) => void;
         onSoundEnd?: (sound: Howl | null) => void;
     }
->(
-    (
-        {
-            src,
-            metaSrc = src,
-            metaTitle,
-            metaAlbum,
-            metaArtist,
-            coverUrl,
-            autoPlay,
-            onSoundLoaded,
-            onSoundEnd,
+>(({ src, metaSrc = src, metaTitle, metaAlbum, metaArtist, coverUrl, autoPlay, onSoundLoaded, onSoundEnd }, ref) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [volume, setVolume] = useState(100);
+    const [muted, setMuted] = useState(false);
+    const [volumeLabel, setVolumeLabel] = useState(faVolumeHigh);
+    const volumeSliderRef = useRef<HTMLInputElement | null>(null);
+    const [play, { pause, stop, duration, sound }] = useSound(src, {
+        volume: muted ? 0 : volume / 100,
+        soundEnabled: !muted,
+        onend: () => {
+            setIsPlaying(false);
+            setSeconds("0");
+            onSoundEnd?.(sound);
         },
-        ref
-    ) => {
-        const [isPlaying, setIsPlaying] = useState(false);
-        const [volume, setVolume] = useState(100);
-        const [muted, setMuted] = useState(false);
-        const [volumeLabel, setVolumeLabel] = useState(faVolumeHigh);
-        const volumeSliderRef = useRef<HTMLInputElement | null>(null);
-        const [play, { pause, stop, duration, sound }] = useSound(src, {
-            volume: muted ? 0 : volume / 100,
-            soundEnabled: !muted,
-            onend: () => {
-                setIsPlaying(false);
-                setSeconds("0");
-                onSoundEnd?.(sound);
-            },
-            // enable HTML5 streaming and avoid web audio API memory leak issues (howler issue #914)
-            html5: true,
+        // enable HTML5 streaming and avoid web audio API memory leak issues (howler issue #914)
+        html5: true,
+    });
+    const [title, setTitle] = useState(metaTitle ?? "");
+    const [album, setAlbum] = useState(metaAlbum ?? "");
+    const [artist, setArtist] = useState(metaArtist ?? "");
+    const [pictureBlobUrl, setPictureBlobUrl] = useState("");
+    const pictureBlobUrlRef = useRef("");
+
+    const userPausedRef = useRef(false);
+    const hasAutoPlayedRef = useRef(false);
+
+    const [time, setTime] = useState({
+        min: 0,
+        sec: 0,
+    });
+    const [currTime, setCurrTime] = useState({
+        min: 0,
+        sec: 0,
+    });
+
+    const [seconds, setSeconds] = useState("0");
+    const timeSliderRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        const min = Math.floor(+seconds / 60);
+        const sec = Math.floor(+seconds % 60);
+        setCurrTime({
+            min,
+            sec,
         });
-        const [title, setTitle] = useState(metaTitle ?? "");
-        const [album, setAlbum] = useState(metaAlbum ?? "");
-        const [artist, setArtist] = useState(metaArtist ?? "");
-        const [pictureBlobUrl, setPictureBlobUrl] = useState("");
-        const pictureBlobUrlRef = useRef("");
+        if (timeSliderRef.current) {
+            let target = timeSliderRef.current;
+            const min = +target.min;
+            const max = +target.max;
+            const val = +target.value;
 
-        const userPausedRef = useRef(false);
-        const hasAutoPlayedRef = useRef(false);
+            target.style.backgroundSize = ((val - min) * 100) / (max - min) + "% 100%";
+        }
+    }, [seconds]);
 
-        const [time, setTime] = useState({
-            min: 0,
-            sec: 0,
-        });
-        const [currTime, setCurrTime] = useState({
-            min: 0,
-            sec: 0,
-        });
-
-        const [seconds, setSeconds] = useState("0");
-        const timeSliderRef = useRef<HTMLInputElement | null>(null);
-
-        useEffect(() => {
-            const min = Math.floor(+seconds / 60);
-            const sec = Math.floor(+seconds % 60);
-            setCurrTime({
-                min,
-                sec,
+    const setDuration = () => {
+        if (duration) {
+            const sec = duration / 1000;
+            const min = Math.floor(sec / 60);
+            const secRemain = Math.floor(sec % 60);
+            setTime({
+                min: min,
+                sec: secRemain,
             });
-            if (timeSliderRef.current) {
-                let target = timeSliderRef.current;
-                const min = +target.min;
-                const max = +target.max;
-                const val = +target.value;
+        }
+    };
 
-                target.style.backgroundSize =
-                    ((val - min) * 100) / (max - min) + "% 100%";
-            }
-        }, [seconds]);
+    useEffect(() => {
+        setDuration();
+    }, [isPlaying]);
 
-        const setDuration = () => {
-            if (duration) {
-                const sec = duration / 1000;
-                const min = Math.floor(sec / 60);
-                const secRemain = Math.floor(sec % 60);
-                setTime({
-                    min: min,
-                    sec: secRemain,
-                });
-            }
-        };
+    useEffect(() => {
+        if (volume) {
+            setMuted(false);
+        }
+    }, [volume]);
 
-        useEffect(() => {
-            setDuration();
-        }, [isPlaying]);
+    useEffect(() => {
+        if (muted) {
+            setVolumeLabel(faVolumeXmark);
+        } else if (volume < 50) {
+            setVolumeLabel(faVolumeLow);
+        } else if (volume <= 0) {
+            setVolumeLabel(faVolumeOff);
+        } else {
+            setVolumeLabel(faVolumeHigh);
+        }
+        if (volumeSliderRef.current) {
+            let target = volumeSliderRef.current;
+            const min = +target.min;
+            const max = +target.max;
+            const val = +target.value;
 
-        useEffect(() => {
-            if (volume) {
-                setMuted(false);
-            }
-        }, [volume]);
+            target.style.backgroundSize = ((val - min) * 100) / (max - min) + "% 100%";
+        }
+    }, [volume, muted]);
 
-        useEffect(() => {
-            if (muted) {
-                setVolumeLabel(faVolumeXmark);
-            } else if (volume < 50) {
-                setVolumeLabel(faVolumeLow);
-            } else if (volume <= 0) {
-                setVolumeLabel(faVolumeOff);
-            } else {
-                setVolumeLabel(faVolumeHigh);
-            }
-            if (volumeSliderRef.current) {
-                let target = volumeSliderRef.current;
-                const min = +target.min;
-                const max = +target.max;
-                const val = +target.value;
-
-                target.style.backgroundSize =
-                    ((val - min) * 100) / (max - min) + "% 100%";
-            }
-        }, [volume, muted]);
-
-        useEffect(() => {
-            setDuration();
-            // if src changes, creating a new sound, this means a presigned URL was refreshed, restore position and play state
-            if (+seconds > 0) {
-                sound?.seek(+seconds);
-            }
-            if (sound && !sound.playing()) {
-                if (isPlaying) {
-                    play();
-                } else if (
-                    autoPlay &&
-                    !hasAutoPlayedRef.current &&
-                    !userPausedRef.current
-                ) {
-                    hasAutoPlayedRef.current = true;
-                    play();
-                    setIsPlaying(true);
-                }
-            }
-            const interval = setInterval(() => {
-                if (sound) {
-                    let seek = sound.seek();
-                    setSeconds(seek.toString());
-                }
-            }, 1000);
-            onSoundLoaded?.(sound);
-            return () => {
-                clearInterval(interval);
-                stop();
-                if (sound) {
-                    sound.unload();
-                }
-            };
-        }, [sound]);
-
-        useEffect(() => {
-            setTitle(metaTitle ?? "");
-            setAlbum(metaAlbum ?? "");
-            setArtist(metaArtist ?? "");
-            setPictureBlobUrl("");
-
-            jsmediatags.read(metaSrc, {
-                onSuccess: function (tag: ID3Tag) {
-                    if (!title) {
-                        setTitle(tag.tags.title);
-                    }
-                    if (!album) {
-                        setAlbum(tag.tags.album);
-                    }
-                    if (!artist) {
-                        setArtist(tag.tags.artist);
-                    }
-                    if (tag.tags.picture) {
-                        const pictureFormat = tag.tags.picture.format;
-
-                        const pictureData = tag.tags.picture.data;
-                        let pictureByteString = "";
-                        for (let i = 0; i < pictureData.length; i++) {
-                            pictureByteString += String.fromCharCode(
-                                pictureData[i]
-                            );
-                        }
-
-                        const ab = new ArrayBuffer(pictureByteString.length);
-                        const ia = new Uint8Array(ab);
-                        for (var i = 0; i < pictureByteString.length; i++) {
-                            ia[i] = pictureByteString.charCodeAt(i);
-                        }
-
-                        const blob = new Blob([ab], { type: pictureFormat });
-                        const blobUrl = URL.createObjectURL(blob);
-                        pictureBlobUrlRef.current = blobUrl;
-                        setPictureBlobUrl(blobUrl);
-                    }
-                },
-                onError: function (error: any) {
-                    console.error("Error reading tag: " + error);
-                },
-            });
-
-            return () => {
-                if (pictureBlobUrlRef.current) {
-                    URL.revokeObjectURL(pictureBlobUrlRef.current);
-                }
-            };
-        }, [src, metaSrc]);
-
-        const onPlayPause = () => {
+    useEffect(() => {
+        setDuration();
+        // if src changes, creating a new sound, this means a presigned URL was refreshed, restore position and play state
+        if (+seconds > 0) {
+            sound?.seek(+seconds);
+        }
+        if (sound && !sound.playing()) {
             if (isPlaying) {
-                userPausedRef.current = true;
-                pause();
-                setIsPlaying(false);
-            } else {
-                userPausedRef.current = false;
+                play();
+            } else if (autoPlay && !hasAutoPlayedRef.current && !userPausedRef.current) {
+                hasAutoPlayedRef.current = true;
                 play();
                 setIsPlaying(true);
             }
+        }
+        const interval = setInterval(() => {
+            if (sound) {
+                let seek = sound.seek();
+                setSeconds(seek.toString());
+            }
+        }, 1000);
+        onSoundLoaded?.(sound);
+        return () => {
+            clearInterval(interval);
+            stop();
+            if (sound) {
+                sound.unload();
+            }
         };
+    }, [sound]);
 
-        let scheduledScrub: NodeJS.Timeout | null = null;
+    useEffect(() => {
+        setTitle(metaTitle ?? "");
+        setAlbum(metaAlbum ?? "");
+        setArtist(metaArtist ?? "");
+        setPictureBlobUrl("");
 
-        const cover = pictureBlobUrl
-            ? pictureBlobUrl
-            : coverUrl
-              ? coverUrl
-              : urlJoin(getPublicUrl(), "logo512.png");
+        jsmediatags.read(metaSrc, {
+            onSuccess: function (tag: ID3Tag) {
+                if (!title) {
+                    setTitle(tag.tags.title);
+                }
+                if (!album) {
+                    setAlbum(tag.tags.album);
+                }
+                if (!artist) {
+                    setArtist(tag.tags.artist);
+                }
+                if (tag.tags.picture) {
+                    const pictureFormat = tag.tags.picture.format;
 
-        const isSongMetadataColumn = !useMediaQuery("(min-width: 600px)");
+                    const pictureData = tag.tags.picture.data;
+                    let pictureByteString = "";
+                    for (let i = 0; i < pictureData.length; i++) {
+                        pictureByteString += String.fromCharCode(pictureData[i]);
+                    }
 
-        useImperativeHandle(
-            ref,
-            () => ({
-                play() {
-                    userPausedRef.current = false;
-                    play();
-                    setIsPlaying(true);
-                },
-                pause() {
-                    userPausedRef.current = true;
-                    pause();
-                    setIsPlaying(false);
-                },
-                toggle() {
-                    onPlayPause();
-                },
-                stop() {
-                    userPausedRef.current = true;
-                    stop();
-                    setIsPlaying(false);
-                },
-                isPlaying() {
-                    return sound?.playing() ?? isPlaying;
-                },
-            }),
-            [isPlaying, sound, play, pause, stop]
-        );
+                    const ab = new ArrayBuffer(pictureByteString.length);
+                    const ia = new Uint8Array(ab);
+                    for (var i = 0; i < pictureByteString.length; i++) {
+                        ia[i] = pictureByteString.charCodeAt(i);
+                    }
 
-        return (
-            <div id="MusicPlayer">
-                <div
-                    id="song-bg-image"
-                    style={{
-                        backgroundImage: `url(${cover})`,
-                    }}
-                />
-                <div className="music-player-container">
-                    <img
-                        className="song-cover"
-                        src={cover}
-                        alt={`Cover art for ${title}`}
-                    />
-                    <div className="song-metadata">
-                        <h3 className="song-title">
-                            <AutoMarquee>{title}</AutoMarquee>
-                        </h3>
-                        {/* If album + artist metadata shown as single column, apply AutoMarquee to whole column, else to each column individually */}
-                        {isSongMetadataColumn ? (
-                            <AutoMarquee>
-                                <div className="song-metadata-container">
-                                    <div>
-                                        <span className="song-sub-title">
-                                            {album}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="song-sub-title">
-                                            {artist}
-                                        </span>
-                                    </div>
-                                </div>
-                            </AutoMarquee>
-                        ) : (
+                    const blob = new Blob([ab], { type: pictureFormat });
+                    const blobUrl = URL.createObjectURL(blob);
+                    pictureBlobUrlRef.current = blobUrl;
+                    setPictureBlobUrl(blobUrl);
+                }
+            },
+            onError: function (error: any) {
+                console.error("Error reading tag: " + error);
+            },
+        });
+
+        return () => {
+            if (pictureBlobUrlRef.current) {
+                URL.revokeObjectURL(pictureBlobUrlRef.current);
+            }
+        };
+    }, [src, metaSrc]);
+
+    const onPlayPause = () => {
+        if (isPlaying) {
+            userPausedRef.current = true;
+            pause();
+            setIsPlaying(false);
+        } else {
+            userPausedRef.current = false;
+            play();
+            setIsPlaying(true);
+        }
+    };
+
+    let scheduledScrub: NodeJS.Timeout | null = null;
+
+    const cover = pictureBlobUrl ? pictureBlobUrl : coverUrl ? coverUrl : urlJoin(getPublicUrl(), "logo512.png");
+
+    const isSongMetadataColumn = !useMediaQuery("(min-width: 600px)");
+
+    useImperativeHandle(
+        ref,
+        () => ({
+            play() {
+                userPausedRef.current = false;
+                play();
+                setIsPlaying(true);
+            },
+            pause() {
+                userPausedRef.current = true;
+                pause();
+                setIsPlaying(false);
+            },
+            toggle() {
+                onPlayPause();
+            },
+            stop() {
+                userPausedRef.current = true;
+                stop();
+                setIsPlaying(false);
+            },
+            isPlaying() {
+                return sound?.playing() ?? isPlaying;
+            },
+        }),
+        [isPlaying, sound, play, pause, stop]
+    );
+
+    return (
+        <div id="MusicPlayer">
+            <div
+                id="song-bg-image"
+                style={{
+                    backgroundImage: `url(${cover})`,
+                }}
+            />
+            <div className="music-player-container">
+                <img className="song-cover" src={cover} alt={`Cover art for ${title}`} />
+                <div className="song-metadata">
+                    <h3 className="song-title">
+                        <AutoMarquee>{title}</AutoMarquee>
+                    </h3>
+                    {/* If album + artist metadata shown as single column, apply AutoMarquee to whole column, else to each column individually */}
+                    {isSongMetadataColumn ? (
+                        <AutoMarquee>
                             <div className="song-metadata-container">
                                 <div>
-                                    <AutoMarquee>
-                                        <span className="song-sub-title">
-                                            {album}
-                                        </span>
-                                    </AutoMarquee>
+                                    <span className="song-sub-title">{album}</span>
                                 </div>
                                 <div>
-                                    <AutoMarquee>
-                                        <span className="song-sub-title">
-                                            {artist}
-                                        </span>
-                                    </AutoMarquee>
+                                    <span className="song-sub-title">{artist}</span>
                                 </div>
                             </div>
-                        )}
-                    </div>
-                    <div className="song-info-container">
-                        <input
-                            type="range"
-                            min="0"
-                            max={(duration ?? 0) / 1000}
-                            value={seconds}
-                            className="song-timeline"
-                            ref={timeSliderRef}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setSeconds(value);
-                                if (scheduledScrub) {
-                                    clearTimeout(scheduledScrub);
-                                }
-                                scheduledScrub = setTimeout(async () => {
-                                    sound?.seek(+value);
-                                }, 50);
-                            }}
-                        />
-                        <div className="song-time">
-                            <span className="song-time-stamp">
-                                {currTime.min.toLocaleString("en-GB", {
-                                    minimumIntegerDigits: 2,
-                                    useGrouping: false,
-                                })}
-                                :
-                                {currTime.sec.toLocaleString("en-GB", {
-                                    minimumIntegerDigits: 2,
-                                    useGrouping: false,
-                                })}
-                            </span>
-                            <span className="song-time-stamp">
-                                {time.min.toLocaleString("en-GB", {
-                                    minimumIntegerDigits: 2,
-                                    useGrouping: false,
-                                })}
-                                :
-                                {time.sec.toLocaleString("en-GB", {
-                                    minimumIntegerDigits: 2,
-                                    useGrouping: false,
-                                })}
-                            </span>
+                        </AutoMarquee>
+                    ) : (
+                        <div className="song-metadata-container">
+                            <div>
+                                <AutoMarquee>
+                                    <span className="song-sub-title">{album}</span>
+                                </AutoMarquee>
+                            </div>
+                            <div>
+                                <AutoMarquee>
+                                    <span className="song-sub-title">{artist}</span>
+                                </AutoMarquee>
+                            </div>
                         </div>
-                    </div>
-                    <div className="song-control-container">
-                        <div className="flex-grid-item volume-control-container">
-                            <button
-                                className="song-volume-button"
-                                onClick={() => setMuted(!muted)}
-                            >
-                                <FontAwesomeIcon
-                                    className="player-icon"
-                                    icon={volumeLabel}
-                                />
-                            </button>
-                            <input
-                                type="range"
-                                className="volume-slider"
-                                min="0"
-                                max="100"
-                                ref={volumeSliderRef}
-                                value={volume}
-                                onChange={(e) => setVolume(+e.target.value)}
-                            />
-                        </div>
-                        <div className="flex-grid-item">
-                            {!isPlaying ? (
-                                <button
-                                    className="song-play-button"
-                                    disabled={!sound}
-                                    onClick={onPlayPause}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faCirclePlay}
-                                        size="3x"
-                                    />
-                                </button>
-                            ) : (
-                                <button
-                                    className="song-play-button"
-                                    disabled={!sound}
-                                    onClick={onPlayPause}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faCirclePause}
-                                        size="3x"
-                                    />
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex-grid-item"></div>
+                    )}
+                </div>
+                <div className="song-info-container">
+                    <input
+                        type="range"
+                        min="0"
+                        max={(duration ?? 0) / 1000}
+                        value={seconds}
+                        className="song-timeline"
+                        ref={timeSliderRef}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setSeconds(value);
+                            if (scheduledScrub) {
+                                clearTimeout(scheduledScrub);
+                            }
+                            scheduledScrub = setTimeout(async () => {
+                                sound?.seek(+value);
+                            }, 50);
+                        }}
+                    />
+                    <div className="song-time">
+                        <span className="song-time-stamp">
+                            {currTime.min.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false,
+                            })}
+                            :
+                            {currTime.sec.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false,
+                            })}
+                        </span>
+                        <span className="song-time-stamp">
+                            {time.min.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false,
+                            })}
+                            :
+                            {time.sec.toLocaleString("en-GB", {
+                                minimumIntegerDigits: 2,
+                                useGrouping: false,
+                            })}
+                        </span>
                     </div>
                 </div>
+                <div className="song-control-container">
+                    <div className="flex-grid-item volume-control-container">
+                        <button className="song-volume-button" onClick={() => setMuted(!muted)}>
+                            <FontAwesomeIcon className="player-icon" icon={volumeLabel} />
+                        </button>
+                        <input
+                            type="range"
+                            className="volume-slider"
+                            min="0"
+                            max="100"
+                            ref={volumeSliderRef}
+                            value={volume}
+                            onChange={(e) => setVolume(+e.target.value)}
+                        />
+                    </div>
+                    <div className="flex-grid-item">
+                        {!isPlaying ? (
+                            <button className="song-play-button" disabled={!sound} onClick={onPlayPause}>
+                                <FontAwesomeIcon icon={faCirclePlay} size="3x" />
+                            </button>
+                        ) : (
+                            <button className="song-play-button" disabled={!sound} onClick={onPlayPause}>
+                                <FontAwesomeIcon icon={faCirclePause} size="3x" />
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex-grid-item"></div>
+                </div>
             </div>
-        );
-    }
-);
+        </div>
+    );
+});

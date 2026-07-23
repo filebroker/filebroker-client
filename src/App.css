@@ -477,9 +477,8 @@ input {
     color: white;
     padding: 5px;
     font-family:
-        -apple-system, BlinkMacSystemFont, "Montserrat", "Segoe UI", "Roboto",
-        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-        "Helvetica Neue", sans-serif;
+        -apple-system, BlinkMacSystemFont, "Montserrat", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+        "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 13.3333px;
 }
 
@@ -545,10 +544,7 @@ fieldset[disabled] .rw-widget-input {
     background-clip: padding-box;
     background: #121212;
     color: white;
-    background-image: linear-gradient(
-        rgba(255, 255, 255, 0.05),
-        rgba(255, 255, 255, 0.05)
-    );
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05));
 }
 
 .rw-list-option,
@@ -564,8 +560,7 @@ fieldset[disabled] .rw-widget-input {
 .rw-list-option:hover,
 .rw-list-option-create:hover,
 [data-intent="keyboard"] .rw-list-option.rw-state-focus:not(.rw-state-selected),
-[data-intent="keyboard"]
-    .rw-state-focus.rw-list-option-create:not(.rw-state-selected) {
+[data-intent="keyboard"] .rw-state-focus.rw-list-option-create:not(.rw-state-selected) {
     background-color: #303030;
     border-color: #303030;
 }

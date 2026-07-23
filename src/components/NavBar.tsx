@@ -78,8 +78,7 @@ const NavLinkIconButton = styled(IconButton)({
 }) as typeof IconButton;
 
 export default function NavBar({ app }: { app: App }) {
-    const [navMenuAnchor, setNavMenuAnchor] =
-        React.useState<null | HTMLElement>(null);
+    const [navMenuAnchor, setNavMenuAnchor] = React.useState<null | HTMLElement>(null);
     const navigate = useNavigate();
     const navModal = useRef<ModalContent | null>(null);
     return (
@@ -123,18 +122,9 @@ export default function NavBar({ app }: { app: App }) {
                                                     width: "fit-content",
                                                 }}
                                             >
-                                                <NavLinkButton
-                                                    component={Link}
-                                                    to={"/"}
-                                                    onClick={() =>
-                                                        modal.close()
-                                                    }
-                                                >
+                                                <NavLinkButton component={Link} to={"/"} onClick={() => modal.close()}>
                                                     <img
-                                                        src={urlJoin(
-                                                            getPublicUrl(),
-                                                            "logo192.png"
-                                                        )}
+                                                        src={urlJoin(getPublicUrl(), "logo192.png")}
                                                         alt="Logo"
                                                         height="48"
                                                     />
@@ -149,9 +139,7 @@ export default function NavBar({ app }: { app: App }) {
                                                 <NavLinkButton
                                                     component={Link}
                                                     to={"/posts"}
-                                                    onClick={() =>
-                                                        modal.close()
-                                                    }
+                                                    onClick={() => modal.close()}
                                                 >
                                                     Posts
                                                 </NavLinkButton>
@@ -165,9 +153,7 @@ export default function NavBar({ app }: { app: App }) {
                                                 <NavLinkButton
                                                     component={Link}
                                                     to={"/collections"}
-                                                    onClick={() =>
-                                                        modal.close()
-                                                    }
+                                                    onClick={() => modal.close()}
                                                 >
                                                     Collections
                                                 </NavLinkButton>
@@ -182,40 +168,20 @@ export default function NavBar({ app }: { app: App }) {
                                                     variant="text"
                                                     disabled={!app.isLoggedIn()}
                                                     startIcon={
-                                                        <FontAwesomeSvgIcon
-                                                            fontSize="inherit"
-                                                            icon={
-                                                                faCloudArrowUp
-                                                            }
-                                                        />
+                                                        <FontAwesomeSvgIcon fontSize="inherit" icon={faCloudArrowUp} />
                                                     }
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         e.preventDefault();
                                                         if (app.isLoggedIn()) {
-                                                            app.openModal(
-                                                                "Upload",
-                                                                (
-                                                                    uploadModal
-                                                                ) => (
-                                                                    <UploadDialogue
-                                                                        app={
-                                                                            app
-                                                                        }
-                                                                        modal={
-                                                                            uploadModal
-                                                                        }
-                                                                    ></UploadDialogue>
-                                                                )
-                                                            );
+                                                            app.openModal("Upload", (uploadModal) => (
+                                                                <UploadDialogue
+                                                                    app={app}
+                                                                    modal={uploadModal}
+                                                                ></UploadDialogue>
+                                                            ));
                                                         } else {
-                                                            app.openModal(
-                                                                "Error",
-                                                                <p>
-                                                                    Must be
-                                                                    logged in
-                                                                </p>
-                                                            );
+                                                            app.openModal("Error", <p>Must be logged in</p>);
                                                         }
                                                     }}
                                                 >
@@ -231,9 +197,7 @@ export default function NavBar({ app }: { app: App }) {
                                                 <NavLinkButton
                                                     component={Link}
                                                     to="/tags"
-                                                    onClick={() =>
-                                                        modal.close()
-                                                    }
+                                                    onClick={() => modal.close()}
                                                 >
                                                     Tags
                                                 </NavLinkButton>
@@ -247,9 +211,7 @@ export default function NavBar({ app }: { app: App }) {
                                                 {app.isLoggedIn() ? (
                                                     <NavLinkIconButton
                                                         onClick={(e) => {
-                                                            setNavMenuAnchor(
-                                                                e.currentTarget
-                                                            );
+                                                            setNavMenuAnchor(e.currentTarget);
                                                         }}
                                                     >
                                                         <Avatar
@@ -258,37 +220,23 @@ export default function NavBar({ app }: { app: App }) {
                                                                 height: 48,
                                                             }}
                                                             src={
-                                                                app.getUser()
-                                                                    ?.avatar_object_key
+                                                                app.getUser()?.avatar_object_key
                                                                     ? urlJoin(
                                                                           getApiUrl(),
                                                                           "get-object",
-                                                                          app.getUser()!
-                                                                              .avatar_object_key!
+                                                                          app.getUser()!.avatar_object_key!
                                                                       )
                                                                     : undefined
                                                             }
                                                         >
-                                                            {!app.getUser()
-                                                                ?.avatar_object_key &&
+                                                            {!app.getUser()?.avatar_object_key &&
                                                                 (
-                                                                    app.getUser()!
-                                                                        .display_name ??
-                                                                    app.getUser()!
-                                                                        .user_name
+                                                                    app.getUser()!.display_name ??
+                                                                    app.getUser()!.user_name
                                                                 )
-                                                                    .split(
-                                                                        /\s+/i,
-                                                                        3
-                                                                    )
-                                                                    .filter(
-                                                                        (s) =>
-                                                                            s.length >
-                                                                            0
-                                                                    )
-                                                                    .map((s) =>
-                                                                        s[0].toUpperCase()
-                                                                    )}
+                                                                    .split(/\s+/i, 3)
+                                                                    .filter((s) => s.length > 0)
+                                                                    .map((s) => s[0].toUpperCase())}
                                                         </Avatar>
                                                     </NavLinkIconButton>
                                                 ) : (
@@ -343,11 +291,7 @@ export default function NavBar({ app }: { app: App }) {
                         }}
                     >
                         <NavLinkButton component={Link} to={"/"}>
-                            <img
-                                src={urlJoin(getPublicUrl(), "logo192.png")}
-                                alt="Logo"
-                                height="48"
-                            />
+                            <img src={urlJoin(getPublicUrl(), "logo192.png")} alt="Logo" height="48" />
                         </NavLinkButton>
                         <NavLinkButton component={Link} to={"/posts"}>
                             Posts
@@ -375,27 +319,16 @@ export default function NavBar({ app }: { app: App }) {
                         <NavLinkButton
                             variant="text"
                             disabled={!app.isLoggedIn()}
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faCloudArrowUp}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faCloudArrowUp} />}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
                                 if (app.isLoggedIn()) {
                                     app.openModal("Upload", (uploadModal) => (
-                                        <UploadDialogue
-                                            app={app}
-                                            modal={uploadModal}
-                                        ></UploadDialogue>
+                                        <UploadDialogue app={app} modal={uploadModal}></UploadDialogue>
                                     ));
                                 } else {
-                                    app.openModal(
-                                        "Error",
-                                        <p>Must be logged in</p>
-                                    );
+                                    app.openModal("Error", <p>Must be logged in</p>);
                                 }
                             }}
                         >
@@ -405,41 +338,24 @@ export default function NavBar({ app }: { app: App }) {
                             Tags
                         </NavLinkButton>
                         {app.isLoggedIn() ? (
-                            <NavLinkIconButton
-                                onClick={(e) =>
-                                    setNavMenuAnchor(e.currentTarget)
-                                }
-                            >
+                            <NavLinkIconButton onClick={(e) => setNavMenuAnchor(e.currentTarget)}>
                                 <Avatar
                                     sx={{ width: 40, height: 40 }}
                                     src={
                                         app.getUser()?.avatar_object_key
-                                            ? urlJoin(
-                                                  getApiUrl(),
-                                                  "get-object",
-                                                  app.getUser()!
-                                                      .avatar_object_key!
-                                              )
+                                            ? urlJoin(getApiUrl(), "get-object", app.getUser()!.avatar_object_key!)
                                             : undefined
                                     }
                                 >
                                     {!app.getUser()?.avatar_object_key &&
-                                        (
-                                            app.getUser()!.display_name ??
-                                            app.getUser()!.user_name
-                                        )
+                                        (app.getUser()!.display_name ?? app.getUser()!.user_name)
                                             .split(/\s+/i, 3)
                                             .filter((s) => s.length > 0)
                                             .map((s) => s[0].toUpperCase())}
                                 </Avatar>
                             </NavLinkIconButton>
                         ) : (
-                            <NavLinkOutlinedButton
-                                component={Link}
-                                to={"/login"}
-                                variant="contained"
-                                color="secondary"
-                            >
+                            <NavLinkOutlinedButton component={Link} to={"/login"} variant="contained" color="secondary">
                                 Log In
                             </NavLinkOutlinedButton>
                         )}
@@ -458,22 +374,16 @@ export default function NavBar({ app }: { app: App }) {
                     <Grow
                         {...TransitionProps}
                         style={{
-                            transformOrigin:
-                                placement === "bottom-start"
-                                    ? "left top"
-                                    : "left bottom",
+                            transformOrigin: placement === "bottom-start" ? "left top" : "left bottom",
                         }}
                     >
                         <Paper>
-                            <ClickAwayListener
-                                onClickAway={() => setNavMenuAnchor(null)}
-                            >
+                            <ClickAwayListener onClickAway={() => setNavMenuAnchor(null)}>
                                 <MenuList
                                     autoFocusItem={Boolean(navMenuAnchor)}
                                     id="nav-menu"
                                     sx={{
-                                        zIndex: (theme) =>
-                                            theme.zIndex.modal + 1,
+                                        zIndex: (theme) => theme.zIndex.modal + 1,
                                     }}
                                     onKeyDown={(event) => {
                                         if (event.key === "Tab") {

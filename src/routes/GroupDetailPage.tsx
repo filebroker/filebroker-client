@@ -69,25 +69,12 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import UndoIcon from "@mui/icons-material/Undo";
 import { ActionModal } from "../components/ActionModal";
 import { a11yProps, TabPanel } from "../components/TabPanel";
-import {
-    Direction,
-    PaginatedTable,
-    PaginatedTableHandle,
-    PaginatedTableRowAction,
-} from "../components/PaginatedTable";
+import { Direction, PaginatedTable, PaginatedTableHandle, PaginatedTableRowAction } from "../components/PaginatedTable";
 import { formatBytes } from "../Util";
 import { RevokeUserGroupInviteResponse } from "./GroupMembershipList";
 import RemoveCircleOutlinedIcon from "@mui/icons-material/RemoveCircleOutlined";
-import {
-    PostCollectionQueryObject,
-    PostQueryObject,
-    SearchResult,
-} from "../Search";
-import {
-    getMediaDurationDisplayForItem,
-    getMediaTypeIconForItem,
-    PreviewGrid,
-} from "../components/PaginatedGridView";
+import { PostCollectionQueryObject, PostQueryObject, SearchResult } from "../Search";
+import { getMediaDurationDisplayForItem, getMediaTypeIconForItem, PreviewGrid } from "../components/PaginatedGridView";
 
 export interface GetUserGroupMembersResponse {
     total_count: number;
@@ -115,13 +102,7 @@ export interface ChangeUserGroupMembershipResponse {
     changed: boolean;
 }
 
-export function GroupCreator({
-    modal,
-    app,
-}: {
-    modal?: ModalContent;
-    app: App;
-}) {
+export function GroupCreator({ modal, app }: { modal?: ModalContent; app: App }) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -173,15 +154,9 @@ export function GroupCreator({
                             size="medium"
                             onClick={(e) => {
                                 e.preventDefault();
-                                app.openModal(
-                                    "Create Tag",
-                                    (createTagModal) => (
-                                        <TagCreator
-                                            app={app}
-                                            modal={createTagModal}
-                                        ></TagCreator>
-                                    )
-                                );
+                                app.openModal("Create Tag", (createTagModal) => (
+                                    <TagCreator app={app} modal={createTagModal}></TagCreator>
+                                ));
                             }}
                         >
                             <AddIcon />
@@ -192,9 +167,7 @@ export function GroupCreator({
                             control={
                                 <Checkbox
                                     checked={isPublic}
-                                    onChange={(e) =>
-                                        setIsPublic(e.currentTarget.checked)
-                                    }
+                                    onChange={(e) => setIsPublic(e.currentTarget.checked)}
                                     sx={{
                                         "&.Mui-disabled": {
                                             color: "text.primary",
@@ -223,11 +196,7 @@ export function GroupCreator({
                             control={
                                 <Checkbox
                                     checked={allowMemberInvite}
-                                    onChange={(e) =>
-                                        setAllowMemberInvite(
-                                            e.currentTarget.checked
-                                        )
-                                    }
+                                    onChange={(e) => setAllowMemberInvite(e.currentTarget.checked)}
                                     sx={{
                                         "&.Mui-disabled": {
                                             color: "text.primary",
@@ -254,41 +223,28 @@ export function GroupCreator({
                     <div className="form-paper-button-row">
                         <Button
                             color="secondary"
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faFloppyDisk}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                             onClick={async () => {
                                 const loadingModal = app.openLoadingModal();
                                 try {
-                                    const config = await app.getAuthorization(
-                                        location,
-                                        navigate
+                                    const config = await app.getAuthorization(location, navigate);
+                                    const result = await http.post<UserGroupDetailed>(
+                                        `/create-user-group`,
+                                        {
+                                            name: name,
+                                            description: description,
+                                            is_public: isPublic,
+                                            allow_member_invite: allowMemberInvite,
+                                            entered_tags: enteredTags,
+                                            selected_tags: selectedTags,
+                                        },
+                                        config
                                     );
-                                    const result =
-                                        await http.post<UserGroupDetailed>(
-                                            `/create-user-group`,
-                                            {
-                                                name: name,
-                                                description: description,
-                                                is_public: isPublic,
-                                                allow_member_invite:
-                                                    allowMemberInvite,
-                                                entered_tags: enteredTags,
-                                                selected_tags: selectedTags,
-                                            },
-                                            config
-                                        );
                                     enqueueSnackbar({
                                         message: (
                                             <span>
                                                 Group{" "}
-                                                <Link
-                                                    className="standard-link"
-                                                    to={`group/${result.data.pk}`}
-                                                >
+                                                <Link className="standard-link" to={`group/${result.data.pk}`}>
                                                     {result.data.name}
                                                 </Link>{" "}
                                                 created
@@ -301,14 +257,12 @@ export function GroupCreator({
                                     console.error("Failed to create group", e);
                                     if (e.response?.status === 401) {
                                         enqueueSnackbar({
-                                            message:
-                                                "Your credentials have expired, try refreshing the page.",
+                                            message: "Your credentials have expired, try refreshing the page.",
                                             variant: "error",
                                         });
                                     } else {
                                         enqueueSnackbar({
-                                            message:
-                                                "An error occurred creating group, please try again",
+                                            message: "An error occurred creating group, please try again",
                                             variant: "error",
                                         });
                                     }
@@ -336,9 +290,7 @@ export function GroupDetailPage({ app }: { app: App }) {
     const [description, setDescription] = useState("");
     const [isPublic, setIsPublic] = useState(false);
     const [allowMemberInvite, setAllowMemberInvite] = useState(false);
-    const [membership, setMembership] = useState<
-        UserGroupMembershipInnerJoined | null | undefined
-    >(null);
+    const [membership, setMembership] = useState<UserGroupMembershipInnerJoined | null | undefined>(null);
     const [tags, setTags] = useState<(string | Tag)[]>([]);
     const [enteredTags, setEnteredTags] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
@@ -354,13 +306,10 @@ export function GroupDetailPage({ app }: { app: App }) {
     }, [activeInvitesOnly]);
 
     const [posts, setPosts] = useState<PostQueryObject[]>([]);
-    const [collections, setCollections] = useState<PostCollectionQueryObject[]>(
-        []
-    );
+    const [collections, setCollections] = useState<PostCollectionQueryObject[]>([]);
 
     const [editMode, setEditMode] = useState(false);
-    const [inviteMenuAnchor, setInviteMenuAnchor] =
-        React.useState<null | HTMLElement>(null);
+    const [inviteMenuAnchor, setInviteMenuAnchor] = React.useState<null | HTMLElement>(null);
 
     const updateGroup = (group: UserGroupDetailed | null) => {
         setGroup(group);
@@ -368,10 +317,7 @@ export function GroupDetailPage({ app }: { app: App }) {
         setDescription(group?.description ?? "");
         setIsPublic(group?.is_public ?? false);
         setAllowMemberInvite(group?.allow_member_invite ?? false);
-        setTags(
-            group?.tags?.sort(sortTagUsages).map((tagUsage) => tagUsage.tag) ??
-                []
-        );
+        setTags(group?.tags?.sort(sortTagUsages).map((tagUsage) => tagUsage.tag) ?? []);
         setSelectedTags(group?.tags?.map((tagUsage) => tagUsage.tag.pk) ?? []);
     };
 
@@ -380,10 +326,7 @@ export function GroupDetailPage({ app }: { app: App }) {
         const loadingModal = app.openLoadingModal();
         try {
             const config = await app.getAuthorization(location, navigate);
-            const response = await http.get<UserGroupJoined>(
-                `/get-user-group/${id}`,
-                config
-            );
+            const response = await http.get<UserGroupJoined>(`/get-user-group/${id}`, config);
             updateGroup(response.data.group);
             setMembership(response.data.membership);
         } catch (e: any) {
@@ -391,13 +334,7 @@ export function GroupDetailPage({ app }: { app: App }) {
             if (e?.response?.data?.error_code === 403001) {
                 app.openModal("Error", <div>Cannot access group</div>);
             } else {
-                app.openModal(
-                    "Error",
-                    <div>
-                        An unexpected error occurred (
-                        {e?.response?.data?.error_code})
-                    </div>
-                );
+                app.openModal("Error", <div>An unexpected error occurred ({e?.response?.data?.error_code})</div>);
             }
         } finally {
             loadingModal.close();
@@ -407,11 +344,7 @@ export function GroupDetailPage({ app }: { app: App }) {
     const loadPosts = async () => {
         if (group) {
             try {
-                const config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                const config = await app.getAuthorization(location, navigate, false);
                 const response = await http.get<SearchResult>(
                     `/search?query=${encodeURIComponent(`.shared_with_group(${group.pk}) %limit(5)`)}`,
                     config
@@ -425,11 +358,7 @@ export function GroupDetailPage({ app }: { app: App }) {
     const loadCollections = async () => {
         if (group) {
             try {
-                const config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                const config = await app.getAuthorization(location, navigate, false);
                 const response = await http.get<SearchResult>(
                     `/search/collection?query=${encodeURIComponent(`.shared_with_group(${group.pk}) %limit(5)`)}`,
                     config
@@ -463,10 +392,7 @@ export function GroupDetailPage({ app }: { app: App }) {
         disableForRow?: (member: UserGroupMembershipInnerJoined) => boolean,
         icon?: ReactNode,
         color?: FormLabelProps["color"],
-        additionalModalContent?: (
-            value: string,
-            setValue: (v: string) => void
-        ) => ReactNode
+        additionalModalContent?: (value: string, setValue: (v: string) => void) => ReactNode
     ): PaginatedTableRowAction<UserGroupMembershipInnerJoined> => ({
         label: label,
         exec: (member) =>
@@ -483,16 +409,12 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 fn: async (_, reason) => {
                                     const loadingModal = app.openLoadingModal();
                                     try {
-                                        let config = await app.getAuthorization(
-                                            location,
-                                            navigate
+                                        let config = await app.getAuthorization(location, navigate);
+                                        let response = await http.post<ChangeUserGroupMembershipResponse>(
+                                            `/change-user-group-membership/${group!!.pk}/${member.user.pk}`,
+                                            requestBodyFn(reason),
+                                            config
                                         );
-                                        let response =
-                                            await http.post<ChangeUserGroupMembershipResponse>(
-                                                `/change-user-group-membership/${group!!.pk}/${member.user.pk}`,
-                                                requestBodyFn(reason),
-                                                config
-                                            );
 
                                         enqueueSnackbar({
                                             message: successMessageFn(member),
@@ -540,10 +462,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 <Button
                                     color="secondary"
                                     startIcon={<PersonAddIcon />}
-                                    hidden={
-                                        Boolean(membership) ||
-                                        group.owner.pk === app.getUser()?.pk
-                                    }
+                                    hidden={Boolean(membership) || group.owner.pk === app.getUser()?.pk}
                                     onClick={() => {
                                         app.openModal(
                                             "Join Group",
@@ -554,35 +473,25 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     actions={[
                                                         {
                                                             name: "Ok",
-                                                            fn: async (
-                                                                modal
-                                                            ) => {
-                                                                const loadingModal =
-                                                                    app.openLoadingModal();
+                                                            fn: async (modal) => {
+                                                                const loadingModal = app.openLoadingModal();
                                                                 try {
-                                                                    const config =
-                                                                        await app.getAuthorization(
-                                                                            location,
-                                                                            navigate
-                                                                        );
-                                                                    const response =
-                                                                        await http.post<UserGroupJoined>(
-                                                                            `/join-user-group/${id}`,
-                                                                            undefined,
-                                                                            config
-                                                                        );
-
-                                                                    enqueueSnackbar(
-                                                                        {
-                                                                            message: `Joined group ${group?.name}`,
-                                                                            variant:
-                                                                                "success",
-                                                                        }
+                                                                    const config = await app.getAuthorization(
+                                                                        location,
+                                                                        navigate
+                                                                    );
+                                                                    const response = await http.post<UserGroupJoined>(
+                                                                        `/join-user-group/${id}`,
+                                                                        undefined,
+                                                                        config
                                                                     );
 
-                                                                    modal?.close(
-                                                                        response.data
-                                                                    );
+                                                                    enqueueSnackbar({
+                                                                        message: `Joined group ${group?.name}`,
+                                                                        variant: "success",
+                                                                    });
+
+                                                                    modal?.close(response.data);
                                                                 } finally {
                                                                     loadingModal.close();
                                                                 }
@@ -594,9 +503,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                             (result) => {
                                                 if (result) {
                                                     updateGroup(result.group);
-                                                    setMembership(
-                                                        result.membership
-                                                    );
+                                                    setMembership(result.membership);
                                                 }
                                             }
                                         );
@@ -607,24 +514,12 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 <Button
                                     color="error"
                                     startIcon={<GroupRemoveIcon />}
-                                    hidden={
-                                        !membership ||
-                                        membership.is_owner ||
-                                        membership.revoked
-                                    }
+                                    hidden={!membership || membership.is_owner || membership.revoked}
                                     onClick={async () => {
-                                        const loadingModal =
-                                            app.openLoadingModal();
+                                        const loadingModal = app.openLoadingModal();
                                         try {
-                                            const config =
-                                                await app.getAuthorization(
-                                                    location,
-                                                    navigate
-                                                );
-                                            await http.delete(
-                                                `/leave-user-group/${id}`,
-                                                config
-                                            );
+                                            const config = await app.getAuthorization(location, navigate);
+                                            await http.delete(`/leave-user-group/${id}`, config);
 
                                             navigate({
                                                 pathname: "/groups",
@@ -641,12 +536,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 >
                                     Leave
                                 </Button>
-                                <Button
-                                    color="error"
-                                    startIcon={<BlockIcon />}
-                                    disabled
-                                    hidden={!membership?.revoked}
-                                >
+                                <Button color="error" startIcon={<BlockIcon />} disabled hidden={!membership?.revoked}>
                                     You are banned from this group
                                 </Button>
                             </div>
@@ -667,17 +557,10 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     "Avatar Cropper",
                                                     (avatarCropperModal) => (
                                                         <AvatarCropper
-                                                            sourceObjectKey={
-                                                                post.s3_object
-                                                                    .object_key
-                                                            }
-                                                            modal={
-                                                                avatarCropperModal
-                                                            }
+                                                            sourceObjectKey={post.s3_object.object_key}
+                                                            modal={avatarCropperModal}
                                                             app={app}
-                                                            userGroupPk={
-                                                                group!!.pk
-                                                            }
+                                                            userGroupPk={group!!.pk}
                                                         />
                                                     ),
                                                     (result) => {
@@ -700,11 +583,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                     sx={{ width: 100, height: 100 }}
                                     src={
                                         group.avatar_object_key
-                                            ? urlJoin(
-                                                  getApiUrl(),
-                                                  "get-object",
-                                                  group.avatar_object_key
-                                              )
+                                            ? urlJoin(getApiUrl(), "get-object", group.avatar_object_key)
                                             : undefined
                                     }
                                 >
@@ -736,9 +615,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 fullWidth
                                 multiline
                                 maxRows={5}
-                                onChange={(e) =>
-                                    setDescription(e.currentTarget.value)
-                                }
+                                onChange={(e) => setDescription(e.currentTarget.value)}
                                 slotProps={{
                                     htmlInput: {
                                         maxLength: 30000,
@@ -759,11 +636,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                             checked={isPublic}
                                             disabled={!editMode}
                                             readOnly={!editMode}
-                                            onChange={(e) =>
-                                                setIsPublic(
-                                                    e.currentTarget.checked
-                                                )
-                                            }
+                                            onChange={(e) => setIsPublic(e.currentTarget.checked)}
                                             sx={{
                                                 "&.Mui-disabled": {
                                                     color: "text.primary",
@@ -774,10 +647,9 @@ export function GroupDetailPage({ app }: { app: App }) {
                                     label="Public"
                                     sx={{
                                         opacity: 1,
-                                        "& .MuiFormControlLabel-label.Mui-disabled":
-                                            {
-                                                color: "text.primary",
-                                            },
+                                        "& .MuiFormControlLabel-label.Mui-disabled": {
+                                            color: "text.primary",
+                                        },
                                     }}
                                 />
                                 <Tooltip
@@ -795,11 +667,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                             checked={allowMemberInvite}
                                             disabled={!editMode}
                                             readOnly={!editMode}
-                                            onChange={(e) =>
-                                                setAllowMemberInvite(
-                                                    e.currentTarget.checked
-                                                )
-                                            }
+                                            onChange={(e) => setAllowMemberInvite(e.currentTarget.checked)}
                                             sx={{
                                                 "&.Mui-disabled": {
                                                     color: "text.primary",
@@ -810,10 +678,9 @@ export function GroupDetailPage({ app }: { app: App }) {
                                     label="Allow Member Invite"
                                     sx={{
                                         opacity: 1,
-                                        "& .MuiFormControlLabel-label.Mui-disabled":
-                                            {
-                                                color: "text.primary",
-                                            },
+                                        "& .MuiFormControlLabel-label.Mui-disabled": {
+                                            color: "text.primary",
+                                        },
                                     }}
                                 />
                                 <Tooltip
@@ -827,27 +694,12 @@ export function GroupDetailPage({ app }: { app: App }) {
                             <ReadOnlyTextField
                                 label="Owner"
                                 variant="standard"
-                                value={
-                                    group.owner.display_name ??
-                                    group.owner.user_name
-                                }
+                                value={group.owner.display_name ?? group.owner.user_name}
                             />
-                            <div
-                                className={
-                                    "form-paper-button-row" +
-                                    (editMode
-                                        ? " form-paper-button--expanded"
-                                        : "")
-                                }
-                            >
+                            <div className={"form-paper-button-row" + (editMode ? " form-paper-button--expanded" : "")}>
                                 {editMode ? (
                                     <Button
-                                        startIcon={
-                                            <FontAwesomeSvgIcon
-                                                fontSize="inherit"
-                                                icon={faXmark}
-                                            />
-                                        }
+                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
                                         onClick={() => setEditMode(false)}
                                     >
                                         Cancel
@@ -855,12 +707,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 ) : (
                                     <div className="button-row">
                                         <Button
-                                            startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faPenToSquare}
-                                                />
-                                            }
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faPenToSquare} />}
                                             hidden={!group.is_editable}
                                             onClick={() => setEditMode(true)}
                                         >
@@ -868,10 +715,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                         </Button>
                                         <Button
                                             startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faClockRotateLeft}
-                                                />
+                                                <FontAwesomeSvgIcon fontSize="inherit" icon={faClockRotateLeft} />
                                             }
                                             hidden={!group.is_editable}
                                             onClick={() =>
@@ -898,59 +742,39 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 )}
                                 <Button
                                     color="secondary"
-                                    startIcon={
-                                        <FontAwesomeSvgIcon
-                                            fontSize="inherit"
-                                            icon={faFloppyDisk}
-                                        />
-                                    }
+                                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                                     hidden={!editMode}
                                     onClick={async () => {
-                                        const loadingModal =
-                                            app.openLoadingModal();
+                                        const loadingModal = app.openLoadingModal();
                                         try {
-                                            const config =
-                                                await app.getAuthorization(
-                                                    location,
-                                                    navigate
-                                                );
-                                            const result =
-                                                await http.post<UserGroupDetailed>(
-                                                    `/edit-user-group/${id}`,
-                                                    {
-                                                        name: name,
-                                                        description:
-                                                            description,
-                                                        is_public: isPublic,
-                                                        allow_member_invite:
-                                                            allowMemberInvite,
-                                                        tags_overwrite:
-                                                            enteredTags,
-                                                        tag_pks_overwrite:
-                                                            selectedTags,
-                                                    },
-                                                    config
-                                                );
+                                            const config = await app.getAuthorization(location, navigate);
+                                            const result = await http.post<UserGroupDetailed>(
+                                                `/edit-user-group/${id}`,
+                                                {
+                                                    name: name,
+                                                    description: description,
+                                                    is_public: isPublic,
+                                                    allow_member_invite: allowMemberInvite,
+                                                    tags_overwrite: enteredTags,
+                                                    tag_pks_overwrite: selectedTags,
+                                                },
+                                                config
+                                            );
                                             updateGroup(result.data);
                                             enqueueSnackbar({
                                                 message: "Group edited",
                                                 variant: "success",
                                             });
                                         } catch (e: any) {
-                                            console.error(
-                                                "Failed to update group",
-                                                e
-                                            );
+                                            console.error("Failed to update group", e);
                                             if (e.response?.status === 401) {
                                                 enqueueSnackbar({
-                                                    message:
-                                                        "Your credentials have expired, try refreshing the page.",
+                                                    message: "Your credentials have expired, try refreshing the page.",
                                                     variant: "error",
                                                 });
                                             } else {
                                                 enqueueSnackbar({
-                                                    message:
-                                                        "An error occurred editing group, please try again",
+                                                    message: "An error occurred editing group, please try again",
                                                     variant: "error",
                                                 });
                                             }
@@ -966,22 +790,16 @@ export function GroupDetailPage({ app }: { app: App }) {
                         </div>
                     ) : (
                         <div>
-                            <FontAwesomeIcon
-                                icon={faCircleNotch}
-                                spin
-                                size="6x"
-                            />
+                            <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
                         </div>
                     )}
                 </Paper>
-                {(group?.owner?.pk === app.getUser()?.pk ||
-                    !(membership && membership.revoked)) && (
+                {(group?.owner?.pk === app.getUser()?.pk || !(membership && membership.revoked)) && (
                     <div
                         className="group-tabs-wrapper"
                         style={{
                             width: "60%",
-                            minWidth:
-                                "max(25vh, min(375px, calc(100vw - 40px)))",
+                            minWidth: "max(25vh, min(375px, calc(100vw - 40px)))",
                         }}
                     >
                         <Paper elevation={2} className="fieldset-paper">
@@ -997,45 +815,19 @@ export function GroupDetailPage({ app }: { app: App }) {
                                             variant="scrollable"
                                             scrollButtons="auto"
                                             value={activeTab}
-                                            onChange={(_e, val: number) =>
-                                                setActiveTab(val)
-                                            }
+                                            onChange={(_e, val: number) => setActiveTab(val)}
                                         >
-                                            <Tab
-                                                label="Members"
-                                                {...a11yProps(0)}
-                                            />
-                                            <Tab
-                                                label="Admins"
-                                                {...a11yProps(1)}
-                                            />
-                                            <Tab
-                                                label="Brokers"
-                                                {...a11yProps(2)}
-                                            />
-                                            {(group.owner.pk ===
-                                                app.getUser()?.pk ||
-                                                membership?.administrator) && (
-                                                <Tab
-                                                    label="Invites"
-                                                    {...a11yProps(3)}
-                                                />
+                                            <Tab label="Members" {...a11yProps(0)} />
+                                            <Tab label="Admins" {...a11yProps(1)} />
+                                            <Tab label="Brokers" {...a11yProps(2)} />
+                                            {(group.owner.pk === app.getUser()?.pk || membership?.administrator) && (
+                                                <Tab label="Invites" {...a11yProps(3)} />
                                             )}
-                                            {(group.owner.pk ===
-                                                app.getUser()?.pk ||
-                                                membership?.administrator) && (
-                                                <Tab
-                                                    label="Audit Logs"
-                                                    {...a11yProps(4)}
-                                                />
+                                            {(group.owner.pk === app.getUser()?.pk || membership?.administrator) && (
+                                                <Tab label="Audit Logs" {...a11yProps(4)} />
                                             )}
-                                            {(group.owner.pk ===
-                                                app.getUser()?.pk ||
-                                                membership?.administrator) && (
-                                                <Tab
-                                                    label="Banned Users"
-                                                    {...a11yProps(5)}
-                                                />
+                                            {(group.owner.pk === app.getUser()?.pk || membership?.administrator) && (
+                                                <Tab label="Banned Users" {...a11yProps(5)} />
                                             )}
                                         </Tabs>
                                     </Box>
@@ -1047,64 +839,43 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     id: "user",
                                                     name: "User",
                                                     renderCellValue: (member) =>
-                                                        member.user
-                                                            .display_name ??
-                                                        member.user.user_name,
+                                                        member.user.display_name ?? member.user.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "creation_timestamp",
                                                     name: "Joined At",
                                                     renderCellValue: (member) =>
-                                                        new Date(
-                                                            member.creation_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(member.creation_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "granted_by",
                                                     name: "Granted By",
                                                     renderCellValue: (member) =>
-                                                        member.granted_by
-                                                            .display_name ??
-                                                        member.granted_by
-                                                            .user_name,
+                                                        member.granted_by.display_name ?? member.granted_by.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "administrator",
                                                     name: "Admin",
-                                                    renderCellValue: (
-                                                        member
-                                                    ) =>
-                                                        member.administrator
-                                                            ? "Yes"
-                                                            : "No",
+                                                    renderCellValue: (member) => (member.administrator ? "Yes" : "No"),
                                                 },
                                             ]}
                                             loadDataFn={async (
                                                 page,
                                                 rowsPerPage,
                                                 orderBy: string | undefined,
-                                                orderDirection:
-                                                    | Direction
-                                                    | undefined
+                                                orderDirection: Direction | undefined
                                             ) => {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.get<GetUserGroupMembersResponse>(
-                                                        `/get-user-group-members/${group!!.pk}?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
-                                                        config
-                                                    );
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.get<GetUserGroupMembersResponse>(
+                                                    `/get-user-group-members/${group!!.pk}?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
+                                                    config
+                                                );
 
                                                 return {
-                                                    totalCount:
-                                                        response.data
-                                                            .total_count,
+                                                    totalCount: response.data.total_count,
                                                     data: response.data.members,
                                                 };
                                             }}
@@ -1120,9 +891,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     (member) =>
                                                         `Promoted ${member.user.display_name ?? member.user.user_name} to admin`,
                                                     (member) =>
-                                                        group.owner.pk !==
-                                                            app.getUser()?.pk ||
-                                                        member.administrator,
+                                                        group.owner.pk !== app.getUser()?.pk || member.administrator,
                                                     <SupervisorAccountIcon />
                                                 ),
                                                 memberUpdateAction(
@@ -1136,9 +905,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     (member) =>
                                                         `User ${member.user.display_name ?? member.user.user_name} demoted`,
                                                     (member) =>
-                                                        group.owner.pk !==
-                                                            app.getUser()?.pk ||
-                                                        !member.administrator,
+                                                        group.owner.pk !== app.getUser()?.pk || !member.administrator,
                                                     <PersonOffIcon />
                                                 ),
                                                 memberUpdateAction(
@@ -1154,9 +921,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                         `Removed user ${member.user.display_name ?? member.user.user_name} from group`,
                                                     (_) =>
                                                         !(
-                                                            group.owner.pk ===
-                                                                app.getUser()
-                                                                    ?.pk ||
+                                                            group.owner.pk === app.getUser()?.pk ||
                                                             membership?.administrator
                                                         ),
                                                     <GroupRemoveIcon />,
@@ -1168,13 +933,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                             fullWidth
                                                             rows={3}
                                                             value={reason}
-                                                            onChange={(e) =>
-                                                                setReason(
-                                                                    e
-                                                                        .currentTarget
-                                                                        .value
-                                                                )
-                                                            }
+                                                            onChange={(e) => setReason(e.currentTarget.value)}
                                                         />
                                                     )
                                                 ),
@@ -1191,9 +950,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                         `Banned user ${member.user.display_name ?? member.user.user_name} from group`,
                                                     (_) =>
                                                         !(
-                                                            group.owner.pk ===
-                                                                app.getUser()
-                                                                    ?.pk ||
+                                                            group.owner.pk === app.getUser()?.pk ||
                                                             membership?.administrator
                                                         ),
                                                     <BlockIcon />,
@@ -1205,13 +962,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                             fullWidth
                                                             rows={3}
                                                             value={reason}
-                                                            onChange={(e) =>
-                                                                setReason(
-                                                                    e
-                                                                        .currentTarget
-                                                                        .value
-                                                                )
-                                                            }
+                                                            onChange={(e) => setReason(e.currentTarget.value)}
                                                         />
                                                     )
                                                 ),
@@ -1226,28 +977,21 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     id: "user",
                                                     name: "User",
                                                     renderCellValue: (member) =>
-                                                        member.user
-                                                            .display_name ??
-                                                        member.user.user_name,
+                                                        member.user.display_name ?? member.user.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "creation_timestamp",
                                                     name: "Joined At",
                                                     renderCellValue: (member) =>
-                                                        new Date(
-                                                            member.creation_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(member.creation_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "granted_by",
                                                     name: "Granted By",
                                                     renderCellValue: (member) =>
-                                                        member.granted_by
-                                                            .display_name ??
-                                                        member.granted_by
-                                                            .user_name,
+                                                        member.granted_by.display_name ?? member.granted_by.user_name,
                                                     allowSorting: true,
                                                 },
                                             ]}
@@ -1255,25 +999,16 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                 page,
                                                 rowsPerPage,
                                                 orderBy: string | undefined,
-                                                orderDirection:
-                                                    | Direction
-                                                    | undefined
+                                                orderDirection: Direction | undefined
                                             ) => {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.get<GetUserGroupMembersResponse>(
-                                                        `/get-user-group-members/${group!!.pk}?page=${page}&limit=${rowsPerPage}&admins_only=true&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
-                                                        config
-                                                    );
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.get<GetUserGroupMembersResponse>(
+                                                    `/get-user-group-members/${group!!.pk}?page=${page}&limit=${rowsPerPage}&admins_only=true&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
+                                                    config
+                                                );
 
                                                 return {
-                                                    totalCount:
-                                                        response.data
-                                                            .total_count,
+                                                    totalCount: response.data.total_count,
                                                     data: response.data.members,
                                                 };
                                             }}
@@ -1289,9 +1024,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     (member) =>
                                                         `User ${member.user.display_name ?? member.user.user_name} demoted`,
                                                     (member) =>
-                                                        group.owner.pk !==
-                                                            app.getUser()?.pk ||
-                                                        !member.administrator,
+                                                        group.owner.pk !== app.getUser()?.pk || !member.administrator,
                                                     <PersonOffIcon />
                                                 ),
                                                 memberUpdateAction(
@@ -1307,9 +1040,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                         `Removed user ${member.user.display_name ?? member.user.user_name} from group`,
                                                     (_) =>
                                                         !(
-                                                            group.owner.pk ===
-                                                                app.getUser()
-                                                                    ?.pk ||
+                                                            group.owner.pk === app.getUser()?.pk ||
                                                             membership?.administrator
                                                         ),
                                                     <GroupRemoveIcon />,
@@ -1321,13 +1052,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                             fullWidth
                                                             rows={3}
                                                             value={reason}
-                                                            onChange={(e) =>
-                                                                setReason(
-                                                                    e
-                                                                        .currentTarget
-                                                                        .value
-                                                                )
-                                                            }
+                                                            onChange={(e) => setReason(e.currentTarget.value)}
                                                         />
                                                     )
                                                 ),
@@ -1344,9 +1069,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                         `Banned user ${member.user.display_name ?? member.user.user_name} from group`,
                                                     (_) =>
                                                         !(
-                                                            group.owner.pk ===
-                                                                app.getUser()
-                                                                    ?.pk ||
+                                                            group.owner.pk === app.getUser()?.pk ||
                                                             membership?.administrator
                                                         ),
                                                     <BlockIcon />,
@@ -1358,13 +1081,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                             fullWidth
                                                             rows={3}
                                                             value={reason}
-                                                            onChange={(e) =>
-                                                                setReason(
-                                                                    e
-                                                                        .currentTarget
-                                                                        .value
-                                                                )
-                                                            }
+                                                            onChange={(e) => setReason(e.currentTarget.value)}
                                                         />
                                                     )
                                                 ),
@@ -1377,64 +1094,40 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                 {
                                                     id: "broker.name",
                                                     name: "Broker",
-                                                    renderCellValue: (
-                                                        brokerAccess
-                                                    ) =>
-                                                        brokerAccess.broker
-                                                            .name,
+                                                    renderCellValue: (brokerAccess) => brokerAccess.broker.name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "write",
                                                     name: "Admin Group",
-                                                    renderCellValue: (
-                                                        brokerAccess
-                                                    ) =>
-                                                        brokerAccess.write
-                                                            ? "Yes"
-                                                            : "No",
+                                                    renderCellValue: (brokerAccess) =>
+                                                        brokerAccess.write ? "Yes" : "No",
                                                 },
                                                 {
                                                     id: "quota",
                                                     name: "Quota Per User",
-                                                    renderCellValue: (
-                                                        brokerAccess
-                                                    ) =>
-                                                        brokerAccess.quota
-                                                            ? formatBytes(
-                                                                  brokerAccess.quota
-                                                              )
-                                                            : "∞",
+                                                    renderCellValue: (brokerAccess) =>
+                                                        brokerAccess.quota ? formatBytes(brokerAccess.quota) : "∞",
                                                 },
                                                 {
                                                     id: "used_bytes",
                                                     name: "Bytes Used By Group",
-                                                    renderCellValue: (
-                                                        brokerAccess
-                                                    ) =>
+                                                    renderCellValue: (brokerAccess) =>
                                                         `${formatBytes(brokerAccess.used_quota)} (${formatBytes(brokerAccess.used_bytes)} total)`,
                                                 },
                                                 {
                                                     id: "granted_by",
                                                     name: "Granted By",
-                                                    renderCellValue: (
-                                                        brokerAccess
-                                                    ) =>
-                                                        brokerAccess.granted_by
-                                                            .display_name ??
-                                                        brokerAccess.granted_by
-                                                            .user_name,
+                                                    renderCellValue: (brokerAccess) =>
+                                                        brokerAccess.granted_by.display_name ??
+                                                        brokerAccess.granted_by.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "creation_timestamp",
                                                     name: "Granted At",
-                                                    renderCellValue: (
-                                                        brokerAccess
-                                                    ) =>
-                                                        new Date(
-                                                            brokerAccess.creation_timestamp
-                                                        ).toLocaleString(),
+                                                    renderCellValue: (brokerAccess) =>
+                                                        new Date(brokerAccess.creation_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                             ]}
@@ -1442,25 +1135,16 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                 page,
                                                 rowsPerPage,
                                                 orderBy: string | undefined,
-                                                orderDirection:
-                                                    | Direction
-                                                    | undefined
+                                                orderDirection: Direction | undefined
                                             ) => {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.get<GetUserGroupBrokersResponse>(
-                                                        `/get-user-group-brokers/${group!!.pk}?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "broker.name"}`,
-                                                        config
-                                                    );
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.get<GetUserGroupBrokersResponse>(
+                                                    `/get-user-group-brokers/${group!!.pk}?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "broker.name"}`,
+                                                    config
+                                                );
 
                                                 return {
-                                                    totalCount:
-                                                        response.data
-                                                            .total_count,
+                                                    totalCount: response.data.total_count,
                                                     data: response.data.brokers,
                                                 };
                                             }}
@@ -1473,35 +1157,27 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                 {
                                                     id: "code",
                                                     name: "Code",
-                                                    renderCellValue: (invite) =>
-                                                        invite.code,
+                                                    renderCellValue: (invite) => invite.code,
                                                 },
                                                 {
                                                     id: "create_user",
                                                     name: "Create User",
                                                     renderCellValue: (invite) =>
-                                                        invite.create_user
-                                                            .display_name ??
-                                                        invite.create_user
-                                                            .user_name,
+                                                        invite.create_user.display_name ?? invite.create_user.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "invited_user",
                                                     name: "Invited User",
                                                     renderCellValue: (invite) =>
-                                                        invite.invited_user
-                                                            ?.display_name ??
-                                                        invite.invited_user
-                                                            ?.user_name,
+                                                        invite.invited_user?.display_name ??
+                                                        invite.invited_user?.user_name,
                                                 },
                                                 {
                                                     id: "creation_timestamp",
                                                     name: "Created At",
                                                     renderCellValue: (invite) =>
-                                                        new Date(
-                                                            invite.creation_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(invite.creation_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                                 {
@@ -1509,9 +1185,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     name: "Expires At",
                                                     renderCellValue: (invite) =>
                                                         invite.expiration_timestamp &&
-                                                        new Date(
-                                                            invite.expiration_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(invite.expiration_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                                 {
@@ -1519,32 +1193,23 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     name: "Last Used",
                                                     renderCellValue: (invite) =>
                                                         invite.last_used_timestamp &&
-                                                        new Date(
-                                                            invite.last_used_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(invite.last_used_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "max_uses",
                                                     name: "Max Uses",
-                                                    renderCellValue: (invite) =>
-                                                        invite.max_uses,
+                                                    renderCellValue: (invite) => invite.max_uses,
                                                 },
                                                 {
                                                     id: "uses_count",
                                                     name: "Uses Count",
-                                                    renderCellValue: (invite) =>
-                                                        invite.uses_count,
+                                                    renderCellValue: (invite) => invite.uses_count,
                                                 },
                                                 {
                                                     id: "revoked",
                                                     name: "Revoked",
-                                                    renderCellValue: (
-                                                        invite
-                                                    ) =>
-                                                        invite.revoked
-                                                            ? "Yes"
-                                                            : "No",
+                                                    renderCellValue: (invite) => (invite.revoked ? "Yes" : "No"),
                                                 },
                                                 {
                                                     id: "link",
@@ -1559,20 +1224,12 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                                 }}
                                                                 onClick={() => {
                                                                     navigator.clipboard.writeText(
-                                                                        urlJoin(
-                                                                            getSiteBaseURI(),
-                                                                            "invite",
-                                                                            invite.code
-                                                                        )
+                                                                        urlJoin(getSiteBaseURI(), "invite", invite.code)
                                                                     );
-                                                                    enqueueSnackbar(
-                                                                        {
-                                                                            message:
-                                                                                "Invite code copied to clipboard",
-                                                                            variant:
-                                                                                "success",
-                                                                        }
-                                                                    );
+                                                                    enqueueSnackbar({
+                                                                        message: "Invite code copied to clipboard",
+                                                                        variant: "success",
+                                                                    });
                                                                 }}
                                                             >
                                                                 <ContentCopyIcon fontSize="small" />
@@ -1584,25 +1241,16 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                 page,
                                                 rowsPerPage,
                                                 orderBy: string | undefined,
-                                                orderDirection:
-                                                    | Direction
-                                                    | undefined
+                                                orderDirection: Direction | undefined
                                             ) => {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.get<GetUserGroupInvitesResponse>(
-                                                        `get-user-group-invites/${group!!.pk}?page=${page}&limit=${rowsPerPage}&active_only=${activeInvitesOnly}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
-                                                        config
-                                                    );
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.get<GetUserGroupInvitesResponse>(
+                                                    `get-user-group-invites/${group!!.pk}?page=${page}&limit=${rowsPerPage}&active_only=${activeInvitesOnly}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
+                                                    config
+                                                );
 
                                                 return {
-                                                    totalCount:
-                                                        response.data
-                                                            .total_count,
+                                                    totalCount: response.data.total_count,
                                                     data: response.data.invites,
                                                 };
                                             }}
@@ -1614,9 +1262,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                             "Confirm",
                                                             (modal) => (
                                                                 <ActionModal
-                                                                    modalContent={
-                                                                        modal
-                                                                    }
+                                                                    modalContent={modal}
                                                                     text={`Revoke Invite ${invite.code}? This invite will no longer be usable and cannot be recovered.`}
                                                                     actions={[
                                                                         {
@@ -1637,13 +1283,10 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                                                             config
                                                                                         );
 
-                                                                                    enqueueSnackbar(
-                                                                                        {
-                                                                                            message: `Invite ${invite.code} has been revoked.`,
-                                                                                            variant:
-                                                                                                "success",
-                                                                                        }
-                                                                                    );
+                                                                                    enqueueSnackbar({
+                                                                                        message: `Invite ${invite.code} has been revoked.`,
+                                                                                        variant: "success",
+                                                                                    });
 
                                                                                     return response.data;
                                                                                 } finally {
@@ -1654,21 +1297,14 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                                     ]}
                                                                 />
                                                             ),
-                                                            (
-                                                                result: RevokeUserGroupInviteResponse
-                                                            ) => {
-                                                                if (
-                                                                    result &&
-                                                                    result.updated
-                                                                ) {
+                                                            (result: RevokeUserGroupInviteResponse) => {
+                                                                if (result && result.updated) {
                                                                     inviteTableRef.current?.reload();
                                                                 }
                                                             }
                                                         ),
                                                     color: "error",
-                                                    icon: (
-                                                        <RemoveCircleOutlinedIcon />
-                                                    ),
+                                                    icon: <RemoveCircleOutlinedIcon />,
                                                 },
                                             ]}
                                         />
@@ -1676,12 +1312,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                             control={
                                                 <Checkbox
                                                     checked={activeInvitesOnly}
-                                                    onChange={(e) =>
-                                                        setActiveInvitesOnly(
-                                                            e.currentTarget
-                                                                .checked
-                                                        )
-                                                    }
+                                                    onChange={(e) => setActiveInvitesOnly(e.currentTarget.checked)}
                                                 />
                                             }
                                             label={"Active Only"}
@@ -1694,29 +1325,23 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     id: "user",
                                                     name: "User",
                                                     renderCellValue: (log) =>
-                                                        log.user.display_name ??
-                                                        log.user.user_name,
+                                                        log.user.display_name ?? log.user.user_name,
                                                 },
                                                 {
                                                     id: "action",
                                                     name: "Action",
-                                                    renderCellValue: (log) =>
-                                                        log.action,
+                                                    renderCellValue: (log) => log.action,
                                                 },
                                                 {
                                                     id: "target_user",
                                                     name: "Target User",
                                                     renderCellValue: (log) =>
-                                                        log.target_user
-                                                            ?.display_name ??
-                                                        log.target_user
-                                                            ?.user_name,
+                                                        log.target_user?.display_name ?? log.target_user?.user_name,
                                                 },
                                                 {
                                                     id: "invite_code",
                                                     name: "Invite Code",
-                                                    renderCellValue: (log) =>
-                                                        log.invite_code,
+                                                    renderCellValue: (log) => log.invite_code,
                                                 },
                                                 {
                                                     id: "reason",
@@ -1725,10 +1350,8 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                         log.reason && (
                                                             <div
                                                                 style={{
-                                                                    display:
-                                                                        "flex",
-                                                                    alignItems:
-                                                                        "center",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
                                                                     maxWidth: 400,
                                                                 }}
                                                             >
@@ -1736,36 +1359,18 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                                     variant="body2"
                                                                     noWrap
                                                                     sx={{
-                                                                        overflow:
-                                                                            "hidden",
-                                                                        textOverflow:
-                                                                            "ellipsis",
-                                                                        whiteSpace:
-                                                                            "nowrap",
-                                                                        maxWidth:
-                                                                            "100%",
+                                                                        overflow: "hidden",
+                                                                        textOverflow: "ellipsis",
+                                                                        whiteSpace: "nowrap",
+                                                                        maxWidth: "100%",
                                                                         mr: 1,
                                                                     }}
                                                                 >
-                                                                    <Tooltip
-                                                                        title={
-                                                                            log.reason
-                                                                        }
-                                                                        placement="top"
-                                                                        arrow
-                                                                    >
+                                                                    <Tooltip title={log.reason} placement="top" arrow>
                                                                         <span>
-                                                                            {log
-                                                                                .reason
-                                                                                .length >
-                                                                            140
-                                                                                ? log.reason.slice(
-                                                                                      0,
-                                                                                      137
-                                                                                  ) +
-                                                                                  "..."
-                                                                                : log.reason ||
-                                                                                  ""}
+                                                                            {log.reason.length > 140
+                                                                                ? log.reason.slice(0, 137) + "..."
+                                                                                : log.reason || ""}
                                                                         </span>
                                                                     </Tooltip>
                                                                 </Typography>
@@ -1774,31 +1379,23 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                                     sx={{
                                                                         ml: 1,
                                                                     }}
-                                                                    onClick={(
-                                                                        e
-                                                                    ) => {
+                                                                    onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         app.openModal(
                                                                             "Reason",
                                                                             <Typography
                                                                                 variant="body2"
                                                                                 sx={{
-                                                                                    whiteSpace:
-                                                                                        "pre-wrap",
+                                                                                    whiteSpace: "pre-wrap",
                                                                                 }}
                                                                             >
                                                                                 <ReadOnlyTextField
-                                                                                    value={
-                                                                                        log.reason
-                                                                                    }
+                                                                                    value={log.reason}
                                                                                     multiline
                                                                                     fullWidth
-                                                                                    rows={
-                                                                                        3
-                                                                                    }
+                                                                                    rows={3}
                                                                                     sx={{
-                                                                                        minWidth:
-                                                                                            "350px",
+                                                                                        minWidth: "350px",
                                                                                     }}
                                                                                 />
                                                                             </Typography>
@@ -1814,32 +1411,19 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     id: "timestamp",
                                                     name: "Timestamp",
                                                     renderCellValue: (log) =>
-                                                        new Date(
-                                                            log.creation_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(log.creation_timestamp).toLocaleString(),
                                                 },
                                             ]}
-                                            loadDataFn={async (
-                                                page,
-                                                rowsPerPage
-                                            ) => {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.get<GetUserGroupAuditLogsResponse>(
-                                                        `/get-user-group-audit-logs/${group!!.pk}?page=${page}&limit=${rowsPerPage}`,
-                                                        config
-                                                    );
+                                            loadDataFn={async (page, rowsPerPage) => {
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.get<GetUserGroupAuditLogsResponse>(
+                                                    `/get-user-group-audit-logs/${group!!.pk}?page=${page}&limit=${rowsPerPage}`,
+                                                    config
+                                                );
 
                                                 return {
-                                                    totalCount:
-                                                        response.data
-                                                            .total_count,
-                                                    data: response.data
-                                                        .audit_logs,
+                                                    totalCount: response.data.total_count,
+                                                    data: response.data.audit_logs,
                                                 };
                                             }}
                                         />
@@ -1852,64 +1436,43 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                     id: "user",
                                                     name: "User",
                                                     renderCellValue: (member) =>
-                                                        member.user
-                                                            .display_name ??
-                                                        member.user.user_name,
+                                                        member.user.display_name ?? member.user.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "creation_timestamp",
                                                     name: "Joined At",
                                                     renderCellValue: (member) =>
-                                                        new Date(
-                                                            member.creation_timestamp
-                                                        ).toLocaleString(),
+                                                        new Date(member.creation_timestamp).toLocaleString(),
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "granted_by",
                                                     name: "Granted By",
                                                     renderCellValue: (member) =>
-                                                        member.granted_by
-                                                            .display_name ??
-                                                        member.granted_by
-                                                            .user_name,
+                                                        member.granted_by.display_name ?? member.granted_by.user_name,
                                                     allowSorting: true,
                                                 },
                                                 {
                                                     id: "administrator",
                                                     name: "Admin",
-                                                    renderCellValue: (
-                                                        member
-                                                    ) =>
-                                                        member.administrator
-                                                            ? "Yes"
-                                                            : "No",
+                                                    renderCellValue: (member) => (member.administrator ? "Yes" : "No"),
                                                 },
                                             ]}
                                             loadDataFn={async (
                                                 page,
                                                 rowsPerPage,
                                                 orderBy: string | undefined,
-                                                orderDirection:
-                                                    | Direction
-                                                    | undefined
+                                                orderDirection: Direction | undefined
                                             ) => {
-                                                let config =
-                                                    await app.getAuthorization(
-                                                        location,
-                                                        navigate
-                                                    );
-                                                let response =
-                                                    await http.get<GetUserGroupMembersResponse>(
-                                                        `/get-user-group-members/${group!!.pk}?page=${page}&limit=${rowsPerPage}&revoked_only=true&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
-                                                        config
-                                                    );
+                                                let config = await app.getAuthorization(location, navigate);
+                                                let response = await http.get<GetUserGroupMembersResponse>(
+                                                    `/get-user-group-members/${group!!.pk}?page=${page}&limit=${rowsPerPage}&revoked_only=true&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
+                                                    config
+                                                );
 
                                                 return {
-                                                    totalCount:
-                                                        response.data
-                                                            .total_count,
+                                                    totalCount: response.data.total_count,
                                                     data: response.data.members,
                                                 };
                                             }}
@@ -1924,9 +1487,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                         `Unbanned user ${member.user.display_name ?? member.user.user_name} from group`,
                                                     () =>
                                                         !(
-                                                            group.owner.pk ===
-                                                                app.getUser()
-                                                                    ?.pk ||
+                                                            group.owner.pk === app.getUser()?.pk ||
                                                             membership?.administrator
                                                         ),
                                                     <UndoIcon />
@@ -1937,11 +1498,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                 </div>
                             ) : (
                                 <div>
-                                    <FontAwesomeIcon
-                                        icon={faCircleNotch}
-                                        spin
-                                        size="6x"
-                                    />
+                                    <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
                                 </div>
                             )}
                         </Paper>
@@ -1953,12 +1510,8 @@ export function GroupDetailPage({ app }: { app: App }) {
                         items={posts}
                         searchLink={`/posts?query=${encodeURIComponent(`.shared_with_group(${group.pk})`)}`}
                         onItemClickPath={(item) => `/post/${item.pk}`}
-                        getMediaTypeIcon={(item) =>
-                            getMediaTypeIconForItem(item)
-                        }
-                        getMediaDurationDisplay={(item) =>
-                            getMediaDurationDisplayForItem(item)
-                        }
+                        getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
+                        getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                     />
                 )}
                 {group && collections.length > 0 && (
@@ -1983,22 +1536,16 @@ export function GroupDetailPage({ app }: { app: App }) {
                     <Grow
                         {...TransitionProps}
                         style={{
-                            transformOrigin:
-                                placement === "bottom-start"
-                                    ? "left top"
-                                    : "left bottom",
+                            transformOrigin: placement === "bottom-start" ? "left top" : "left bottom",
                         }}
                     >
                         <Paper>
-                            <ClickAwayListener
-                                onClickAway={() => setInviteMenuAnchor(null)}
-                            >
+                            <ClickAwayListener onClickAway={() => setInviteMenuAnchor(null)}>
                                 <MenuList
                                     autoFocusItem={Boolean(inviteMenuAnchor)}
                                     id="nav-menu"
                                     sx={{
-                                        zIndex: (theme) =>
-                                            theme.zIndex.modal + 1,
+                                        zIndex: (theme) => theme.zIndex.modal + 1,
                                     }}
                                     onKeyDown={(event) => {
                                         if (event.key === "Tab") {
@@ -2012,16 +1559,9 @@ export function GroupDetailPage({ app }: { app: App }) {
                                     <MenuItem
                                         onClick={() => {
                                             setInviteMenuAnchor(null);
-                                            app.openModal(
-                                                "Invite User",
-                                                (modal) => (
-                                                    <UserInviteDialogue
-                                                        group={group!}
-                                                        modal={modal}
-                                                        app={app}
-                                                    />
-                                                )
-                                            );
+                                            app.openModal("Invite User", (modal) => (
+                                                <UserInviteDialogue group={group!} modal={modal} app={app} />
+                                            ));
                                         }}
                                     >
                                         <ListItemIcon>
@@ -2032,24 +1572,15 @@ export function GroupDetailPage({ app }: { app: App }) {
                                     <MenuItem
                                         onClick={() => {
                                             setInviteMenuAnchor(null);
-                                            app.openModal(
-                                                "Create Invite Link",
-                                                (modal) => (
-                                                    <CreateInviteLinkDialogue
-                                                        group={group!}
-                                                        modal={modal}
-                                                        app={app}
-                                                    />
-                                                )
-                                            );
+                                            app.openModal("Create Invite Link", (modal) => (
+                                                <CreateInviteLinkDialogue group={group!} modal={modal} app={app} />
+                                            ));
                                         }}
                                     >
                                         <ListItemIcon>
                                             <AddLinkIcon />
                                         </ListItemIcon>
-                                        <ListItemText>
-                                            Create invite link
-                                        </ListItemText>
+                                        <ListItemText>Create invite link</ListItemText>
                                     </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>
@@ -2061,15 +1592,7 @@ export function GroupDetailPage({ app }: { app: App }) {
     );
 }
 
-function CreateInviteLinkDialogue({
-    group,
-    modal,
-    app,
-}: {
-    group: UserGroupDetailed;
-    modal?: ModalContent;
-    app: App;
-}) {
+function CreateInviteLinkDialogue({ group, modal, app }: { group: UserGroupDetailed; modal?: ModalContent; app: App }) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -2111,10 +1634,7 @@ function CreateInviteLinkDialogue({
                             },
                         }}
                         error={expirationInvalid}
-                        helperText={
-                            expirationInvalid &&
-                            "Expiration must be between 1 and 3600 days"
-                        }
+                        helperText={expirationInvalid && "Expiration must be between 1 and 3600 days"}
                     />
                     <TextField
                         label="Max Uses"
@@ -2142,9 +1662,7 @@ function CreateInviteLinkDialogue({
                             },
                         }}
                         error={maxUsesInvalid}
-                        helperText={
-                            maxUsesInvalid && "Max uses must be greater than 0"
-                        }
+                        helperText={maxUsesInvalid && "Max uses must be greater than 0"}
                     />
                 </div>
             </Paper>
@@ -2152,27 +1670,19 @@ function CreateInviteLinkDialogue({
                 <Button
                     color="secondary"
                     disabled={isLoading || expirationInvalid || maxUsesInvalid}
-                    startIcon={
-                        isLoading && (
-                            <FontAwesomeIcon icon={faCircleNotch} spin />
-                        )
-                    }
+                    startIcon={isLoading && <FontAwesomeIcon icon={faCircleNotch} spin />}
                     onClick={async () => {
                         setIsLoading(true);
                         try {
-                            const config = await app.getAuthorization(
-                                location,
-                                navigate
+                            const config = await app.getAuthorization(location, navigate);
+                            const res = await http.post<UserGroupInviteDetailed>(
+                                `/create-user-group-invite/${group.pk}`,
+                                {
+                                    expiration_days: expirationDays,
+                                    max_uses: maxUses,
+                                },
+                                config
                             );
-                            const res =
-                                await http.post<UserGroupInviteDetailed>(
-                                    `/create-user-group-invite/${group.pk}`,
-                                    {
-                                        expiration_days: expirationDays,
-                                        max_uses: maxUses,
-                                    },
-                                    config
-                                );
 
                             const groupInvite = res.data;
 
@@ -2181,21 +1691,12 @@ function CreateInviteLinkDialogue({
                             app.openModal(
                                 "Success",
                                 <div className="modal-form">
-                                    <Paper
-                                        elevation={2}
-                                        className="fieldset-paper"
-                                    >
+                                    <Paper elevation={2} className="fieldset-paper">
                                         <div className="form-paper-content">
-                                            <Typography variant="body1">
-                                                Invite code has been created.
-                                            </Typography>
+                                            <Typography variant="body1">Invite code has been created.</Typography>
                                             <TextField
                                                 label="Invite Code"
-                                                value={urlJoin(
-                                                    getSiteBaseURI(),
-                                                    "invite",
-                                                    groupInvite.code
-                                                )}
+                                                value={urlJoin(getSiteBaseURI(), "invite", groupInvite.code)}
                                                 fullWidth
                                                 slotProps={{
                                                     input: {
@@ -2211,14 +1712,10 @@ function CreateInviteLinkDialogue({
                                                                                 groupInvite.code
                                                                             )
                                                                         );
-                                                                        enqueueSnackbar(
-                                                                            {
-                                                                                message:
-                                                                                    "Invite code copied to clipboard",
-                                                                                variant:
-                                                                                    "success",
-                                                                            }
-                                                                        );
+                                                                        enqueueSnackbar({
+                                                                            message: "Invite code copied to clipboard",
+                                                                            variant: "success",
+                                                                        });
                                                                     }}
                                                                     edge="end"
                                                                 >
@@ -2245,15 +1742,7 @@ function CreateInviteLinkDialogue({
     );
 }
 
-function UserInviteDialogue({
-    group,
-    modal,
-    app,
-}: {
-    group: UserGroupDetailed;
-    modal?: ModalContent;
-    app: App;
-}) {
+function UserInviteDialogue({ group, modal, app }: { group: UserGroupDetailed; modal?: ModalContent; app: App }) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -2282,8 +1771,7 @@ function UserInviteDialogue({
                         helperText={isUserInvalid && "User Not Found"}
                     />
                     <span className="footnote">
-                        Enter name of user to invite, meaning the unique user
-                        name, not the display name.
+                        Enter name of user to invite, meaning the unique user name, not the display name.
                     </span>
                 </div>
             </Paper>
@@ -2291,11 +1779,7 @@ function UserInviteDialogue({
                 <Button
                     color="secondary"
                     disabled={!userName || isLoading || isUserInvalid}
-                    startIcon={
-                        isLoading && (
-                            <FontAwesomeIcon icon={faCircleNotch} spin />
-                        )
-                    }
+                    startIcon={isLoading && <FontAwesomeIcon icon={faCircleNotch} spin />}
                     onClick={async () => {
                         setIsLoading(true);
                         try {
@@ -2311,20 +1795,16 @@ function UserInviteDialogue({
                                 return;
                             }
 
-                            const config = await app.getAuthorization(
-                                location,
-                                navigate
+                            const config = await app.getAuthorization(location, navigate);
+                            const res = await http.post<UserGroupInviteDetailed>(
+                                `/create-user-group-invite/${group.pk}`,
+                                {
+                                    invited_user_pk: user.pk,
+                                    expiration_days: 7,
+                                    max_uses: 1,
+                                },
+                                config
                             );
-                            const res =
-                                await http.post<UserGroupInviteDetailed>(
-                                    `/create-user-group-invite/${group.pk}`,
-                                    {
-                                        invited_user_pk: user.pk,
-                                        expiration_days: 7,
-                                        max_uses: 1,
-                                    },
-                                    config
-                                );
 
                             const groupInvite = res.data;
 
@@ -2333,27 +1813,16 @@ function UserInviteDialogue({
                             app.openModal(
                                 "Success",
                                 <div className="modal-form">
-                                    <Paper
-                                        elevation={2}
-                                        className="fieldset-paper"
-                                    >
+                                    <Paper elevation={2} className="fieldset-paper">
                                         <div className="form-paper-content">
                                             <Typography variant="body1">
-                                                User {user.user_name} has been
-                                                invited to group {group.name}.
-                                                They can find the invite on
-                                                their groups page. Alternatively
-                                                you can send them the following
-                                                invite link (only valid for that
-                                                user).
+                                                User {user.user_name} has been invited to group {group.name}. They can
+                                                find the invite on their groups page. Alternatively you can send them
+                                                the following invite link (only valid for that user).
                                             </Typography>
                                             <TextField
                                                 label="Invite Code"
-                                                value={urlJoin(
-                                                    getSiteBaseURI(),
-                                                    "invite",
-                                                    groupInvite.code
-                                                )}
+                                                value={urlJoin(getSiteBaseURI(), "invite", groupInvite.code)}
                                                 fullWidth
                                                 slotProps={{
                                                     input: {
@@ -2369,14 +1838,10 @@ function UserInviteDialogue({
                                                                                 groupInvite.code
                                                                             )
                                                                         );
-                                                                        enqueueSnackbar(
-                                                                            {
-                                                                                message:
-                                                                                    "Invite code copied to clipboard",
-                                                                                variant:
-                                                                                    "success",
-                                                                            }
-                                                                        );
+                                                                        enqueueSnackbar({
+                                                                            message: "Invite code copied to clipboard",
+                                                                            variant: "success",
+                                                                        });
                                                                     }}
                                                                     edge="end"
                                                                 >
@@ -2394,22 +1859,11 @@ function UserInviteDialogue({
                         } catch (e: any) {
                             console.error("Failed to create invite", e);
                             if (e?.response?.data?.error_code === 400022) {
-                                app.openModal(
-                                    "Error",
-                                    <div>User already a member</div>
-                                );
-                            } else if (
-                                e?.response?.data?.error_code === 403006
-                            ) {
-                                app.openModal(
-                                    "Error",
-                                    <div>User is banned from group</div>
-                                );
+                                app.openModal("Error", <div>User already a member</div>);
+                            } else if (e?.response?.data?.error_code === 403006) {
+                                app.openModal("Error", <div>User is banned from group</div>);
                             } else {
-                                app.openModal(
-                                    "Error",
-                                    <div>An unexpected error occurred</div>
-                                );
+                                app.openModal("Error", <div>An unexpected error occurred</div>);
                             }
                         } finally {
                             setIsLoading(false);

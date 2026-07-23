@@ -18,10 +18,7 @@ import urlJoin from "url-join";
 import { getApiUrl, getPublicUrl } from "../http-common";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faArrowUpRightFromSquare,
-    faEllipsisVertical,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowUpRightFromSquare, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { User } from "../App";
 import "./PaginatedGridView.css";
@@ -58,21 +55,14 @@ export interface GridItemAction {
     icon: IconDefinition;
     color?: string;
     enableForItem?: (item: TransformedPaginatedGridViewItem) => boolean;
-    enableForItemAsync?: (
-        item: TransformedPaginatedGridViewItem
-    ) => Promise<boolean>;
-    fn: (
-        items: TransformedPaginatedGridViewItem[],
-        cb?: (result: any) => void
-    ) => void;
+    enableForItemAsync?: (item: TransformedPaginatedGridViewItem) => Promise<boolean>;
+    fn: (items: TransformedPaginatedGridViewItem[], cb?: (result: any) => void) => void;
     disallowMultiSelect?: boolean;
     allowExecuteForAll?: boolean;
     disabled?: boolean;
 }
 
-export function getMediaTypeIconForItem(
-    item: PaginatedGridViewItem
-): IconDefinition | undefined {
+export function getMediaTypeIconForItem(item: PaginatedGridViewItem): IconDefinition | undefined {
     const mimeType = item.s3_object?.mime_type;
     if (mimeType) {
         if (mimeType.startsWith("image/")) {
@@ -87,9 +77,7 @@ export function getMediaTypeIconForItem(
     return undefined;
 }
 
-export function getMediaDurationDisplayForItem(
-    item: PaginatedGridViewItem
-): string | undefined {
+export function getMediaDurationDisplayForItem(item: PaginatedGridViewItem): string | undefined {
     const durationString = item.s3_object_metadata?.duration;
     if (durationString) {
         // only display duration for video and audio items
@@ -119,14 +107,8 @@ export function PaginatedGridView({
     fullCount: number | null;
     pageCount: number | null;
     gridItemActions?: GridItemAction[] | undefined;
-    getMediaTypeIcon?:
-        | ((
-              item: TransformedPaginatedGridViewItem
-          ) => IconDefinition | undefined)
-        | undefined;
-    getMediaDurationDisplay?:
-        | ((item: TransformedPaginatedGridViewItem) => string | undefined)
-        | undefined;
+    getMediaTypeIcon?: ((item: TransformedPaginatedGridViewItem) => IconDefinition | undefined) | undefined;
+    getMediaDurationDisplay?: ((item: TransformedPaginatedGridViewItem) => string | undefined) | undefined;
     isDesktop?: boolean;
 }) {
     const location = useLocation();
@@ -149,9 +131,7 @@ export function PaginatedGridView({
             };
         });
     } else if (itemsProperty && itemsProperty.hasOwnProperty("items")) {
-        items = itemsProperty.items.map((item) =>
-            itemsProperty.extraction_fn(item)
-        );
+        items = itemsProperty.items.map((item) => itemsProperty.extraction_fn(item));
     } else {
         items = [];
     }
@@ -160,17 +140,14 @@ export function PaginatedGridView({
     let queryParam: string = searchParams.get("query") ?? "";
     let pageParam: number = +(searchParams.get("page") ?? 0);
 
-    const [gridItemActionMenuAnchor, setGridItemActionMenuAnchor] =
-        useState<HTMLElement | null>(null);
+    const [gridItemActionMenuAnchor, setGridItemActionMenuAnchor] = useState<HTMLElement | null>(null);
     const [itemMenuOpenPk, setItemMenuOpenPk] = useState<number | null>(null);
     const gridItemActionMenuOpen = Boolean(gridItemActionMenuAnchor);
     const [enabledGridActionsAsync, setEnabledGridActionsAsync] = useState<{
         [key: number]: string[];
     }>({});
     const [selectionMode, setSelectionMode] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<
-        TransformedPaginatedGridViewItem[]
-    >([]);
+    const [selectedItems, setSelectedItems] = useState<TransformedPaginatedGridViewItem[]>([]);
 
     return (
         <div id="image-wall">
@@ -182,8 +159,7 @@ export function PaginatedGridView({
                         height: "100%",
                         paddingTop: "25px",
                         paddingBottom: "25px",
-                        gridTemplateColumns:
-                            "repeat(auto-fill, minmax(360px, 1fr))!important",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))!important",
                     }}
                 >
                     {items.map((item) => {
@@ -191,16 +167,9 @@ export function PaginatedGridView({
                         if (item.thumbnail_url) {
                             thumbnailUrl = item.thumbnail_url;
                         } else if (item.thumbnail_object_key) {
-                            thumbnailUrl = urlJoin(
-                                getApiUrl(),
-                                "get-object",
-                                item.thumbnail_object_key
-                            );
+                            thumbnailUrl = urlJoin(getApiUrl(), "get-object", item.thumbnail_object_key);
                         } else {
-                            thumbnailUrl = urlJoin(
-                                getPublicUrl(),
-                                "logo512.png"
-                            );
+                            thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
                         }
 
                         const mediaTypeIcon = getMediaTypeIcon?.(item);
@@ -212,98 +181,49 @@ export function PaginatedGridView({
                                     component={Link}
                                     to={{
                                         pathname: onItemClickPath(item),
-                                        search: stripQueryParamsOnItemClick
-                                            ? undefined
-                                            : search,
+                                        search: stripQueryParamsOnItemClick ? undefined : search,
                                     }}
                                     className="paginated_grid_view_item_button"
                                     key={"link_" + item.pk}
                                     sx={{ height: "100%" }}
-                                    onClick={(
-                                        e: React.MouseEvent<
-                                            HTMLAnchorElement,
-                                            MouseEvent
-                                        >
-                                    ) => {
+                                    onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
                                         if (selectionMode) {
                                             e.preventDefault();
-                                            setSelectedItems(
-                                                (selectedItems) => {
-                                                    if (
-                                                        selectedItems.findIndex(
-                                                            (other) =>
-                                                                other.pk ===
-                                                                item.pk
-                                                        ) >= 0
-                                                    ) {
-                                                        return selectedItems.filter(
-                                                            (other) =>
-                                                                other.pk !==
-                                                                item.pk
-                                                        );
-                                                    } else {
-                                                        return [
-                                                            ...selectedItems,
-                                                            item,
-                                                        ];
-                                                    }
+                                            setSelectedItems((selectedItems) => {
+                                                if (selectedItems.findIndex((other) => other.pk === item.pk) >= 0) {
+                                                    return selectedItems.filter((other) => other.pk !== item.pk);
+                                                } else {
+                                                    return [...selectedItems, item];
                                                 }
-                                            );
+                                            });
                                         }
                                     }}
                                 >
-                                    <div
-                                        key={"flex_" + item.pk}
-                                        className="paginated_grid_view_item_wrapper_flexbox"
-                                    >
-                                        <div
-                                            key={"thumbnail_wrapper_" + item.pk}
-                                            className="thumbnail_wrapper"
-                                        >
-                                            <div
-                                                key={
-                                                    "thumbnail_wrapper_img_" +
-                                                    item.pk
-                                                }
-                                                className="thumbnail_image"
-                                            >
+                                    <div key={"flex_" + item.pk} className="paginated_grid_view_item_wrapper_flexbox">
+                                        <div key={"thumbnail_wrapper_" + item.pk} className="thumbnail_wrapper">
+                                            <div key={"thumbnail_wrapper_img_" + item.pk} className="thumbnail_image">
                                                 <LazyLoadImage
                                                     alt={`Thumnail for item ${item.pk}`}
                                                     src={thumbnailUrl}
                                                     effect="blur"
-                                                    placeholderSrc={urlJoin(
-                                                        getPublicUrl(),
-                                                        "logo192.png"
-                                                    )}
+                                                    placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
                                                     className="thumb-img"
                                                 />
 
                                                 {mediaTypeIcon && (
                                                     <span className="thumbnail_media_icon">
-                                                        <FontAwesomeSvgIcon
-                                                            fontSize="inherit"
-                                                            icon={mediaTypeIcon}
-                                                        />
+                                                        <FontAwesomeSvgIcon fontSize="inherit" icon={mediaTypeIcon} />
                                                     </span>
                                                 )}
                                                 {duration && (
-                                                    <span className="thumbnail_duration_badge">
-                                                        {duration}
-                                                    </span>
+                                                    <span className="thumbnail_duration_badge">{duration}</span>
                                                 )}
                                             </div>
                                         </div>
-                                        <div
-                                            key={"footer_" + item.pk}
-                                            className="paginated_grid_view_item_footer"
-                                        >
+                                        <div key={"footer_" + item.pk} className="paginated_grid_view_item_footer">
                                             <ImageListItemBar
                                                 title={item.title}
-                                                subtitle={
-                                                    item.create_user
-                                                        .display_name ??
-                                                    item.create_user.user_name
-                                                }
+                                                subtitle={item.create_user.display_name ?? item.create_user.user_name}
                                                 position="below"
                                                 sx={{
                                                     textAlign: "left",
@@ -319,28 +239,13 @@ export function PaginatedGridView({
                                 >
                                     {selectionMode ? (
                                         <Checkbox
-                                            checked={
-                                                selectedItems.findIndex(
-                                                    (other) =>
-                                                        other.pk === item.pk
-                                                ) >= 0
-                                            }
+                                            checked={selectedItems.findIndex((other) => other.pk === item.pk) >= 0}
                                             onChange={(event) => {
                                                 if (event.target.checked) {
-                                                    setSelectedItems(
-                                                        (selectedItems) => [
-                                                            ...selectedItems,
-                                                            item,
-                                                        ]
-                                                    );
+                                                    setSelectedItems((selectedItems) => [...selectedItems, item]);
                                                 } else {
-                                                    setSelectedItems(
-                                                        (selectedItems) =>
-                                                            selectedItems.filter(
-                                                                (other) =>
-                                                                    other.pk !==
-                                                                    item.pk
-                                                            )
+                                                    setSelectedItems((selectedItems) =>
+                                                        selectedItems.filter((other) => other.pk !== item.pk)
                                                     );
                                                 }
                                             }}
@@ -354,65 +259,40 @@ export function PaginatedGridView({
                                         <IconButton
                                             color="primary"
                                             size="medium"
-                                            disabled={
-                                                !gridItemActions ||
-                                                gridItemActions.length === 0
-                                            }
+                                            disabled={!gridItemActions || gridItemActions.length === 0}
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                setGridItemActionMenuAnchor(
-                                                    e.currentTarget
-                                                );
+                                                setGridItemActionMenuAnchor(e.currentTarget);
                                                 setItemMenuOpenPk(item.pk);
-                                                gridItemActions?.forEach(
-                                                    (action) =>
-                                                        action
-                                                            .enableForItemAsync?.(
-                                                                item
-                                                            )
-                                                            .then((enable) => {
-                                                                if (enable) {
-                                                                    setEnabledGridActionsAsync(
-                                                                        (
-                                                                            enabledGridActions
-                                                                        ) => {
-                                                                            const newVal =
-                                                                                {
-                                                                                    [item.pk]:
-                                                                                        [
-                                                                                            ...(enabledGridActions[
-                                                                                                item
-                                                                                                    .pk
-                                                                                            ] ??
-                                                                                                []),
-                                                                                            action.name,
-                                                                                        ],
-                                                                                };
-                                                                            return {
-                                                                                ...enabledGridActions,
-                                                                                ...newVal,
-                                                                            };
-                                                                        }
-                                                                    );
-                                                                }
-                                                            })
+                                                gridItemActions?.forEach((action) =>
+                                                    action.enableForItemAsync?.(item).then((enable) => {
+                                                        if (enable) {
+                                                            setEnabledGridActionsAsync((enabledGridActions) => {
+                                                                const newVal = {
+                                                                    [item.pk]: [
+                                                                        ...(enabledGridActions[item.pk] ?? []),
+                                                                        action.name,
+                                                                    ],
+                                                                };
+                                                                return {
+                                                                    ...enabledGridActions,
+                                                                    ...newVal,
+                                                                };
+                                                            });
+                                                        }
+                                                    })
                                                 );
                                             }}
                                         >
-                                            <FontAwesomeSvgIcon
-                                                icon={faEllipsisVertical}
-                                            />
+                                            <FontAwesomeSvgIcon icon={faEllipsisVertical} />
                                         </IconButton>
                                     )}
                                 </div>
                                 <Menu
                                     id={"grid_item_menu_" + item.pk}
                                     key={"grid_item_menu_" + item.pk}
-                                    open={
-                                        gridItemActionMenuOpen &&
-                                        itemMenuOpenPk === item.pk
-                                    }
+                                    open={gridItemActionMenuOpen && itemMenuOpenPk === item.pk}
                                     anchorEl={gridItemActionMenuAnchor}
                                     onClose={() => {
                                         setGridItemActionMenuAnchor(null);
@@ -422,65 +302,42 @@ export function PaginatedGridView({
                                 >
                                     {gridItemActions?.map((action) => (
                                         <MenuItem
-                                            id={
-                                                "grid_item_menu_" +
-                                                item.pk +
-                                                "_action_" +
-                                                action.name
-                                            }
-                                            key={
-                                                "grid_item_menu_" +
-                                                item.pk +
-                                                "_action_" +
-                                                action.name
-                                            }
+                                            id={"grid_item_menu_" + item.pk + "_action_" + action.name}
+                                            key={"grid_item_menu_" + item.pk + "_action_" + action.name}
                                             color={action.color ?? "white"}
                                             sx={{
                                                 color: action.color ?? "white",
                                             }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                setGridItemActionMenuAnchor(
-                                                    null
-                                                );
+                                                setGridItemActionMenuAnchor(null);
                                                 setItemMenuOpenPk(null);
                                                 action.fn([item]);
                                             }}
                                             disabled={
                                                 action.disabled ||
-                                                (action.enableForItem &&
-                                                    !action.enableForItem(
-                                                        item
-                                                    )) ||
+                                                (action.enableForItem && !action.enableForItem(item)) ||
                                                 (action.enableForItemAsync &&
-                                                    !enabledGridActionsAsync[
-                                                        item.pk
-                                                    ]?.includes(action.name))
+                                                    !enabledGridActionsAsync[item.pk]?.includes(action.name))
                                             }
                                         >
                                             <ListItemIcon
                                                 color={action.color ?? "white"}
                                                 sx={{
-                                                    color:
-                                                        action.color ?? "white",
+                                                    color: action.color ?? "white",
                                                 }}
                                             >
-                                                <FontAwesomeIcon
-                                                    icon={action.icon}
-                                                />
+                                                <FontAwesomeIcon icon={action.icon} />
                                             </ListItemIcon>
                                             <ListItemText
                                                 color={action.color ?? "white"}
                                                 sx={{
-                                                    color:
-                                                        action.color ?? "white",
+                                                    color: action.color ?? "white",
                                                 }}
                                                 slotProps={{
                                                     primary: {
                                                         style: {
-                                                            color:
-                                                                action.color ??
-                                                                "white",
+                                                            color: action.color ?? "white",
                                                         },
                                                     },
                                                 }}
@@ -503,15 +360,8 @@ export function PaginatedGridView({
                     paddingLeft: isDesktop ? "25px" : "10px",
                 }}
             >
-                {isDesktop && (
-                    <div id="page-full-count">
-                        {fullCount !== null && <span>{fullCount} results</span>}
-                    </div>
-                )}
-                <div
-                    id="page-grid-pagination-container"
-                    style={{ justifySelf: isDesktop ? "center" : "flex-start" }}
-                >
+                {isDesktop && <div id="page-full-count">{fullCount !== null && <span>{fullCount} results</span>}</div>}
+                <div id="page-grid-pagination-container" style={{ justifySelf: isDesktop ? "center" : "flex-start" }}>
                     <Pagination
                         page={pageParam + 1}
                         count={pageCount ?? 999}
@@ -522,13 +372,7 @@ export function PaginatedGridView({
                         siblingCount={isDesktop ? 3 : 1}
                         boundaryCount={pageCount !== null && isDesktop ? 1 : 0}
                         color="primary"
-                        size={
-                            useLargeControls
-                                ? isDesktop
-                                    ? "large"
-                                    : "medium"
-                                : "small"
-                        }
+                        size={useLargeControls ? (isDesktop ? "large" : "medium") : "small"}
                         renderItem={(item) => {
                             let page = item.page ?? 1;
                             let searchParams = new URLSearchParams();
@@ -538,13 +382,7 @@ export function PaginatedGridView({
                                 pathname: pagePath,
                                 search: searchParams.toString(),
                             };
-                            return (
-                                <PaginationItem
-                                    component={NavLink}
-                                    to={location}
-                                    {...item}
-                                />
-                            );
+                            return <PaginationItem component={NavLink} to={location} {...item} />;
                         }}
                     />
                 </div>
@@ -564,11 +402,7 @@ export function PaginatedGridView({
                             <DeselectIcon />
                         </IconButton>
                     ) : (
-                        <IconButton
-                            color="primary"
-                            size="medium"
-                            onClick={() => setSelectionMode(true)}
-                        >
+                        <IconButton color="primary" size="medium" onClick={() => setSelectionMode(true)}>
                             <SelectAllIcon />
                         </IconButton>
                     )}
@@ -579,13 +413,7 @@ export function PaginatedGridView({
                                 key={"selection_action_" + action.name}
                                 color="primary"
                                 size="medium"
-                                disabled={
-                                    action.disabled ||
-                                    !(
-                                        action.allowExecuteForAll ||
-                                        selectedItems.length > 0
-                                    )
-                                }
+                                disabled={action.disabled || !(action.allowExecuteForAll || selectedItems.length > 0)}
                                 onClick={() =>
                                     action.fn(selectedItems, (result) => {
                                         if (result) {
@@ -616,12 +444,8 @@ export function PreviewGrid({
     title: string;
     searchLink: string;
     onItemClickPath: (item: PaginatedGridViewItem) => string;
-    getMediaTypeIcon?:
-        | ((item: PaginatedGridViewItem) => IconDefinition | undefined)
-        | undefined;
-    getMediaDurationDisplay?:
-        | ((item: PaginatedGridViewItem) => string | undefined)
-        | undefined;
+    getMediaTypeIcon?: ((item: PaginatedGridViewItem) => IconDefinition | undefined) | undefined;
+    getMediaDurationDisplay?: ((item: PaginatedGridViewItem) => string | undefined) | undefined;
 }) {
     return (
         <Paper elevation={2} className="post-preview-container">
@@ -646,11 +470,7 @@ export function PreviewGrid({
                     if (item.thumbnail_url) {
                         thumbnailUrl = item.thumbnail_url;
                     } else if (item.thumbnail_object_key) {
-                        thumbnailUrl = urlJoin(
-                            getApiUrl(),
-                            "get-object",
-                            item.thumbnail_object_key
-                        );
+                        thumbnailUrl = urlJoin(getApiUrl(), "get-object", item.thumbnail_object_key);
                     } else {
                         thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
                     }
@@ -669,56 +489,31 @@ export function PreviewGrid({
                                 key={"link_" + item.pk}
                                 sx={{ height: "100%" }}
                             >
-                                <div
-                                    key={"flex_" + item.pk}
-                                    className="paginated_grid_view_item_wrapper_flexbox"
-                                >
-                                    <div
-                                        key={"thumbnail_wrapper_" + item.pk}
-                                        className="preview_thumbnail_wrapper"
-                                    >
+                                <div key={"flex_" + item.pk} className="paginated_grid_view_item_wrapper_flexbox">
+                                    <div key={"thumbnail_wrapper_" + item.pk} className="preview_thumbnail_wrapper">
                                         <div
-                                            key={
-                                                "thumbnail_wrapper_img_" +
-                                                item.pk
-                                            }
+                                            key={"thumbnail_wrapper_img_" + item.pk}
                                             className="preview_thumbnail_image"
                                         >
                                             <LazyLoadImage
                                                 alt={`Thumnail for item ${item.pk}`}
                                                 src={thumbnailUrl}
                                                 effect="blur"
-                                                placeholderSrc={urlJoin(
-                                                    getPublicUrl(),
-                                                    "logo192.png"
-                                                )}
+                                                placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
                                                 className="thumb-img"
                                             />
                                             {mediaTypeIcon && (
                                                 <span className="thumbnail_media_icon">
-                                                    <FontAwesomeSvgIcon
-                                                        fontSize="inherit"
-                                                        icon={mediaTypeIcon}
-                                                    />
+                                                    <FontAwesomeSvgIcon fontSize="inherit" icon={mediaTypeIcon} />
                                                 </span>
                                             )}
-                                            {duration && (
-                                                <span className="thumbnail_duration_badge">
-                                                    {duration}
-                                                </span>
-                                            )}
+                                            {duration && <span className="thumbnail_duration_badge">{duration}</span>}
                                         </div>
                                     </div>
-                                    <div
-                                        key={"footer_" + item.pk}
-                                        className="paginated_grid_view_item_footer"
-                                    >
+                                    <div key={"footer_" + item.pk} className="paginated_grid_view_item_footer">
                                         <ImageListItemBar
                                             title={item.title}
-                                            subtitle={
-                                                item.create_user.display_name ??
-                                                item.create_user.user_name
-                                            }
+                                            subtitle={item.create_user.display_name ?? item.create_user.user_name}
                                             position="below"
                                         />
                                     </div>

@@ -1,14 +1,6 @@
 import { User } from "./App";
 import { ReactElement } from "react";
-import {
-    Album,
-    Face,
-    LocalMovies,
-    Palette,
-    Save,
-    SportsEsports,
-    TheaterComedy,
-} from "@mui/icons-material";
+import { Album, Face, LocalMovies, Palette, Save, SportsEsports, TheaterComedy } from "@mui/icons-material";
 
 export class UserPublic {
     pk: number;
@@ -363,12 +355,7 @@ export class BrokerAvailability {
     used_quota: number;
     quota_bytes: number | null | undefined;
 
-    constructor(
-        broker: Broker,
-        used_bytes: number,
-        used_quota: number,
-        quota_bytes: number | null | undefined
-    ) {
+    constructor(broker: Broker, used_bytes: number, used_quota: number, quota_bytes: number | null | undefined) {
         this.broker = broker;
         this.used_bytes = used_bytes;
         this.used_quota = used_quota;
@@ -449,10 +436,7 @@ export class BrokerDetailed {
     }
 }
 
-export function updateBrokerWithValues(
-    current: BrokerDetailed,
-    values: Broker
-): BrokerDetailed {
+export function updateBrokerWithValues(current: BrokerDetailed, values: Broker): BrokerDetailed {
     return {
         ...current,
         name: values.name,
@@ -472,15 +456,8 @@ export function updateBrokerWithValues(
     };
 }
 
-export function isBrokerDetailed(
-    broker: Broker | BrokerDetailed | null
-): broker is BrokerDetailed {
-    return (
-        !!broker &&
-        "owner" in broker &&
-        "is_admin" in broker &&
-        "used_bytes" in broker
-    );
+export function isBrokerDetailed(broker: Broker | BrokerDetailed | null): broker is BrokerDetailed {
+    return !!broker && "owner" in broker && "is_admin" in broker && "used_bytes" in broker;
 }
 
 export type BrokerAuditAction =
@@ -570,23 +547,17 @@ export class TagCategory {
 }
 
 export function sortTags(a: Tag, b: Tag): number {
-    if (!a.tag_category && !b.tag_category)
-        return a.tag_name.localeCompare(b.tag_name);
+    if (!a.tag_category && !b.tag_category) return a.tag_name.localeCompare(b.tag_name);
     if (!a.tag_category) return 1;
     if (!b.tag_category) return -1;
-    return (
-        a.tag_category.localeCompare(b.tag_category) ||
-        a.tag_name.localeCompare(b.tag_name)
-    );
+    return a.tag_category.localeCompare(b.tag_category) || a.tag_name.localeCompare(b.tag_name);
 }
 
 export function sortTagUsages(a: TagUsage, b: TagUsage): number {
     return sortTags(a.tag, b.tag);
 }
 
-export function getIconForTagCategory(
-    tagCategory: string
-): ReactElement | undefined {
+export function getIconForTagCategory(tagCategory: string): ReactElement | undefined {
     switch (tagCategory) {
         case "album":
             return <Album />;
@@ -674,13 +645,7 @@ export class UserGroup {
     fk_owner: number;
     creation_timestamp: string;
 
-    constructor(
-        pk: number,
-        name: string,
-        is_public: boolean,
-        fk_owner: number,
-        creation_timestamp: string
-    ) {
+    constructor(pk: number, name: string, is_public: boolean, fk_owner: number, creation_timestamp: string) {
         this.pk = pk;
         this.name = name;
         this.is_public = is_public;
@@ -1077,11 +1042,7 @@ export class AnalyzeQueryRequest {
     query: string;
     scope: string;
 
-    constructor(
-        cursor_pos: number | null | undefined,
-        query: string,
-        scope: string
-    ) {
+    constructor(cursor_pos: number | null | undefined, query: string, scope: string) {
         this.cursor_pos = cursor_pos;
         this.query = query;
         this.scope = scope;
@@ -1151,10 +1112,7 @@ export class AnalyzeQueryResponse {
     error: QueryCompilationError | null | undefined;
     suggestions: QueryAutocompleteSuggestion[];
 
-    constructor(
-        error: QueryCompilationError | null | undefined,
-        suggestions: QueryAutocompleteSuggestion[]
-    ) {
+    constructor(error: QueryCompilationError | null | undefined, suggestions: QueryAutocompleteSuggestion[]) {
         this.error = error;
         this.suggestions = suggestions;
     }

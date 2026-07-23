@@ -76,9 +76,7 @@
 }
 
 .loading-container {
-    height: calc(
-        100vh - 120px - 56px
-    ); /* 60px each for header and pagination footer, 56px for action bar */
+    height: calc(100vh - 120px - 56px); /* 60px each for header and pagination footer, 56px for action bar */
     display: flex;
     align-items: center;
     justify-content: center;

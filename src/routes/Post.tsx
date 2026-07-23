@@ -1,11 +1,5 @@
 import React, { ReactElement, useEffect, useRef, useState } from "react";
-import {
-    Link,
-    Location,
-    useLocation,
-    useNavigate,
-    useParams,
-} from "react-router-dom";
+import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
 import App from "../App";
 import http, { getApiUrl, getPublicUrl } from "../http-common";
@@ -27,24 +21,8 @@ import {
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { faFloppyDisk } from "@fortawesome/free-regular-svg-icons";
-import {
-    DeletePostsResponse,
-    GroupAccessDefinition,
-    PostDetailed,
-    sortTagUsages,
-    Tag,
-    UserGroup,
-} from "../Model";
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    FormControlLabel,
-    IconButton,
-    Switch,
-    TextField,
-    Tooltip,
-} from "@mui/material";
+import { DeletePostsResponse, GroupAccessDefinition, PostDetailed, sortTagUsages, Tag, UserGroup } from "../Model";
+import { Box, Button, ButtonGroup, FormControlLabel, IconButton, Switch, TextField, Tooltip } from "@mui/material";
 import { TagCreator, TagSelector } from "../components/TagEditor";
 import { GroupSelector } from "../components/GroupEditor";
 import urlJoin from "url-join";
@@ -71,9 +49,7 @@ class PostProps {
 
 function Post({ app }: PostProps) {
     let { collection_id, id } = useParams();
-    const basePostPath = collection_id
-        ? "/collection/" + collection_id + "/post/"
-        : "/post/";
+    const basePostPath = collection_id ? "/collection/" + collection_id + "/post/" : "/post/";
     const [post, setPost] = useState<PostDetailed | null>(null);
     const location = useLocation();
     const search = location.search;
@@ -91,24 +67,17 @@ function Post({ app }: PostProps) {
     const [publicPost, setPublicPost] = useState(false);
     const [publicPostEdit, setPublicPostEdit] = useState(false);
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
-    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>(
-        []
-    );
-    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] =
-        useState<number[]>([]);
+    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
     const [hlsEnabled, setHlsEnabled] = useState(true);
-    const [mediaComponent, setMediaComponent] = useState<
-        ReactElement | undefined | null
-    >(null);
+    const [mediaComponent, setMediaComponent] = useState<ReactElement | undefined | null>(null);
 
     const [mediaWidth, setMediaWidth] = useState<number | undefined>(undefined);
     const [useLargeControls, setUseLargeControls] = useState(false);
     const resizeObservers = useRef<ResizeObserver[]>([]);
     useEffect(() => {
         return () => {
-            resizeObservers.current.forEach((observer) =>
-                observer.disconnect()
-            );
+            resizeObservers.current.forEach((observer) => observer.disconnect());
         };
     }, []);
     const mediaComponentElementCallback = (el: HTMLDivElement | null) => {
@@ -118,10 +87,7 @@ function Post({ app }: PostProps) {
 
         let currEl: HTMLElement | null = el;
         let minWidth;
-        while (
-            currEl &&
-            (!minWidth || minWidth === "auto" || minWidth === "inherit")
-        ) {
+        while (currEl && (!minWidth || minWidth === "auto" || minWidth === "inherit")) {
             minWidth = window.getComputedStyle(currEl).minWidth;
             currEl = currEl.parentElement;
         }
@@ -145,9 +111,7 @@ function Post({ app }: PostProps) {
 
     const [autoplayEnabled, setAutoplayEnabled] = useState(false);
     const autoplayEnabledRef = useRef(autoplayEnabled);
-    const autoplayPreferenceUpdateTimeoutRef = useRef<ReturnType<
-        typeof setTimeout
-    > | null>(null);
+    const autoplayPreferenceUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => {
         return () => {
             if (autoplayPreferenceUpdateTimeoutRef.current) {
@@ -158,10 +122,7 @@ function Post({ app }: PostProps) {
     useEffect(() => {
         autoplayEnabledRef.current = autoplayEnabled;
     }, [autoplayEnabled]);
-    const handleSetAutoplayEnabledChange = (
-        post: PostDetailed,
-        enabled: boolean
-    ) => {
+    const handleSetAutoplayEnabledChange = (post: PostDetailed, enabled: boolean) => {
         setAutoplayEnabled(enabled);
 
         if (autoplayPreferenceUpdateTimeoutRef.current) {
@@ -197,23 +158,13 @@ function Post({ app }: PostProps) {
 
     function updatePost(postDetailed: PostDetailed | null) {
         setPost(postDetailed);
-        setTags(
-            postDetailed?.tags
-                ?.sort(sortTagUsages)
-                .map((tagUsage) => tagUsage.tag) ?? []
-        );
-        setSelectedTags(
-            postDetailed?.tags?.map((tagUsage) => tagUsage.tag.pk) ?? []
-        );
+        setTags(postDetailed?.tags?.sort(sortTagUsages).map((tagUsage) => tagUsage.tag) ?? []);
+        setSelectedTags(postDetailed?.tags?.map((tagUsage) => tagUsage.tag.pk) ?? []);
         setTitle(postDetailed?.title || "");
         setDescription(postDetailed?.description || "");
         setPublicPost(postDetailed?.is_public || false);
         setPublicPostEdit(postDetailed?.public_edit || false);
-        setSelectedUserGroups(
-            postDetailed?.group_access?.map(
-                (groupAccess) => groupAccess.granted_group
-            ) ?? []
-        );
+        setSelectedUserGroups(postDetailed?.group_access?.map((groupAccess) => groupAccess.granted_group) ?? []);
         setSelectedUserGroupsReadOnly(
             postDetailed?.group_access
                 ?.filter((groupAccess) => !groupAccess.write)
@@ -234,65 +185,39 @@ function Post({ app }: PostProps) {
         updatePost(null);
         let fetch = async () => {
             try {
-                let config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                let config = await app.getAuthorization(location, navigate, false);
 
-                let basePath = collection_id
-                    ? "/get-post/" + collection_id
-                    : "/get-post";
-                let post = await http.get<PostDetailed>(
-                    `${basePath}/${id}${search}`,
-                    config
-                );
+                let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
+                let post = await http.get<PostDetailed>(`${basePath}/${id}${search}`, config);
                 updatePost(post.data);
 
                 if (isAudio(post.data)) {
                     const preferences = app.getUserPreferences();
                     if (collection_id) {
-                        setAutoplayEnabled(
-                            preferences?.auto_play_audio_in_collection ?? false
-                        );
+                        setAutoplayEnabled(preferences?.auto_play_audio_in_collection ?? false);
                     } else {
-                        setAutoplayEnabled(
-                            preferences?.auto_play_audio ?? false
-                        );
+                        setAutoplayEnabled(preferences?.auto_play_audio ?? false);
                     }
                 } else if (isVideo(post.data)) {
                     const preferences = app.getUserPreferences();
                     if (collection_id) {
-                        setAutoplayEnabled(
-                            preferences?.auto_play_video_in_collection ?? false
-                        );
+                        setAutoplayEnabled(preferences?.auto_play_video_in_collection ?? false);
                     } else {
-                        setAutoplayEnabled(
-                            preferences?.auto_play_video ?? false
-                        );
+                        setAutoplayEnabled(preferences?.auto_play_video ?? false);
                     }
                 } else {
                     setAutoplayEnabled(false);
                 }
 
                 if (config) {
-                    let currentUserGroups = await http.get<UserGroup[]>(
-                        "/get-current-user-groups",
-                        config
-                    );
+                    let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
                     setCurrentUserGroups(currentUserGroups.data);
                 }
             } catch (e: any) {
                 if (e.response?.status === 403) {
                     app.openModal("Error", <p>This post is unavailable.</p>);
                 } else if (e.response?.status === 401) {
-                    app.openModal(
-                        "Error",
-                        <p>
-                            Your credentials have expired, try refreshing the
-                            page.
-                        </p>
-                    );
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                 }
                 console.error(e);
             }
@@ -315,20 +240,11 @@ function Post({ app }: PostProps) {
     const reloadPostData = (cb?: (post: PostDetailed) => void) => {
         const fetch = async () => {
             try {
-                let config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                let config = await app.getAuthorization(location, navigate, false);
                 let searchParams = new URLSearchParams(search);
                 searchParams.set("exclude_window", "true");
-                let basePath = collection_id
-                    ? "/get-post/" + collection_id
-                    : "/get-post";
-                let result = await http.get<PostDetailed>(
-                    `${basePath}/${id}?${searchParams}`,
-                    config
-                );
+                let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
+                let result = await http.get<PostDetailed>(`${basePath}/${id}?${searchParams}`, config);
                 if (post) {
                     result.data.prev_post = post.prev_post;
                     result.data.next_post = post.next_post;
@@ -339,13 +255,7 @@ function Post({ app }: PostProps) {
                 if (e.response?.status === 403) {
                     app.openModal("Error", <p>This post is unavailable.</p>);
                 } else if (e.response?.status === 401) {
-                    app.openModal(
-                        "Error",
-                        <p>
-                            Your credentials have expired, try refreshing the
-                            page.
-                        </p>
-                    );
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                 }
                 console.error(e);
             }
@@ -399,9 +309,7 @@ function Post({ app }: PostProps) {
             console.log("Reloading post data");
             reloadPostData((post) => {
                 if (currPresignedUrl !== post?.s3_object_presigned_url) {
-                    console.log(
-                        "Presigned url changed, reloading media component"
-                    );
+                    console.log("Presigned url changed, reloading media component");
                     updateMediaComponent();
                 }
             });
@@ -439,12 +347,9 @@ function Post({ app }: PostProps) {
         }
     };
 
-    const getComponentForData = (
-        post: PostDetailed
-    ): ReactElement | undefined => {
+    const getComponentForData = (post: PostDetailed): ReactElement | undefined => {
         if (post.s3_object != null) {
-            let dataUrl =
-                getApiUrl() + "get-object/" + post.s3_object.object_key;
+            let dataUrl = getApiUrl() + "get-object/" + post.s3_object.object_key;
             if (post.s3_object.mime_type.startsWith("image")) {
                 return (
                     <img
@@ -458,11 +363,7 @@ function Post({ app }: PostProps) {
                 if (post.thumbnail_url) {
                     thumbnailUrl = post.thumbnail_url;
                 } else if (post.s3_object?.thumbnail_object_key) {
-                    thumbnailUrl = urlJoin(
-                        getApiUrl(),
-                        "get-object",
-                        post.s3_object.thumbnail_object_key
-                    );
+                    thumbnailUrl = urlJoin(getApiUrl(), "get-object", post.s3_object.thumbnail_object_key);
                 } else {
                     thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
                 }
@@ -485,10 +386,7 @@ function Post({ app }: PostProps) {
                     {
                         src: dataUrl,
                         // attempt to play mvk as webm
-                        type:
-                            videoType === "video/x-matroska"
-                                ? "video/webm"
-                                : post.s3_object.mime_type,
+                        type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type,
                     },
                 ];
 
@@ -496,29 +394,18 @@ function Post({ app }: PostProps) {
                     sources.splice(0, 0, {
                         src: post.s3_object_presigned_url,
                         // attempt to play mvk as webm
-                        type:
-                            videoType === "video/x-matroska"
-                                ? "video/webm"
-                                : post.s3_object.mime_type,
+                        type: videoType === "video/x-matroska" ? "video/webm" : post.s3_object.mime_type,
                     });
                 }
 
                 if (hlsEnabled && post.s3_object.hls_master_playlist) {
                     sources.splice(0, 0, {
-                        src: urlJoin(
-                            getApiUrl(),
-                            "get-object",
-                            post.s3_object.hls_master_playlist
-                        ),
+                        src: urlJoin(getApiUrl(), "get-object", post.s3_object.hls_master_playlist),
                         type: "application/vnd.apple.mpegurl",
                     });
                     if (post.s3_object_presigned_url) {
                         sources.splice(0, 0, {
-                            src: urlJoin(
-                                getApiUrl(),
-                                "get-presigned-hls-playlist",
-                                post.s3_object.hls_master_playlist
-                            ),
+                            src: urlJoin(getApiUrl(), "get-presigned-hls-playlist", post.s3_object.hls_master_playlist),
                             type: "application/vnd.apple.mpegurl",
                         });
                     }
@@ -563,9 +450,7 @@ function Post({ app }: PostProps) {
         postContainerButtonGroup = (
             <ButtonGroup
                 size={useLargeControls ? "large" : "medium"}
-                orientation={
-                    mediaWidth && mediaWidth < 350 ? "vertical" : "horizontal"
-                }
+                orientation={mediaWidth && mediaWidth < 350 ? "vertical" : "horizontal"}
             >
                 <Button href={dataUrl} target="_blank" rel="noreferrer">
                     <FontAwesomeSvgIcon fontSize="inherit" icon={faDownload} />
@@ -573,16 +458,9 @@ function Post({ app }: PostProps) {
                 {app.isLoggedIn() && (
                     <Button
                         onClick={() =>
-                            app.openModal(
-                                "Add to collection",
-                                (addToCollectionModal) => (
-                                    <AddToCollectionDialogue
-                                        app={app}
-                                        postPks={[post.pk]}
-                                        modal={addToCollectionModal}
-                                    />
-                                )
-                            )
+                            app.openModal("Add to collection", (addToCollectionModal) => (
+                                <AddToCollectionDialogue app={app} postPks={[post.pk]} modal={addToCollectionModal} />
+                            ))
                         }
                     >
                         <FontAwesomeSvgIcon fontSize="inherit" icon={faPlus} />
@@ -594,42 +472,28 @@ function Post({ app }: PostProps) {
                             app.openModal("Delete post", (modal) => (
                                 <ActionModal
                                     modalContent={modal}
-                                    text={
-                                        post.title
-                                            ? `Delete post '${post.title}'`
-                                            : `Delete 1 post`
-                                    }
+                                    text={post.title ? `Delete post '${post.title}'` : `Delete 1 post`}
                                     actions={[
                                         {
                                             name: "Ok",
                                             fn: async () => {
-                                                const loadingModal =
-                                                    app.openLoadingModal();
+                                                const loadingModal = app.openLoadingModal();
                                                 try {
-                                                    const config =
-                                                        await app.getAuthorization(
-                                                            location,
-                                                            navigate
-                                                        );
-                                                    const result =
-                                                        await http.post<DeletePostsResponse>(
-                                                            "/delete-posts",
-                                                            {
-                                                                post_pks: [
-                                                                    post.pk,
-                                                                ],
-                                                                inaccessible_post_mode:
-                                                                    "skip",
-                                                                delete_unreferenced_objects: true,
-                                                            },
-                                                            config
-                                                        );
+                                                    const config = await app.getAuthorization(location, navigate);
+                                                    const result = await http.post<DeletePostsResponse>(
+                                                        "/delete-posts",
+                                                        {
+                                                            post_pks: [post.pk],
+                                                            inaccessible_post_mode: "skip",
+                                                            delete_unreferenced_objects: true,
+                                                        },
+                                                        config
+                                                    );
 
                                                     loadingModal.close();
                                                     navigate({
                                                         pathname: collection_id
-                                                            ? "/collection/" +
-                                                              collection_id
+                                                            ? "/collection/" + collection_id
                                                             : "/posts",
                                                         search: search,
                                                     });
@@ -643,8 +507,7 @@ function Post({ app }: PostProps) {
                                                     console.error(e);
                                                     loadingModal.close();
                                                     enqueueSnackbar({
-                                                        message:
-                                                            "Failed to delete post",
+                                                        message: "Failed to delete post",
                                                         variant: "error",
                                                     });
                                                 }
@@ -670,10 +533,7 @@ function Post({ app }: PostProps) {
                             )
                         }
                     >
-                        <FontAwesomeSvgIcon
-                            fontSize="inherit"
-                            icon={faInfoCircle}
-                        />
+                        <FontAwesomeSvgIcon fontSize="inherit" icon={faInfoCircle} />
                     </Button>
                 )}
             </ButtonGroup>
@@ -683,8 +543,7 @@ function Post({ app }: PostProps) {
             <>
                 <div>
                     <FontAwesomeIcon icon={faUser}></FontAwesomeIcon>{" "}
-                    {post.create_user.display_name ||
-                        post.create_user.user_name}
+                    {post.create_user.display_name || post.create_user.user_name}
                 </div>
                 <div>
                     <FontAwesomeIcon icon={faClock}></FontAwesomeIcon>{" "}
@@ -702,12 +561,7 @@ function Post({ app }: PostProps) {
                 key: post.prev_post.pk.toString(),
             };
             prevLink = (
-                <Button
-                    component={Link}
-                    to={location}
-                    size="large"
-                    sx={{ minWidth: "0" }}
-                >
+                <Button component={Link} to={location} size="large" sx={{ minWidth: "0" }}>
                     <FontAwesomeSvgIcon fontSize="inherit" icon={faAngleLeft} />
                 </Button>
             );
@@ -721,30 +575,18 @@ function Post({ app }: PostProps) {
                 key: post.next_post.pk.toString(),
             };
             nextLink = (
-                <Button
-                    component={Link}
-                    to={location}
-                    size="large"
-                    sx={{ minWidth: "0" }}
-                >
-                    <FontAwesomeSvgIcon
-                        fontSize="inherit"
-                        icon={faAngleRight}
-                    />
+                <Button component={Link} to={location} size="large" sx={{ minWidth: "0" }}>
+                    <FontAwesomeSvgIcon fontSize="inherit" icon={faAngleRight} />
                 </Button>
             );
         }
     } else {
-        component = (
-            <FontAwesomeIcon icon={faCircleNotch} spin></FontAwesomeIcon>
-        );
+        component = <FontAwesomeIcon icon={faCircleNotch} spin></FontAwesomeIcon>;
     }
 
     return (
         <div id="Post">
-            <PageTitle
-                title={post ? post.title || "Untitled Post" : undefined}
-            />
+            <PageTitle title={post ? post.title || "Untitled Post" : undefined} />
             <div id="post-container">
                 <div id="post-container-top-row">
                     <Button
@@ -753,9 +595,7 @@ function Post({ app }: PostProps) {
                         startIcon={<FontAwesomeSvgIcon icon={faAngleLeft} />}
                         sx={{ marginRight: "5px" }}
                         to={{
-                            pathname: collection_id
-                                ? "/collection/" + collection_id
-                                : "/posts",
+                            pathname: collection_id ? "/collection/" + collection_id : "/posts",
                             search: search,
                         }}
                     >
@@ -778,68 +618,56 @@ function Post({ app }: PostProps) {
                         <></>
                     )}
                     <div id="navigate-buttons">
-                        {post &&
-                            post.next_post &&
-                            (isAudio(post) || isVideo(post)) && (
-                                <Tooltip
-                                    title={
-                                        autoplayEnabled
-                                            ? "Disable autoplay"
-                                            : "Enable autoplay"
+                        {post && post.next_post && (isAudio(post) || isVideo(post)) && (
+                            <Tooltip title={autoplayEnabled ? "Disable autoplay" : "Enable autoplay"} arrow>
+                                <Switch
+                                    checked={autoplayEnabled}
+                                    onChange={(_e, checked) => {
+                                        handleSetAutoplayEnabledChange(post, checked);
+                                    }}
+                                    icon={
+                                        <Box
+                                            sx={{
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: "50%",
+                                                bgcolor: "white",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <PauseIcon
+                                                fontSize="inherit"
+                                                sx={{
+                                                    color: "var(--bs-body-bg)",
+                                                }}
+                                            />
+                                        </Box>
                                     }
-                                    arrow
-                                >
-                                    <Switch
-                                        checked={autoplayEnabled}
-                                        onChange={(_e, checked) => {
-                                            handleSetAutoplayEnabledChange(
-                                                post,
-                                                checked
-                                            );
-                                        }}
-                                        icon={
-                                            <Box
+                                    checkedIcon={
+                                        <Box
+                                            sx={{
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: "50%",
+                                                bgcolor: "white",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <PlayArrowIcon
+                                                fontSize="inherit"
                                                 sx={{
-                                                    width: 20,
-                                                    height: 20,
-                                                    borderRadius: "50%",
-                                                    bgcolor: "white",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
+                                                    color: "var(--bs-body-bg)",
                                                 }}
-                                            >
-                                                <PauseIcon
-                                                    fontSize="inherit"
-                                                    sx={{
-                                                        color: "var(--bs-body-bg)",
-                                                    }}
-                                                />
-                                            </Box>
-                                        }
-                                        checkedIcon={
-                                            <Box
-                                                sx={{
-                                                    width: 20,
-                                                    height: 20,
-                                                    borderRadius: "50%",
-                                                    bgcolor: "white",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
-                                                <PlayArrowIcon
-                                                    fontSize="inherit"
-                                                    sx={{
-                                                        color: "var(--bs-body-bg)",
-                                                    }}
-                                                />
-                                            </Box>
-                                        }
-                                    />
-                                </Tooltip>
-                            )}
+                                            />
+                                        </Box>
+                                    }
+                                />
+                            </Tooltip>
+                        )}
                         {prevLink}
                         {nextLink}
                     </div>
@@ -857,21 +685,14 @@ function Post({ app }: PostProps) {
                     >
                         {postInformation}
                     </div>
-                    <div className="post-container-button-group">
-                        {postContainerButtonGroup}
-                    </div>
+                    <div className="post-container-button-group">{postContainerButtonGroup}</div>
                 </div>
             </div>
             <div id="post-information-container">
                 {isEditMode ? (
                     <div className="button-row">
                         <Button
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faXmark}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
                             onClick={() => setEditMode(false)}
                         >
                             Cancel
@@ -881,35 +702,19 @@ function Post({ app }: PostProps) {
                     post && (
                         <div className="button-row">
                             <Button
-                                startIcon={
-                                    <FontAwesomeSvgIcon
-                                        fontSize="inherit"
-                                        icon={faPenToSquare}
-                                    />
-                                }
+                                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faPenToSquare} />}
                                 hidden={!post?.is_editable || !app.isLoggedIn()}
                                 onClick={() => setEditMode(true)}
                             >
                                 Edit
                             </Button>
                             <Button
-                                startIcon={
-                                    <FontAwesomeSvgIcon
-                                        fontSize="inherit"
-                                        icon={faClockRotateLeft}
-                                    />
-                                }
+                                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faClockRotateLeft} />}
                                 hidden={!post?.is_editable || !app.isLoggedIn()}
                                 onClick={() =>
                                     app.openModal(
                                         "History",
-                                        (modal) => (
-                                            <PostEditHistoryDialogue
-                                                app={app}
-                                                post={post}
-                                                modal={modal}
-                                            />
-                                        ),
+                                        (modal) => <PostEditHistoryDialogue app={app} post={post} modal={modal} />,
                                         (result) => {
                                             if (result) {
                                                 updatePost(result);
@@ -954,10 +759,7 @@ function Post({ app }: PostProps) {
                         }}
                     />
                 ) : (
-                    <p
-                        className="multiline-text"
-                        hidden={!(post && post.description)}
-                    >
+                    <p className="multiline-text" hidden={!(post && post.description)}>
                         {post && post.description}
                     </p>
                 )}
@@ -975,15 +777,9 @@ function Post({ app }: PostProps) {
                             sx={{ alignSelf: "center" }}
                             onClick={(e) => {
                                 e.preventDefault();
-                                app.openModal(
-                                    "Create Tag",
-                                    (createTagModal) => (
-                                        <TagCreator
-                                            app={app}
-                                            modal={createTagModal}
-                                        ></TagCreator>
-                                    )
-                                );
+                                app.openModal("Create Tag", (createTagModal) => (
+                                    <TagCreator app={app} modal={createTagModal}></TagCreator>
+                                ));
                             }}
                         >
                             <AddIcon />
@@ -1003,41 +799,26 @@ function Post({ app }: PostProps) {
                         selectedUserGroups={selectedUserGroups}
                         setSelectedUserGroups={setSelectedUserGroups}
                         selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
-                        setSelectedUserGroupsReadOnly={
-                            setSelectedUserGroupsReadOnly
-                        }
+                        setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
                         readOnly={!isEditMode}
                     />
                 </div>
                 <div className="button-row">
                     <Button
                         color="secondary"
-                        startIcon={
-                            <FontAwesomeSvgIcon
-                                fontSize="inherit"
-                                icon={faFloppyDisk}
-                            />
-                        }
+                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                         hidden={!isEditMode}
                         onClick={async () => {
                             let groupAccess: GroupAccessDefinition[] = [];
                             selectedUserGroups.forEach((group) =>
                                 groupAccess.push(
-                                    new GroupAccessDefinition(
-                                        group.pk,
-                                        !selectedUserGroupsReadOnly.includes(
-                                            group.pk
-                                        )
-                                    )
+                                    new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))
                                 )
                             );
 
                             const loadingModal = app.openLoadingModal();
                             try {
-                                let config = await app.getAuthorization(
-                                    location,
-                                    navigate
-                                );
+                                let config = await app.getAuthorization(location, navigate);
                                 let result = await http.post<PostDetailed>(
                                     `/edit-post/${post!.pk}`,
                                     new EditPostRequest(
@@ -1070,12 +851,9 @@ function Post({ app }: PostProps) {
                                 });
                                 updatePost(result.data);
                             } catch (e) {
-                                console.error(
-                                    "Error occurred editing post " + e
-                                );
+                                console.error("Error occurred editing post " + e);
                                 enqueueSnackbar({
-                                    message:
-                                        "An error occurred editing your post, please try again",
+                                    message: "An error occurred editing your post, please try again",
                                     variant: "error",
                                 });
                             }

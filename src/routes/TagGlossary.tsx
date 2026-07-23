@@ -5,19 +5,8 @@ import { Tag } from "../Model";
 
 import "./TagGlossary.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faAdd,
-    faCircleNotch,
-    faFilter,
-    faList,
-} from "@fortawesome/free-solid-svg-icons";
-import {
-    Button,
-    InputAdornment,
-    Pagination,
-    TextField,
-    useMediaQuery,
-} from "@mui/material";
+import { faAdd, faCircleNotch, faFilter, faList } from "@fortawesome/free-solid-svg-icons";
+import { Button, InputAdornment, Pagination, TextField, useMediaQuery } from "@mui/material";
 import { TagCategoryList, TagCreator } from "../components/TagEditor";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { Link } from "react-router-dom";
@@ -64,9 +53,7 @@ export function TagGlossary({ app }: { app: App }) {
         search.set("filter", filter);
         setLoading(true);
         try {
-            const response = await http.get<GetTagReponse>(
-                "/get-tags?" + search
-            );
+            const response = await http.get<GetTagReponse>("/get-tags?" + search);
             setTags(groupTagsByFirstLetter(response.data.tags));
             setCount(response.data.count);
         } catch (e: any) {
@@ -120,40 +107,23 @@ export function TagGlossary({ app }: { app: App }) {
                     />
                     <div className="button-row">
                         <Button
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faList}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faList} />}
                             onClick={(e) => {
                                 e.preventDefault();
-                                app.openModal("Tag Categories", (modal) => (
-                                    <TagCategoryList app={app} modal={modal} />
-                                ));
+                                app.openModal("Tag Categories", (modal) => <TagCategoryList app={app} modal={modal} />);
                             }}
                             hidden={!app.getUser()?.is_admin}
                         >
                             Categories
                         </Button>
                         <Button
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faAdd}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faAdd} />}
                             disabled={!app.isLoggedIn()}
                             onClick={(e) => {
                                 e.preventDefault();
                                 app.openModal(
                                     "Create Tag",
-                                    (createTagModal) => (
-                                        <TagCreator
-                                            app={app}
-                                            modal={createTagModal}
-                                        ></TagCreator>
-                                    ),
+                                    (createTagModal) => <TagCreator app={app} modal={createTagModal}></TagCreator>,
                                     (result) => {
                                         if (result) {
                                             loadTags();
@@ -175,22 +145,11 @@ export function TagGlossary({ app }: { app: App }) {
                         {Object.keys(tags)
                             .sort()
                             .map((letter: string) => (
-                                <div
-                                    key={letter}
-                                    className="tag-glossary-section"
-                                >
-                                    <h2 className="tag-glossary-letter">
-                                        {letter.toUpperCase()}
-                                    </h2>
+                                <div key={letter} className="tag-glossary-section">
+                                    <h2 className="tag-glossary-letter">{letter.toUpperCase()}</h2>
                                     {tags[letter].map((tag, index) => (
-                                        <li
-                                            key={index}
-                                            className="tag-glossary-item"
-                                        >
-                                            <Link
-                                                className="undecorated-link"
-                                                to={`/tag/${tag.pk}`}
-                                            >
+                                        <li key={index} className="tag-glossary-item">
+                                            <Link className="undecorated-link" to={`/tag/${tag.pk}`}>
                                                 {tag.tag_name}
                                             </Link>
                                         </li>
@@ -208,15 +167,8 @@ export function TagGlossary({ app }: { app: App }) {
                     paddingLeft: isDesktop ? "25px" : "10px",
                 }}
             >
-                {isDesktop && (
-                    <div id="page-full-count">
-                        {count !== null && <span>{count} tags</span>}
-                    </div>
-                )}
-                <div
-                    id="page-grid-pagination-container"
-                    style={{ justifySelf: isDesktop ? "center" : "flex-start" }}
-                >
+                {isDesktop && <div id="page-full-count">{count !== null && <span>{count} tags</span>}</div>}
+                <div id="page-grid-pagination-container" style={{ justifySelf: isDesktop ? "center" : "flex-start" }}>
                     <Pagination
                         page={page + 1}
                         count={Math.ceil(count / 1000)}
@@ -227,13 +179,7 @@ export function TagGlossary({ app }: { app: App }) {
                         siblingCount={isDesktop ? 3 : 1}
                         boundaryCount={isDesktop ? 1 : 0}
                         color="primary"
-                        size={
-                            useLargeControls
-                                ? isDesktop
-                                    ? "large"
-                                    : "medium"
-                                : "small"
-                        }
+                        size={useLargeControls ? (isDesktop ? "large" : "medium") : "small"}
                         onChange={(_e, value) => setPage(value - 1)}
                     />
                 </div>

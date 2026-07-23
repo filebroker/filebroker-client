@@ -16,10 +16,7 @@ export function ActionModal({
 }: {
     modalContent: ModalContent;
     text: string;
-    additionalContent?: (
-        value: string,
-        setValue: (v: string) => void
-    ) => ReactNode;
+    additionalContent?: (value: string, setValue: (v: string) => void) => ReactNode;
     actions: Action[];
     showCancelButton?: boolean;
 }) {
@@ -41,10 +38,7 @@ export function ActionModal({
             <div id="action-modal-button-row">
                 {showCancelButton && (
                     <div style={{ float: "left" }}>
-                        <Button
-                            color="error"
-                            onClick={() => modalContent.close()}
-                        >
+                        <Button color="error" onClick={() => modalContent.close()}>
                             Cancel
                         </Button>
                     </div>
@@ -57,10 +51,7 @@ export function ActionModal({
                                 onClick={async () => {
                                     let returnValue;
                                     try {
-                                        returnValue = await action.fn(
-                                            modalContent,
-                                            additionalContent && value
-                                        );
+                                        returnValue = await action.fn(modalContent, additionalContent && value);
                                     } finally {
                                         modalContent.close(returnValue);
                                     }

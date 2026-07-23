@@ -1,11 +1,4 @@
-import {
-    FormControl,
-    FormLabelProps,
-    InputLabel,
-    MenuItem,
-    Select,
-    useTheme,
-} from "@mui/material";
+import { FormControl, FormLabelProps, InputLabel, MenuItem, Select, useTheme } from "@mui/material";
 
 export default function VisibilitySelect({
     isPublic,
@@ -26,10 +19,7 @@ export default function VisibilitySelect({
 }) {
     const theme = useTheme();
     return (
-        <FormControl
-            style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }}
-            fullWidth={fullWidth}
-        >
+        <FormControl style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }} fullWidth={fullWidth}>
             <InputLabel id="post-visibility-select-label" color={color}>
                 <span
                     style={{
@@ -43,13 +33,7 @@ export default function VisibilitySelect({
                 labelId="post-visibility-select-label"
                 id="post-visibility-select"
                 label="Visibility"
-                value={
-                    isPublic
-                        ? isPublicEdit
-                            ? "public-edit"
-                            : "public"
-                        : "private"
-                }
+                value={isPublic ? (isPublicEdit ? "public-edit" : "public") : "private"}
                 readOnly={readOnly}
                 disabled={readOnly}
                 color={color}
@@ -59,9 +43,7 @@ export default function VisibilitySelect({
                     },
                     "&.MuiOutlinedInput-root.Mui-disabled": {
                         "& fieldset": {
-                            borderColor: color
-                                ? theme.palette[color].main
-                                : "rgba(0, 0, 0, 0.23)",
+                            borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                             color: color ? theme.palette[color].main : "white",
                         },
                     },

@@ -1,10 +1,4 @@
-import {
-    Autocomplete,
-    Chip,
-    FormLabelProps,
-    TextField,
-    useTheme,
-} from "@mui/material";
+import { Autocomplete, Chip, FormLabelProps, TextField, useTheme } from "@mui/material";
 import { UserGroup } from "../Model";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
@@ -64,15 +58,11 @@ export function GroupSelector({
                         label="Groups"
                         sx={{
                             "& .MuiInputLabel-root.Mui-disabled": {
-                                color: color
-                                    ? theme.palette[color].main
-                                    : "white",
+                                color: color ? theme.palette[color].main : "white",
                             },
                             "& .MuiInputBase-root.Mui-disabled": {
                                 "& > fieldset": {
-                                    borderColor: color
-                                        ? theme.palette[color].main
-                                        : "rgba(0, 0, 0, 0.23)",
+                                    borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                                     color: "white",
                                 },
                             },
@@ -87,35 +77,17 @@ export function GroupSelector({
                         color="primary"
                         variant="outlined"
                         disabled={false}
-                        label={
-                            typeof option === "string" ? option : option.name
-                        }
-                        icon={
-                            selectedUserGroupsReadOnly.includes(
-                                option.pk
-                            ) ? undefined : (
-                                <EditIcon />
-                            )
-                        }
+                        label={typeof option === "string" ? option : option.name}
+                        icon={selectedUserGroupsReadOnly.includes(option.pk) ? undefined : <EditIcon />}
                         onClick={
                             !readOnly
                                 ? () => {
-                                      if (
-                                          selectedUserGroupsReadOnly.includes(
-                                              option.pk
-                                          )
-                                      ) {
+                                      if (selectedUserGroupsReadOnly.includes(option.pk)) {
                                           setSelectedUserGroupsReadOnly(
-                                              selectedUserGroupsReadOnly.filter(
-                                                  (i) => i !== option.pk
-                                              )
+                                              selectedUserGroupsReadOnly.filter((i) => i !== option.pk)
                                           );
                                       } else {
-                                          setSelectedUserGroupsReadOnly(
-                                              selectedUserGroupsReadOnly.concat(
-                                                  [option.pk]
-                                              )
-                                          );
+                                          setSelectedUserGroupsReadOnly(selectedUserGroupsReadOnly.concat([option.pk]));
                                       }
                                   }
                                 : undefined
@@ -128,9 +100,7 @@ export function GroupSelector({
             onChange={(_e, newVal) => {
                 setSelectedUserGroups(newVal);
                 setSelectedUserGroupsReadOnly(
-                    selectedUserGroupsReadOnly.filter((i) =>
-                        selectedUserGroups.some((group) => group.pk === i)
-                    )
+                    selectedUserGroupsReadOnly.filter((i) => selectedUserGroups.some((group) => group.pk === i))
                 );
                 if (newVal.length >= limit) {
                     setInputDisabled(true);

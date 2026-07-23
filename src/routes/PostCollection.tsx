@@ -41,8 +41,7 @@ import { PageTitle } from "../index";
 
 export function PostCollection({ app }: { app: App }) {
     let { id } = useParams();
-    const [postCollection, setPostCollection] =
-        useState<PostCollectionDetailed | null>(null);
+    const [postCollection, setPostCollection] = useState<PostCollectionDetailed | null>(null);
     const location = useLocation();
     const search = location.search;
     const navigate = useNavigate();
@@ -50,9 +49,7 @@ export function PostCollection({ app }: { app: App }) {
 
     const [fullCount, setFullCount] = useState<number | null>(0);
     const [pageCount, setPageCount] = useState<number | null>(0);
-    const [collectionPosts, setCollectionPosts] = useState<
-        PostCollectionItemQueryObject[]
-    >([]);
+    const [collectionPosts, setCollectionPosts] = useState<PostCollectionItemQueryObject[]>([]);
 
     const [isEditMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<(string | Tag)[]>([]);
@@ -63,33 +60,18 @@ export function PostCollection({ app }: { app: App }) {
     const [publicCollection, setPublicCollection] = useState(false);
     const [publicEdit, setPublicEdit] = useState(false);
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
-    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>(
-        []
-    );
-    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] =
-        useState<number[]>([]);
+    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
 
-    function updatePostCollection(
-        postCollectionDetailed: PostCollectionDetailed
-    ) {
+    function updatePostCollection(postCollectionDetailed: PostCollectionDetailed) {
         setPostCollection(postCollectionDetailed);
-        setTags(
-            postCollectionDetailed.tags
-                .sort(sortTagUsages)
-                .map((tagUsage) => tagUsage.tag)
-        );
-        setSelectedTags(
-            postCollectionDetailed.tags.map((tagUsage) => tagUsage.tag.pk)
-        );
+        setTags(postCollectionDetailed.tags.sort(sortTagUsages).map((tagUsage) => tagUsage.tag));
+        setSelectedTags(postCollectionDetailed.tags.map((tagUsage) => tagUsage.tag.pk));
         setTitle(postCollectionDetailed.title || "");
         setDescription(postCollectionDetailed.description || "");
         setPublicCollection(postCollectionDetailed.is_public);
         setPublicEdit(postCollectionDetailed.public_edit);
-        setSelectedUserGroups(
-            postCollectionDetailed.group_access.map(
-                (groupAccess) => groupAccess.granted_group
-            )
-        );
+        setSelectedUserGroups(postCollectionDetailed.group_access.map((groupAccess) => groupAccess.granted_group));
         setSelectedUserGroupsReadOnly(
             postCollectionDetailed.group_access
                 .filter((groupAccess) => !groupAccess.write)
@@ -101,39 +83,20 @@ export function PostCollection({ app }: { app: App }) {
         setPostCollection(null);
         let fetch = async () => {
             try {
-                let config = await app.getAuthorization(
-                    location,
-                    navigate,
-                    false
-                );
+                let config = await app.getAuthorization(location, navigate, false);
 
-                let postCollection = await http.get<PostCollectionDetailed>(
-                    `/get-collection/${id}`,
-                    config
-                );
+                let postCollection = await http.get<PostCollectionDetailed>(`/get-collection/${id}`, config);
                 updatePostCollection(postCollection.data);
 
                 if (config) {
-                    let currentUserGroups = await http.get<UserGroup[]>(
-                        "/get-current-user-groups",
-                        config
-                    );
+                    let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
                     setCurrentUserGroups(currentUserGroups.data);
                 }
             } catch (e: any) {
                 if (e.response?.status === 403) {
-                    app.openModal(
-                        "Error",
-                        <p>This collection is unavailable.</p>
-                    );
+                    app.openModal("Error", <p>This collection is unavailable.</p>);
                 } else if (e.response?.status === 401) {
-                    app.openModal(
-                        "Error",
-                        <p>
-                            Your credentials have expired, try refreshing the
-                            page.
-                        </p>
-                    );
+                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                 }
                 console.error(e);
             }
@@ -153,13 +116,7 @@ export function PostCollection({ app }: { app: App }) {
     const loadPosts = () => {
         if (postCollection) {
             const modal = app.openLoadingModal();
-            performSearchQuery(
-                "/collection/" + postCollection.pk + search,
-                app,
-                location,
-                navigate,
-                modal
-            )
+            performSearchQuery("/collection/" + postCollection.pk + search, app, location, navigate, modal)
                 .then((searchResult) => {
                     setFullCount(searchResult.full_count);
                     setPageCount(searchResult.pages);
@@ -185,25 +142,14 @@ export function PostCollection({ app }: { app: App }) {
 
     return (
         <div id="PostCollection">
-            <PageTitle
-                title={
-                    postCollection
-                        ? postCollection.title || "Untitled"
-                        : undefined
-                }
-            />
+            <PageTitle title={postCollection ? postCollection.title || "Untitled" : undefined} />
             <div id="post-collection-head">
                 <div id="post-collection-information-container">
                     <div id="post-collection-button-row">
                         {isEditMode ? (
                             <div className="button-row">
                                 <Button
-                                    startIcon={
-                                        <FontAwesomeSvgIcon
-                                            fontSize="inherit"
-                                            icon={faXmark}
-                                        />
-                                    }
+                                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
                                     onClick={() => setEditMode(false)}
                                 >
                                     Cancel
@@ -213,48 +159,28 @@ export function PostCollection({ app }: { app: App }) {
                             postCollection && (
                                 <div className="button-row">
                                     <Button
-                                        hidden={
-                                            !postCollection?.is_editable ||
-                                            !app.isLoggedIn()
-                                        }
-                                        startIcon={
-                                            <FontAwesomeSvgIcon
-                                                fontSize="inherit"
-                                                icon={faPenToSquare}
-                                            />
-                                        }
+                                        hidden={!postCollection?.is_editable || !app.isLoggedIn()}
+                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faPenToSquare} />}
                                         onClick={() => setEditMode(true)}
                                     >
                                         Edit
                                     </Button>
                                     <Button
-                                        startIcon={
-                                            <FontAwesomeSvgIcon
-                                                fontSize="inherit"
-                                                icon={faClockRotateLeft}
-                                            />
-                                        }
-                                        hidden={
-                                            !postCollection?.is_editable ||
-                                            !app.isLoggedIn()
-                                        }
+                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faClockRotateLeft} />}
+                                        hidden={!postCollection?.is_editable || !app.isLoggedIn()}
                                         onClick={() =>
                                             app.openModal(
                                                 "History",
                                                 (modal) => (
                                                     <PostCollectionEditHistoryDialogue
                                                         app={app}
-                                                        collection={
-                                                            postCollection
-                                                        }
+                                                        collection={postCollection}
                                                         modal={modal}
                                                     />
                                                 ),
                                                 (result) => {
                                                     if (result) {
-                                                        updatePostCollection(
-                                                            result
-                                                        );
+                                                        updatePostCollection(result);
                                                     }
                                                 }
                                             )
@@ -264,85 +190,61 @@ export function PostCollection({ app }: { app: App }) {
                                     </Button>
                                     {postCollection?.is_deletable && (
                                         <Button
-                                            startIcon={
-                                                <FontAwesomeSvgIcon
-                                                    fontSize="inherit"
-                                                    icon={faTrash}
-                                                />
-                                            }
+                                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faTrash} />}
                                             onClick={() =>
-                                                app.openModal(
-                                                    "Delete collection",
-                                                    (modal) => (
-                                                        <ActionModal
-                                                            modalContent={modal}
-                                                            text={
-                                                                postCollection.title
-                                                                    ? `Delete collection '${postCollection.title}'`
-                                                                    : `Delete 1 collection`
-                                                            }
-                                                            actions={[
-                                                                {
-                                                                    name: "Ok",
-                                                                    fn: async () => {
-                                                                        const loadingModal =
-                                                                            app.openLoadingModal();
-                                                                        try {
-                                                                            const config =
-                                                                                await app.getAuthorization(
-                                                                                    location,
-                                                                                    navigate
-                                                                                );
-                                                                            const result =
-                                                                                await http.post<DeletePostCollectionsResponse>(
-                                                                                    "/delete-collections",
-                                                                                    {
-                                                                                        post_collection_pks:
-                                                                                            [
-                                                                                                postCollection.pk,
-                                                                                            ],
-                                                                                        inaccessible_post_mode:
-                                                                                            "skip",
-                                                                                    },
-                                                                                    config
-                                                                                );
-
-                                                                            loadingModal.close();
-                                                                            navigate(
+                                                app.openModal("Delete collection", (modal) => (
+                                                    <ActionModal
+                                                        modalContent={modal}
+                                                        text={
+                                                            postCollection.title
+                                                                ? `Delete collection '${postCollection.title}'`
+                                                                : `Delete 1 collection`
+                                                        }
+                                                        actions={[
+                                                            {
+                                                                name: "Ok",
+                                                                fn: async () => {
+                                                                    const loadingModal = app.openLoadingModal();
+                                                                    try {
+                                                                        const config = await app.getAuthorization(
+                                                                            location,
+                                                                            navigate
+                                                                        );
+                                                                        const result =
+                                                                            await http.post<DeletePostCollectionsResponse>(
+                                                                                "/delete-collections",
                                                                                 {
-                                                                                    pathname:
-                                                                                        "/collections",
-                                                                                }
+                                                                                    post_collection_pks: [
+                                                                                        postCollection.pk,
+                                                                                    ],
+                                                                                    inaccessible_post_mode: "skip",
+                                                                                },
+                                                                                config
                                                                             );
 
-                                                                            enqueueSnackbar(
-                                                                                {
-                                                                                    message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? "s" : ""}`,
-                                                                                    variant:
-                                                                                        "success",
-                                                                                }
-                                                                            );
-                                                                            return result.data;
-                                                                        } catch (e) {
-                                                                            console.error(
-                                                                                e
-                                                                            );
-                                                                            loadingModal.close();
-                                                                            enqueueSnackbar(
-                                                                                {
-                                                                                    message:
-                                                                                        "Failed to delete collection",
-                                                                                    variant:
-                                                                                        "error",
-                                                                                }
-                                                                            );
-                                                                        }
-                                                                    },
+                                                                        loadingModal.close();
+                                                                        navigate({
+                                                                            pathname: "/collections",
+                                                                        });
+
+                                                                        enqueueSnackbar({
+                                                                            message: `Deleted ${result.data.deleted_post_collections.length} collection${result.data.deleted_post_collections.length !== 1 ? "s" : ""}`,
+                                                                            variant: "success",
+                                                                        });
+                                                                        return result.data;
+                                                                    } catch (e) {
+                                                                        console.error(e);
+                                                                        loadingModal.close();
+                                                                        enqueueSnackbar({
+                                                                            message: "Failed to delete collection",
+                                                                            variant: "error",
+                                                                        });
+                                                                    }
                                                                 },
-                                                            ]}
-                                                        />
-                                                    )
-                                                )
+                                                            },
+                                                        ]}
+                                                    />
+                                                ))
                                             }
                                         >
                                             Delete
@@ -385,12 +287,7 @@ export function PostCollection({ app }: { app: App }) {
                             }}
                         />
                     ) : (
-                        <p
-                            className="multiline-text"
-                            hidden={
-                                !(postCollection && postCollection.description)
-                            }
-                        >
+                        <p className="multiline-text" hidden={!(postCollection && postCollection.description)}>
                             {postCollection && postCollection.description}
                         </p>
                     )}
@@ -408,15 +305,9 @@ export function PostCollection({ app }: { app: App }) {
                                 sx={{ alignSelf: "center" }}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    app.openModal(
-                                        "Create Tag",
-                                        (createTagModal) => (
-                                            <TagCreator
-                                                app={app}
-                                                modal={createTagModal}
-                                            ></TagCreator>
-                                        )
-                                    );
+                                    app.openModal("Create Tag", (createTagModal) => (
+                                        <TagCreator app={app} modal={createTagModal}></TagCreator>
+                                    ));
                                 }}
                             >
                                 <AddIcon />
@@ -435,24 +326,15 @@ export function PostCollection({ app }: { app: App }) {
                             currentUserGroups={currentUserGroups}
                             selectedUserGroups={selectedUserGroups}
                             setSelectedUserGroups={setSelectedUserGroups}
-                            selectedUserGroupsReadOnly={
-                                selectedUserGroupsReadOnly
-                            }
-                            setSelectedUserGroupsReadOnly={
-                                setSelectedUserGroupsReadOnly
-                            }
+                            selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
+                            setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
                             readOnly={!isEditMode}
                         />
                     </div>
                     <div className="button-row">
                         <Button
                             color="secondary"
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faFloppyDisk}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faFloppyDisk} />}
                             hidden={!isEditMode}
                             onClick={async () => {
                                 let groupAccess: GroupAccessDefinition[] = [];
@@ -460,34 +342,27 @@ export function PostCollection({ app }: { app: App }) {
                                     groupAccess.push(
                                         new GroupAccessDefinition(
                                             group.pk,
-                                            !selectedUserGroupsReadOnly.includes(
-                                                group.pk
-                                            )
+                                            !selectedUserGroupsReadOnly.includes(group.pk)
                                         )
                                     )
                                 );
 
                                 const loadingModal = app.openLoadingModal();
                                 try {
-                                    const config = await app.getAuthorization(
-                                        location,
-                                        navigate
+                                    const config = await app.getAuthorization(location, navigate);
+                                    const result = await http.post<PostCollectionDetailed>(
+                                        `/edit-collection/${id}`,
+                                        {
+                                            tags_overwrite: enteredTags,
+                                            tag_pks_overwrite: selectedTags,
+                                            title: title,
+                                            description: description,
+                                            is_public: publicCollection,
+                                            public_edit: publicEdit,
+                                            group_access_overwrite: groupAccess,
+                                        },
+                                        config
                                     );
-                                    const result =
-                                        await http.post<PostCollectionDetailed>(
-                                            `/edit-collection/${id}`,
-                                            {
-                                                tags_overwrite: enteredTags,
-                                                tag_pks_overwrite: selectedTags,
-                                                title: title,
-                                                description: description,
-                                                is_public: publicCollection,
-                                                public_edit: publicEdit,
-                                                group_access_overwrite:
-                                                    groupAccess,
-                                            },
-                                            config
-                                        );
 
                                     enqueueSnackbar({
                                         message: "Edited collection",
@@ -495,12 +370,9 @@ export function PostCollection({ app }: { app: App }) {
                                     });
                                     updatePostCollection(result.data);
                                 } catch (e) {
-                                    console.error(
-                                        "Error occurred editing collection " + e
-                                    );
+                                    console.error("Error occurred editing collection " + e);
                                     enqueueSnackbar({
-                                        message:
-                                            "An error occurred editing your collection, please try again",
+                                        message: "An error occurred editing your collection, please try again",
                                         variant: "error",
                                     });
                                 }
@@ -523,24 +395,19 @@ export function PostCollection({ app }: { app: App }) {
                             create_user: item.post.create_user,
                             title: item.post.title,
                             thumbnail_url: item.post.thumbnail_url,
-                            thumbnail_object_key:
-                                item.post.thumbnail_object_key,
+                            thumbnail_object_key: item.post.thumbnail_object_key,
                             source: item,
                             s3_object: item.post.s3_object,
                             s3_object_metadata: item.post.s3_object_metadata,
                         };
                     },
                 }}
-                onItemClickPath={(post) =>
-                    "/collection/" + postCollection?.pk + "/post/" + post.pk
-                }
+                onItemClickPath={(post) => "/collection/" + postCollection?.pk + "/post/" + post.pk}
                 pagePath={"/collection/" + postCollection?.pk}
                 fullCount={fullCount}
                 pageCount={pageCount}
                 getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
-                getMediaDurationDisplay={(item) =>
-                    getMediaDurationDisplayForItem(item)
-                }
+                getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                 isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {
@@ -551,18 +418,13 @@ export function PostCollection({ app }: { app: App }) {
                         enableForItem: (post) => post.source.post.s3_object,
                         fn: (items) => {
                             if (items && items.length > 0) {
-                                const post = (
-                                    items[0]
-                                        .source as unknown as PostCollectionItemQueryObject
-                                ).post;
+                                const post = (items[0].source as unknown as PostCollectionItemQueryObject).post;
                                 if (post.s3_object) {
                                     app.openModal(
                                         "File metadata",
                                         <FileMetadataDisplay
                                             s3_object={post.s3_object}
-                                            s3_object_metadata={
-                                                post.s3_object_metadata
-                                            }
+                                            s3_object_metadata={post.s3_object_metadata}
                                         />
                                     );
                                 }
@@ -579,9 +441,7 @@ export function PostCollection({ app }: { app: App }) {
                                 (modal) => (
                                     <AddToCollectionDialogue
                                         app={app}
-                                        postPks={items.map(
-                                            (item) => item.source.post.pk
-                                        )}
+                                        postPks={items.map((item) => item.source.post.pk)}
                                         modal={modal}
                                     />
                                 ),
@@ -592,8 +452,7 @@ export function PostCollection({ app }: { app: App }) {
                         name: "Remove from collection",
                         icon: faTrash,
                         color: "red",
-                        enableForItem: () =>
-                            postCollection?.is_editable ?? false,
+                        enableForItem: () => postCollection?.is_editable ?? false,
                         disabled: !app.isLoggedIn(),
                         fn: (items, cb) =>
                             app.openModal(
@@ -610,37 +469,22 @@ export function PostCollection({ app }: { app: App }) {
                                             {
                                                 name: "Ok",
                                                 fn: async () => {
-                                                    const loadingModal =
-                                                        app.openLoadingModal();
+                                                    const loadingModal = app.openLoadingModal();
                                                     try {
-                                                        const config =
-                                                            await app.getAuthorization(
-                                                                location,
-                                                                navigate
-                                                            );
-                                                        const result =
-                                                            await http.post<PostCollectionDetailed>(
-                                                                `/edit-collection/${postCollection!.pk}`,
-                                                                {
-                                                                    removed_item_pks:
-                                                                        items.map(
-                                                                            (
-                                                                                item
-                                                                            ) =>
-                                                                                item.pk
-                                                                        ),
-                                                                },
-                                                                config
-                                                            );
+                                                        const config = await app.getAuthorization(location, navigate);
+                                                        const result = await http.post<PostCollectionDetailed>(
+                                                            `/edit-collection/${postCollection!.pk}`,
+                                                            {
+                                                                removed_item_pks: items.map((item) => item.pk),
+                                                            },
+                                                            config
+                                                        );
 
                                                         loadingModal.close();
-                                                        updatePostCollection(
-                                                            result.data
-                                                        );
+                                                        updatePostCollection(result.data);
                                                         enqueueSnackbar({
                                                             message:
-                                                                items.length ===
-                                                                1
+                                                                items.length === 1
                                                                     ? "Removed post from collection"
                                                                     : "Removed selected posts from collection",
                                                             variant: "success",

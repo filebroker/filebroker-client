@@ -33,10 +33,7 @@ export function AvatarCropper({
     const imgSrc = urlJoin(getApiUrl(), "get-object", sourceObjectKey);
 
     return (
-        <div
-            id="AvatarCropper"
-            style={{ minWidth: "350px", minHeight: "350px" }}
-        >
+        <div id="AvatarCropper" style={{ minWidth: "350px", minHeight: "350px" }}>
             <div
                 style={{
                     minWidth: "350px",
@@ -66,19 +63,9 @@ export function AvatarCropper({
                     marginTop: "10px",
                 }}
             >
-                <Stack
-                    spacing={2}
-                    direction="row"
-                    sx={{ alignItems: "center", mb: 1, width: "200px" }}
-                >
+                <Stack spacing={2} direction="row" sx={{ alignItems: "center", mb: 1, width: "200px" }}>
                     <ZoomOut />
-                    <Slider
-                        value={zoom}
-                        onChange={(_, value) => setZoom(value as number)}
-                        min={1}
-                        max={9}
-                        step={0.1}
-                    />
+                    <Slider value={zoom} onChange={(_, value) => setZoom(value as number)} min={1} max={9} step={0.1} />
                     <ZoomIn />
                 </Stack>
                 <Button
@@ -92,10 +79,7 @@ export function AvatarCropper({
                         }
                         const loadingModal = app.openLoadingModal();
                         try {
-                            let config = await app.getAuthorization(
-                                location,
-                                navigate
-                            );
+                            let config = await app.getAuthorization(location, navigate);
                             let req = {
                                 source_object_key: sourceObjectKey,
                                 width: currentArea.width,
@@ -115,11 +99,7 @@ export function AvatarCropper({
                                 });
                                 modal?.close(response.data);
                             } else {
-                                let response = await http.post<User>(
-                                    "create-user-avatar",
-                                    req,
-                                    config
-                                );
+                                let response = await http.post<User>("create-user-avatar", req, config);
                                 enqueueSnackbar({
                                     message: "Avatar saved",
                                     variant: "success",
@@ -131,10 +111,7 @@ export function AvatarCropper({
                             if (e?.response?.data?.error_code === 500017) {
                                 app.openModal(
                                     "Error",
-                                    <p>
-                                        Cannot save avatar image because site
-                                        admin has not set up a system bucket.
-                                    </p>
+                                    <p>Cannot save avatar image because site admin has not set up a system bucket.</p>
                                 );
                             } else {
                                 console.error("Failed to set user avatar", e);

@@ -1,11 +1,7 @@
 import App, { ModalContent } from "../App";
 import { TagCreator, TagSelector } from "./TagEditor";
 import { useEffect, useState } from "react";
-import {
-    GroupAccessDefinition,
-    PostCollectionDetailed,
-    UserGroup,
-} from "../Model";
+import { GroupAccessDefinition, PostCollectionDetailed, UserGroup } from "../Model";
 import { Button, IconButton, Paper, TextField } from "@mui/material";
 import { GroupSelector } from "./GroupEditor";
 import EditIcon from "@mui/icons-material/Edit";
@@ -38,18 +34,15 @@ export function CreateCollectionDialogue({
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
 
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
-    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>(
-        []
-    );
-    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] =
-        useState<number[]>([]);
+    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
 
     useEffect(() => {
         let fetch = async () => {
             let config = await app.getAuthorization(location, navigate);
 
-            http.get<UserGroup[]>("/get-current-user-groups", config).then(
-                (result) => setCurrentUserGroups(result.data)
+            http.get<UserGroup[]>("/get-current-user-groups", config).then((result) =>
+                setCurrentUserGroups(result.data)
             );
         };
 
@@ -86,9 +79,7 @@ export function CreateCollectionDialogue({
                                     value={description}
                                     fullWidth
                                     multiline
-                                    onChange={(e) =>
-                                        setDescription(e.target.value)
-                                    }
+                                    onChange={(e) => setDescription(e.target.value)}
                                     maxRows={5}
                                     slotProps={{
                                         htmlInput: {
@@ -104,20 +95,14 @@ export function CreateCollectionDialogue({
             <Paper elevation={2} className="fieldset-paper">
                 <div id="tag-editor-div">
                     <div className="autocomplete-container">
-                        <TagSelector
-                            setEnteredTags={setEnteredTags}
-                            setSelectedTags={setSelectedTags}
-                        ></TagSelector>
+                        <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
                     </div>
                     <IconButton
                         size="medium"
                         onClick={(e) => {
                             e.preventDefault();
                             app.openModal("Create Tag", (createTagModal) => (
-                                <TagCreator
-                                    app={app}
-                                    modal={createTagModal}
-                                ></TagCreator>
+                                <TagCreator app={app} modal={createTagModal}></TagCreator>
                             ));
                         }}
                     >
@@ -142,21 +127,13 @@ export function CreateCollectionDialogue({
                                 <GroupSelector
                                     currentUserGroups={currentUserGroups}
                                     selectedUserGroups={selectedUserGroups}
-                                    setSelectedUserGroups={
-                                        setSelectedUserGroups
-                                    }
-                                    selectedUserGroupsReadOnly={
-                                        selectedUserGroupsReadOnly
-                                    }
-                                    setSelectedUserGroupsReadOnly={
-                                        setSelectedUserGroupsReadOnly
-                                    }
+                                    setSelectedUserGroups={setSelectedUserGroups}
+                                    selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
+                                    setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
                                 />
                                 <span className="footnote">
-                                    Groups with the{" "}
-                                    <EditIcon fontSize="small"></EditIcon> icon
-                                    can edit the post, click the selected group
-                                    to toggle edit permissions.
+                                    Groups with the <EditIcon fontSize="small"></EditIcon> icon can edit the post, click
+                                    the selected group to toggle edit permissions.
                                 </span>
                             </td>
                         </tr>
@@ -170,40 +147,31 @@ export function CreateCollectionDialogue({
                     onClick={async (_e) => {
                         const loadingModal = app.openLoadingModal();
                         try {
-                            const config = await app.getAuthorization(
-                                location,
-                                navigate
-                            );
+                            const config = await app.getAuthorization(location, navigate);
 
                             const groupAccess: GroupAccessDefinition[] = [];
                             selectedUserGroups.forEach((group) =>
                                 groupAccess.push(
-                                    new GroupAccessDefinition(
-                                        group.pk,
-                                        !selectedUserGroupsReadOnly.includes(
-                                            group.pk
-                                        )
-                                    )
+                                    new GroupAccessDefinition(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))
                                 )
                             );
 
-                            const response =
-                                await http.post<PostCollectionDetailed>(
-                                    "create-collection",
-                                    new CreatePostCollectionRequest(
-                                        title,
-                                        enteredTags,
-                                        selectedTags,
-                                        null,
-                                        publicCollection,
-                                        publicEdit,
-                                        groupAccess,
-                                        description,
-                                        postPks,
-                                        postQuery ?? null
-                                    ),
-                                    config
-                                );
+                            const response = await http.post<PostCollectionDetailed>(
+                                "create-collection",
+                                new CreatePostCollectionRequest(
+                                    title,
+                                    enteredTags,
+                                    selectedTags,
+                                    null,
+                                    publicCollection,
+                                    publicEdit,
+                                    groupAccess,
+                                    description,
+                                    postPks,
+                                    postQuery ?? null
+                                ),
+                                config
+                            );
 
                             loadingModal.close();
                             modal.close(response.data);
@@ -224,15 +192,9 @@ export function CreateCollectionDialogue({
                             console.error("Failed to create collection: ");
                             console.error(e);
                             if (e?.response?.data?.error_code === 400010) {
-                                app.openModal(
-                                    "Error",
-                                    <p>The provided query is invalid</p>
-                                );
+                                app.openModal("Error", <p>The provided query is invalid</p>);
                             } else {
-                                app.openModal(
-                                    "Error",
-                                    <p>An unexpected error occurred</p>
-                                );
+                                app.openModal("Error", <p>An unexpected error occurred</p>);
                             }
                         }
                     }}

@@ -116,25 +116,13 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                     });
                 } catch (e: any) {
                     if (e?.response?.data?.error_code === 400007) {
-                        showBucketConnectionError(
-                            app,
-                            e?.response?.data?.message
-                        );
+                        showBucketConnectionError(app, e?.response?.data?.message);
                     } else if (e.response?.status === 401) {
-                        app.openModal(
-                            "Error",
-                            <p>
-                                Your credentials have expired, try refreshing
-                                the page.
-                            </p>
-                        );
+                        app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
                     } else {
                         app.openModal(
                             "Error",
-                            <p>
-                                An unexpected error occurred creating the
-                                broker, please try again.
-                            </p>
+                            <p>An unexpected error occurred creating the broker, please try again.</p>
                         );
                         console.error("Failed to create broker", e);
                     }
@@ -145,16 +133,9 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
         >
             <div className="form-paper-content">
                 <p>
-                    Add a new S3 file server. You may add an S3 bucket from any
-                    Amazon AWS region or any S3 compatible storage solution,
-                    such as MinIO. To host your files on a pay-what-you-use
-                    cloud bucket, check out{" "}
-                    <a
-                        className="standard-link"
-                        target="_blank"
-                        rel="noreferrer"
-                        href="https://aws.amazon.com/s3/"
-                    >
+                    Add a new S3 file server. You may add an S3 bucket from any Amazon AWS region or any S3 compatible
+                    storage solution, such as MinIO. To host your files on a pay-what-you-use cloud bucket, check out{" "}
+                    <a className="standard-link" target="_blank" rel="noreferrer" href="https://aws.amazon.com/s3/">
                         Amazon S3
                     </a>{" "}
                     or{" "}
@@ -167,21 +148,11 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                         Cloudflare R2
                     </a>
                     . To explore free and self-hosted solutions, check out{" "}
-                    <a
-                        className="standard-link"
-                        target="_blank"
-                        rel="noreferrer"
-                        href="https://www.min.io/"
-                    >
+                    <a className="standard-link" target="_blank" rel="noreferrer" href="https://www.min.io/">
                         MinIO
                     </a>{" "}
                     or{" "}
-                    <a
-                        className="standard-link"
-                        target="_blank"
-                        rel="noreferrer"
-                        href="https://rustfs.com/"
-                    >
+                    <a className="standard-link" target="_blank" rel="noreferrer" href="https://rustfs.com/">
                         RustFS
                     </a>
                     .
@@ -214,10 +185,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                     }}
                 />
                 <Paper elevation={4} sx={{ minWidth: "fit-content" }}>
-                    <div
-                        className="form-paper-content"
-                        style={{ padding: "20px" }}
-                    >
+                    <div className="form-paper-content" style={{ padding: "20px" }}>
                         <h5>
                             <CloudIcon /> Bucket Connection
                         </h5>
@@ -228,10 +196,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                                 aria-label="basic tabs example"
                             >
                                 <Tab label="Amazon S3" {...a11yProps(0)} />
-                                <Tab
-                                    label="Other S3 storage"
-                                    {...a11yProps(1)}
-                                />
+                                <Tab label="Other S3 storage" {...a11yProps(1)} />
                             </Tabs>
                         </Box>
                         <TabPanel value={0} index={0}>
@@ -241,9 +206,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                                     variant="outlined"
                                     value={bucket}
                                     fullWidth
-                                    onChange={(e) =>
-                                        setBucket(e.currentTarget.value)
-                                    }
+                                    onChange={(e) => setBucket(e.currentTarget.value)}
                                     slotProps={{
                                         htmlInput: {
                                             maxLength: 255,
@@ -252,36 +215,24 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                                     placeholder="Name of S3 Bucket"
                                 />
                                 <TextField
-                                    label={
-                                        isAwsRegion
-                                            ? "AWS Region"
-                                            : "Endpoint URL"
-                                    }
+                                    label={isAwsRegion ? "AWS Region" : "Endpoint URL"}
                                     variant="outlined"
                                     value={endpoint}
                                     fullWidth
-                                    onChange={(e) =>
-                                        setEndpoint(e.currentTarget.value)
-                                    }
+                                    onChange={(e) => setEndpoint(e.currentTarget.value)}
                                     slotProps={{
                                         htmlInput: {
                                             maxLength: 2048,
                                         },
                                     }}
-                                    placeholder={
-                                        isAwsRegion
-                                            ? "e.g. eu-west-2"
-                                            : "URL of S3 endpoint"
-                                    }
+                                    placeholder={isAwsRegion ? "e.g. eu-west-2" : "URL of S3 endpoint"}
                                 />
                                 <TextField
                                     label="Access Key"
                                     variant="outlined"
                                     value={accessKey}
                                     fullWidth
-                                    onChange={(e) =>
-                                        setAccessKey(e.currentTarget.value)
-                                    }
+                                    onChange={(e) => setAccessKey(e.currentTarget.value)}
                                     slotProps={{
                                         htmlInput: {
                                             maxLength: 255,
@@ -294,9 +245,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                                     variant="outlined"
                                     value={secretKey}
                                     fullWidth
-                                    onChange={(e) =>
-                                        setSecretKey(e.currentTarget.value)
-                                    }
+                                    onChange={(e) => setSecretKey(e.currentTarget.value)}
                                     slotProps={{
                                         htmlInput: {
                                             maxLength: 255,
@@ -313,11 +262,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                         control={
                             <Checkbox
                                 checked={removeDuplicateFiles}
-                                onChange={(e) =>
-                                    setRemoveDuplicateFiles(
-                                        e.currentTarget.checked
-                                    )
-                                }
+                                onChange={(e) => setRemoveDuplicateFiles(e.currentTarget.checked)}
                             />
                         }
                         label="Merge Duplicate Files"
@@ -335,11 +280,7 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                         control={
                             <Checkbox
                                 checked={enablePresignedGet}
-                                onChange={(e) =>
-                                    setEnablePresignedGet(
-                                        e.currentTarget.checked
-                                    )
-                                }
+                                onChange={(e) => setEnablePresignedGet(e.currentTarget.checked)}
                             />
                         }
                         label="Enable Presigned Get"
@@ -352,17 +293,12 @@ function CreateBrokerDialogue({ app, modal }: CreateBrokerDialogueProps) {
                         <FontAwesomeIcon icon={faCircleInfo} />
                     </Tooltip>
                 </div>
-                <div
-                    className="flex-row"
-                    hidden={app.getUser()?.is_admin !== true}
-                >
+                <div className="flex-row" hidden={app.getUser()?.is_admin !== true}>
                     <FormControlLabel
                         control={
                             <Checkbox
                                 checked={isSystemBucket}
-                                onChange={(e) =>
-                                    setIsSystemBucket(e.currentTarget.checked)
-                                }
+                                onChange={(e) => setIsSystemBucket(e.currentTarget.checked)}
                             />
                         }
                         label="Set System Bucket"

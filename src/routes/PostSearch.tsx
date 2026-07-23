@@ -1,8 +1,4 @@
-import {
-    faInfoCircle,
-    faSquarePlus,
-    faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faInfoCircle, faSquarePlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import App from "../App";
@@ -12,11 +8,7 @@ import {
     getMediaTypeIconForItem,
     PaginatedGridView,
 } from "../components/PaginatedGridView";
-import {
-    PostQueryObject,
-    performSearchQuery,
-    extractQueryFromSearch,
-} from "../Search";
+import { PostQueryObject, performSearchQuery, extractQueryFromSearch } from "../Search";
 import { AddToCollectionDialogue } from "../components/AddToCollectionDialogue";
 import { ActionModal } from "../components/ActionModal";
 import { DeletePostsResponse, PostDetailed } from "../Model";
@@ -76,9 +68,7 @@ function PostSearch({ app }: PostSearchProps) {
                 fullCount={fullCount}
                 pageCount={pageCount}
                 getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
-                getMediaDurationDisplay={(item) =>
-                    getMediaDurationDisplayForItem(item)
-                }
+                getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                 isDesktop={app.isDesktop()}
                 gridItemActions={[
                     {
@@ -89,16 +79,13 @@ function PostSearch({ app }: PostSearchProps) {
                         enableForItem: (post) => post.source.s3_object,
                         fn: (items) => {
                             if (items && items.length > 0) {
-                                const post = items[0]
-                                    .source as unknown as PostQueryObject;
+                                const post = items[0].source as unknown as PostQueryObject;
                                 if (post.s3_object) {
                                     app.openModal(
                                         "File metadata",
                                         <FileMetadataDisplay
                                             s3_object={post.s3_object}
-                                            s3_object_metadata={
-                                                post.s3_object_metadata
-                                            }
+                                            s3_object_metadata={post.s3_object_metadata}
                                         />
                                     );
                                 }
@@ -120,9 +107,7 @@ function PostSearch({ app }: PostSearchProps) {
                                     (modal) => (
                                         <AddToCollectionDialogue
                                             app={app}
-                                            postPks={items.map(
-                                                (item) => item.pk
-                                            )}
+                                            postPks={items.map((item) => item.pk)}
                                             modal={modal}
                                         />
                                     ),
@@ -139,26 +124,17 @@ function PostSearch({ app }: PostSearchProps) {
                                                 {
                                                     name: "Ok",
                                                     fn: () =>
-                                                        app.openModal(
-                                                            "Add to collection",
-                                                            (modal) => (
-                                                                <AddToCollectionDialogue
-                                                                    app={app}
-                                                                    postPks={[]}
-                                                                    modal={
-                                                                        modal
-                                                                    }
-                                                                    postQuery={
-                                                                        new URLSearchParams(
-                                                                            search
-                                                                        ).get(
-                                                                            "query"
-                                                                        ) ??
-                                                                        undefined
-                                                                    }
-                                                                />
-                                                            )
-                                                        ),
+                                                        app.openModal("Add to collection", (modal) => (
+                                                            <AddToCollectionDialogue
+                                                                app={app}
+                                                                postPks={[]}
+                                                                modal={modal}
+                                                                postQuery={
+                                                                    new URLSearchParams(search).get("query") ??
+                                                                    undefined
+                                                                }
+                                                            />
+                                                        )),
                                                 },
                                             ]}
                                         />
@@ -177,17 +153,10 @@ function PostSearch({ app }: PostSearchProps) {
                             if (!app.isLoggedIn()) {
                                 return false;
                             }
-                            const config = await app.getAuthorization(
-                                location,
-                                navigate,
-                                false
-                            );
+                            const config = await app.getAuthorization(location, navigate, false);
                             let searchParams = new URLSearchParams(search);
                             searchParams.set("exclude_window", "true");
-                            let result = await http.get<PostDetailed>(
-                                `/get-post/${post.pk}?${searchParams}`,
-                                config
-                            );
+                            let result = await http.get<PostDetailed>(`/get-post/${post.pk}?${searchParams}`, config);
                             return result.data.is_deletable;
                         },
                         fn: (items, cb) =>
@@ -195,20 +164,14 @@ function PostSearch({ app }: PostSearchProps) {
                                 items.length > 1000 ? "Error" : "Delete post",
                                 (modal) => {
                                     if (items.length > 1000) {
-                                        return (
-                                            <p>
-                                                Cannot delete more than 1000
-                                                posts at once.
-                                            </p>
-                                        );
+                                        return <p>Cannot delete more than 1000 posts at once.</p>;
                                     }
 
                                     return (
                                         <ActionModal
                                             modalContent={modal}
                                             text={
-                                                items.length === 1 &&
-                                                items[0].title
+                                                items.length === 1 && items[0].title
                                                     ? `Delete post '${items[0].title}'`
                                                     : `Delete ${items.length} post${items.length === 1 ? "" : "s"}. Posts you are not allowed to delete will be ignored.`
                                             }
@@ -216,50 +179,35 @@ function PostSearch({ app }: PostSearchProps) {
                                                 {
                                                     name: "Ok",
                                                     fn: async () => {
-                                                        const loadingModal =
-                                                            app.openLoadingModal();
+                                                        const loadingModal = app.openLoadingModal();
                                                         try {
-                                                            const config =
-                                                                await app.getAuthorization(
-                                                                    location,
-                                                                    navigate
-                                                                );
-                                                            const result =
-                                                                await http.post<DeletePostsResponse>(
-                                                                    "/delete-posts",
-                                                                    {
-                                                                        post_pks:
-                                                                            items.map(
-                                                                                (
-                                                                                    item
-                                                                                ) =>
-                                                                                    item.pk
-                                                                            ),
-                                                                        inaccessible_post_mode:
-                                                                            "skip",
-                                                                        delete_unreferenced_objects: true,
-                                                                    },
-                                                                    config
-                                                                );
+                                                            const config = await app.getAuthorization(
+                                                                location,
+                                                                navigate
+                                                            );
+                                                            const result = await http.post<DeletePostsResponse>(
+                                                                "/delete-posts",
+                                                                {
+                                                                    post_pks: items.map((item) => item.pk),
+                                                                    inaccessible_post_mode: "skip",
+                                                                    delete_unreferenced_objects: true,
+                                                                },
+                                                                config
+                                                            );
 
                                                             loadingModal.close();
-                                                            setModCount(
-                                                                modCount + 1
-                                                            );
+                                                            setModCount(modCount + 1);
                                                             enqueueSnackbar({
                                                                 message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? "s" : ""}`,
-                                                                variant:
-                                                                    "success",
+                                                                variant: "success",
                                                             });
                                                             return result.data;
                                                         } catch (e) {
                                                             console.error(e);
                                                             loadingModal.close();
                                                             enqueueSnackbar({
-                                                                message:
-                                                                    "Failed to delete post",
-                                                                variant:
-                                                                    "error",
+                                                                message: "Failed to delete post",
+                                                                variant: "error",
                                                             });
                                                         }
                                                     },

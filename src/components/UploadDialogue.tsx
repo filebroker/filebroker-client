@@ -6,12 +6,7 @@ import http from "../http-common";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import CreateBrokerDialogue from "./CreateBrokerDialogue";
 import React from "react";
-import {
-    BrokerAvailability,
-    PostDetailed,
-    S3Object,
-    UserGroup,
-} from "../Model";
+import { BrokerAvailability, PostDetailed, S3Object, UserGroup } from "../Model";
 import "./UploadDialogue.css";
 import { TagCreator, TagSelector } from "./TagEditor";
 import {
@@ -125,9 +120,7 @@ class ProgressSubject {
     }
 
     public detach(observerToRemove: ProgressObserver) {
-        this.observers = this.observers.filter(
-            (observer) => observer !== observerToRemove
-        );
+        this.observers = this.observers.filter((observer) => observer !== observerToRemove);
     }
 
     public setProgress(progress: number | undefined) {
@@ -139,39 +132,22 @@ class ProgressSubject {
     }
 }
 
-function LinearProgressWithLabel(
-    props: LinearProgressProps & { value?: number | undefined }
-) {
+function LinearProgressWithLabel(props: LinearProgressProps & { value?: number | undefined }) {
     return (
         <Box sx={{ display: "flex", alignItems: "center" }}>
             <Box sx={{ width: "100%", mr: 1 }}>
-                <LinearProgress
-                    variant={
-                        props.value === undefined
-                            ? "indeterminate"
-                            : "determinate"
-                    }
-                    {...props}
-                />
+                <LinearProgress variant={props.value === undefined ? "indeterminate" : "determinate"} {...props} />
             </Box>
             <Box sx={{ minWidth: 35 }}>
                 <Typography variant="body2" color="text.secondary">
-                    {props.value === undefined
-                        ? "..."
-                        : `${Math.round(props.value)}%`}
+                    {props.value === undefined ? "..." : `${Math.round(props.value)}%`}
                 </Typography>
             </Box>
         </Box>
     );
 }
 
-function UploadProgress({
-    progressSubject,
-    steps,
-}: {
-    progressSubject: ProgressSubject;
-    steps: number;
-}) {
+function UploadProgress({ progressSubject, steps }: { progressSubject: ProgressSubject; steps: number }) {
     const [progress, setProgress] = useState<number | undefined>(0);
     const [step, setStep] = useState(0);
 
@@ -193,10 +169,7 @@ function UploadProgress({
             <p>Uploading File</p>
             <LinearProgressWithLabel value={progress} />
             <Box sx={{ minWidth: 35 }}>
-                <Typography
-                    variant="body2"
-                    color="text.secondary"
-                >{`${step} / ${steps}`}</Typography>
+                <Typography variant="body2" color="text.secondary">{`${step} / ${steps}`}</Typography>
             </Box>
         </div>
     );
@@ -208,9 +181,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
     const [isUploadingFolder, setUploadingFolder] = useState(false);
     const [brokers, setBrokers] = useState<BrokerAvailability[]>([]);
-    const [selectedBroker, setSelectedBroker] = useState<string | undefined>(
-        undefined
-    );
+    const [selectedBroker, setSelectedBroker] = useState<string | undefined>(undefined);
     const [file, setFile] = useState<File | null>(null);
     const [fileLabel, setFileLabel] = useState("No file chosen");
     const hiddenFileInput = React.useRef<HTMLInputElement | null>(null);
@@ -222,11 +193,8 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
     const [publicPost, setPublicPost] = useState(false);
     const [publicEdit, setPublicEdit] = useState(false);
     const [currentUserGroups, setCurrentUserGroups] = useState<UserGroup[]>([]);
-    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>(
-        []
-    );
-    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] =
-        useState<number[]>([]);
+    const [selectedUserGroups, setSelectedUserGroups] = useState<UserGroup[]>([]);
+    const [selectedUserGroupsReadOnly, setSelectedUserGroupsReadOnly] = useState<number[]>([]);
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -235,13 +203,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
         let fetch = async () => {
             let config = await app.getAuthorization(location, navigate);
 
-            http.get<BrokerAvailability[]>(
-                "/get-available-brokers",
-                config
-            ).then((result) => setBrokers(result.data));
+            http.get<BrokerAvailability[]>("/get-available-brokers", config).then((result) => setBrokers(result.data));
 
-            http.get<UserGroup[]>("/get-current-user-groups", config).then(
-                (result) => setCurrentUserGroups(result.data)
+            http.get<UserGroup[]>("/get-current-user-groups", config).then((result) =>
+                setCurrentUserGroups(result.data)
             );
         };
 
@@ -250,9 +215,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
     function setFileLabelTrimmed(name: string) {
         if (name.length > 50) {
-            setFileLabel(
-                name.substring(0, 40) + "..." + name.substring(name.length - 20)
-            );
+            setFileLabel(name.substring(0, 40) + "..." + name.substring(name.length - 20));
         } else {
             setFileLabel(name);
         }
@@ -260,11 +223,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
     const brokerSelector = (
         <div className="flex-row">
-            <Tooltip
-                title="Select or create a new file server to upload files to."
-                placement="top"
-                arrow
-            >
+            <Tooltip title="Select or create a new file server to upload files to." placement="top" arrow>
                 <FontAwesomeIcon icon={faCircleInfo} />
             </Tooltip>
             <div id="broker-selector">
@@ -277,17 +236,10 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                         required
                     >
                         {brokers
-                            .sort((a, b) =>
-                                a.broker.name.localeCompare(b.broker.name)
-                            )
+                            .sort((a, b) => a.broker.name.localeCompare(b.broker.name))
                             .map((broker) => (
-                                <MenuItem
-                                    key={broker.broker.pk}
-                                    value={broker.broker.pk}
-                                >
-                                    <ListItemText>
-                                        {broker.broker.name}
-                                    </ListItemText>
+                                <MenuItem key={broker.broker.pk} value={broker.broker.pk}>
+                                    <ListItemText>{broker.broker.name}</ListItemText>
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"
@@ -296,9 +248,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                         })}
                                     >
                                         {formatBytes(broker.used_quota)} /{" "}
-                                        {broker.quota_bytes
-                                            ? formatBytes(broker.quota_bytes)
-                                            : "∞"}
+                                        {broker.quota_bytes ? formatBytes(broker.quota_bytes) : "∞"}
                                     </Typography>
                                 </MenuItem>
                             ))}
@@ -312,21 +262,14 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                     app.openModal(
                         "Create Broker",
                         (createBrokerModal) => (
-                            <CreateBrokerDialogue
-                                app={app}
-                                modal={createBrokerModal}
-                            ></CreateBrokerDialogue>
+                            <CreateBrokerDialogue app={app} modal={createBrokerModal}></CreateBrokerDialogue>
                         ),
                         async () => {
-                            let config = await app.getAuthorization(
-                                location,
-                                navigate
-                            );
+                            let config = await app.getAuthorization(location, navigate);
 
-                            http.get<BrokerAvailability[]>(
-                                "/get-available-brokers",
-                                config
-                            ).then((result) => setBrokers(result.data));
+                            http.get<BrokerAvailability[]>("/get-available-brokers", config).then((result) =>
+                                setBrokers(result.data)
+                            );
                         }
                     );
                 }}
@@ -362,11 +305,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 <TabPanel value={isUploadingFolder ? 1 : 0} index={0}>
                     {brokerSelector}
                     <div className="file-selector-row">
-                        <Button
-                            component="label"
-                            variant="contained"
-                            startIcon={<CloudUploadIcon />}
-                        >
+                        <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
                             Select file
                             <input
                                 id="upload-file-picker"
@@ -393,11 +332,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 <TabPanel value={isUploadingFolder ? 1 : 0} index={1}>
                     {brokerSelector}
                     <div className="file-selector-row">
-                        <Button
-                            component="label"
-                            variant="contained"
-                            startIcon={<CloudUploadIcon />}
-                        >
+                        <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
                             Select folder
                             {/*@ts-ignore*/}
                             <input
@@ -414,9 +349,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                     let fileList = e.target.files;
                                     if (fileList) {
                                         setFileList(fileList);
-                                        setFileLabelTrimmed(
-                                            `Selected ${fileList.length} files`
-                                        );
+                                        setFileLabelTrimmed(`Selected ${fileList.length} files`);
                                     } else {
                                         setFile(null);
                                         setFileLabel("No file chosen");
@@ -428,11 +361,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                     </div>
                 </TabPanel>
             </Paper>
-            <Paper
-                elevation={2}
-                hidden={isUploadingFolder}
-                className="fieldset-paper"
-            >
+            <Paper elevation={2} hidden={isUploadingFolder} className="fieldset-paper">
                 <table className="fieldset-container">
                     <tbody>
                         <tr className="form-row">
@@ -459,9 +388,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                     value={description}
                                     fullWidth
                                     multiline
-                                    onChange={(e) =>
-                                        setDescription(e.target.value)
-                                    }
+                                    onChange={(e) => setDescription(e.target.value)}
                                     maxRows={5}
                                     slotProps={{
                                         htmlInput: {
@@ -477,20 +404,14 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
             <Paper elevation={2} className="fieldset-paper">
                 <div id="tag-editor-div">
                     <div className="autocomplete-container">
-                        <TagSelector
-                            setEnteredTags={setEnteredTags}
-                            setSelectedTags={setSelectedTags}
-                        ></TagSelector>
+                        <TagSelector setEnteredTags={setEnteredTags} setSelectedTags={setSelectedTags}></TagSelector>
                     </div>
                     <IconButton
                         size="medium"
                         onClick={(e) => {
                             e.preventDefault();
                             app.openModal("Create Tag", (createTagModal) => (
-                                <TagCreator
-                                    app={app}
-                                    modal={createTagModal}
-                                ></TagCreator>
+                                <TagCreator app={app} modal={createTagModal}></TagCreator>
                             ));
                         }}
                     >
@@ -517,21 +438,13 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                 <GroupSelector
                                     currentUserGroups={currentUserGroups}
                                     selectedUserGroups={selectedUserGroups}
-                                    setSelectedUserGroups={
-                                        setSelectedUserGroups
-                                    }
-                                    selectedUserGroupsReadOnly={
-                                        selectedUserGroupsReadOnly
-                                    }
-                                    setSelectedUserGroupsReadOnly={
-                                        setSelectedUserGroupsReadOnly
-                                    }
+                                    setSelectedUserGroups={setSelectedUserGroups}
+                                    selectedUserGroupsReadOnly={selectedUserGroupsReadOnly}
+                                    setSelectedUserGroupsReadOnly={setSelectedUserGroupsReadOnly}
                                 />
                                 <span className="footnote">
-                                    Groups with the{" "}
-                                    <EditIcon fontSize="small"></EditIcon> icon
-                                    can edit the post, click the selected group
-                                    to toggle edit permissions.
+                                    Groups with the <EditIcon fontSize="small"></EditIcon> icon can edit the post, click
+                                    the selected group to toggle edit permissions.
                                 </span>
                             </td>
                         </tr>
@@ -542,33 +455,19 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                 <Button
                     color="secondary"
                     disabled={
-                        ((file != null || fileList != null) &&
-                            !selectedBroker) ||
+                        ((file != null || fileList != null) && !selectedBroker) ||
                         (!isUploadingFolder && file === null) ||
-                        (isUploadingFolder &&
-                            (fileList === null || fileList.length === 0))
+                        (isUploadingFolder && (fileList === null || fileList.length === 0))
                     }
                     onClick={async (e) => {
                         e.preventDefault();
 
-                        if (
-                            (file != null || fileList != null) &&
-                            !selectedBroker
-                        ) {
-                            app.openModal(
-                                "Error",
-                                <p>
-                                    You must select a broker when uploading a
-                                    file
-                                </p>
-                            );
+                        if ((file != null || fileList != null) && !selectedBroker) {
+                            app.openModal("Error", <p>You must select a broker when uploading a file</p>);
                             return;
                         }
 
-                        if (
-                            isUploadingFolder &&
-                            (fileList === null || fileList.length === 0)
-                        ) {
+                        if (isUploadingFolder && (fileList === null || fileList.length === 0)) {
                             app.openModal("Error", <p>No files selected</p>);
                             return;
                         }
@@ -585,77 +484,45 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                     steps={fileList.length}
                                 ></UploadProgress>
                             );
-                            const uploadProgressModal = app.openModal(
-                                "Uploading",
-                                uploadProgress,
-                                undefined,
-                                false
-                            );
+                            const uploadProgressModal = app.openModal("Uploading", uploadProgress, undefined, false);
 
                             let groupAccess: GrantedPostGroupAccess[] = [];
                             selectedUserGroups.forEach((group) =>
                                 groupAccess.push(
-                                    new GrantedPostGroupAccess(
-                                        group.pk,
-                                        !selectedUserGroupsReadOnly.includes(
-                                            group.pk
-                                        )
-                                    )
+                                    new GrantedPostGroupAccess(group.pk, !selectedUserGroupsReadOnly.includes(group.pk))
                                 )
                             );
                             try {
                                 const files = Array.from(fileList);
                                 files.sort((a, b) =>
-                                    a.name.localeCompare(
-                                        b.name,
-                                        navigator.languages[0] ||
-                                            navigator.language,
-                                        { numeric: true }
-                                    )
+                                    a.name.localeCompare(b.name, navigator.languages[0] || navigator.language, {
+                                        numeric: true,
+                                    })
                                 );
                                 for (let i = 0; i < files.length; i++) {
                                     let file = files[i];
-                                    let config = await app.getAuthorization(
-                                        location,
-                                        navigate
-                                    );
+                                    let config = await app.getAuthorization(location, navigate);
                                     let formData = new FormData();
                                     formData.append("file", file);
-                                    let uploadResponse =
-                                        await http.post<UploadResponse>(
-                                            `/upload/${selectedBroker}`,
-                                            formData,
-                                            {
-                                                headers: {
-                                                    "Content-Type":
-                                                        "multipart/form-data",
-                                                    authorization:
-                                                        config!.headers
-                                                            .authorization,
-                                                    "Filebroker-Upload-Size":
-                                                        file.size,
-                                                },
-                                                onUploadProgress: (e) => {
-                                                    progressSubject.setProgress(
-                                                        e.total
-                                                            ? Math.round(
-                                                                  (100 *
-                                                                      e.loaded) /
-                                                                      e.total
-                                                              )
-                                                            : undefined
-                                                    );
-                                                },
-                                            }
-                                        );
+                                    let uploadResponse = await http.post<UploadResponse>(
+                                        `/upload/${selectedBroker}`,
+                                        formData,
+                                        {
+                                            headers: {
+                                                "Content-Type": "multipart/form-data",
+                                                authorization: config!.headers.authorization,
+                                                "Filebroker-Upload-Size": file.size,
+                                            },
+                                            onUploadProgress: (e) => {
+                                                progressSubject.setProgress(
+                                                    e.total ? Math.round((100 * e.loaded) / e.total) : undefined
+                                                );
+                                            },
+                                        }
+                                    );
 
-                                    if (
-                                        uploadResponse.data.posts.length === 0
-                                    ) {
-                                        let config = await app.getAuthorization(
-                                            location,
-                                            navigate
-                                        );
+                                    if (uploadResponse.data.posts.length === 0) {
+                                        let config = await app.getAuthorization(location, navigate);
                                         await http.post(
                                             "create-post",
                                             new CreatePostRequest(
@@ -664,8 +531,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                                 null,
                                                 enteredTags,
                                                 selectedTags,
-                                                uploadResponse.data.s3_object
-                                                    ?.object_key ?? null,
+                                                uploadResponse.data.s3_object?.object_key ?? null,
                                                 null,
                                                 publicPost,
                                                 publicEdit && publicPost,
@@ -675,10 +541,7 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                             config
                                         );
                                     } else {
-                                        let config = await app.getAuthorization(
-                                            location,
-                                            navigate
-                                        );
+                                        let config = await app.getAuthorization(location, navigate);
                                         uploadResponse.data.posts
                                             .filter((post) => post.is_editable)
                                             .forEach(async (post) => {
@@ -709,95 +572,56 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
 
                                 uploadProgressModal.close();
                                 modal.close();
-                                app.openModal(
-                                    "Success",
-                                    <p>Posts created successfully</p>
-                                );
+                                app.openModal("Success", <p>Posts created successfully</p>);
                             } catch (e: any) {
                                 uploadProgressModal.close();
                                 if (e?.response?.data?.error_code === 400019) {
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            You have run out of available
-                                            storage for this broker.
-                                        </p>
+                                        <p>You have run out of available storage for this broker.</p>
                                     );
-                                } else if (
-                                    e?.response?.data?.error_code === 400025
-                                ) {
+                                } else if (e?.response?.data?.error_code === 400025) {
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            This broker currently does not
-                                            accept further uploads.
-                                        </p>
+                                        <p>This broker currently does not accept further uploads.</p>
                                     );
                                 } else {
-                                    console.error(
-                                        "Error occurred creating post for file " +
-                                            e
-                                    );
+                                    console.error("Error occurred creating post for file " + e);
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            An error occurred creating your
-                                            post, please try again.
-                                        </p>
+                                        <p>An error occurred creating your post, please try again.</p>
                                     );
                                 }
                             }
                         } else {
                             let progressSubject = new ProgressSubject();
                             let upgloadProgress = (
-                                <UploadProgress
-                                    progressSubject={progressSubject}
-                                    steps={1}
-                                ></UploadProgress>
+                                <UploadProgress progressSubject={progressSubject} steps={1}></UploadProgress>
                             );
-                            const uploadProgressModal = app.openModal(
-                                "Uploading",
-                                upgloadProgress,
-                                undefined,
-                                false
-                            );
+                            const uploadProgressModal = app.openModal("Uploading", upgloadProgress, undefined, false);
 
                             try {
                                 let s3_object: S3Object | null;
                                 if (file != null && selectedBroker) {
-                                    let config = await app.getAuthorization(
-                                        location,
-                                        navigate
-                                    );
+                                    let config = await app.getAuthorization(location, navigate);
                                     let formData = new FormData();
                                     formData.append("file", file);
-                                    let uploadResponse =
-                                        await http.post<UploadResponse>(
-                                            `/upload/${selectedBroker}`,
-                                            formData,
-                                            {
-                                                headers: {
-                                                    "Content-Type":
-                                                        "multipart/form-data",
-                                                    authorization:
-                                                        config!.headers
-                                                            .authorization,
-                                                    "Filebroker-Upload-Size":
-                                                        file.size,
-                                                },
-                                                onUploadProgress: (e) => {
-                                                    progressSubject.setProgress(
-                                                        e.total
-                                                            ? Math.round(
-                                                                  (100 *
-                                                                      e.loaded) /
-                                                                      e.total
-                                                              )
-                                                            : undefined
-                                                    );
-                                                },
-                                            }
-                                        );
+                                    let uploadResponse = await http.post<UploadResponse>(
+                                        `/upload/${selectedBroker}`,
+                                        formData,
+                                        {
+                                            headers: {
+                                                "Content-Type": "multipart/form-data",
+                                                authorization: config!.headers.authorization,
+                                                "Filebroker-Upload-Size": file.size,
+                                            },
+                                            onUploadProgress: (e) => {
+                                                progressSubject.setProgress(
+                                                    e.total ? Math.round((100 * e.loaded) / e.total) : undefined
+                                                );
+                                            },
+                                        }
+                                    );
 
                                     progressSubject.setStep(1);
                                     s3_object = uploadResponse.data.s3_object;
@@ -805,41 +629,35 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                     s3_object = null;
                                 }
 
-                                let config = await app.getAuthorization(
-                                    location,
-                                    navigate
-                                );
+                                let config = await app.getAuthorization(location, navigate);
 
                                 let groupAccess: GrantedPostGroupAccess[] = [];
                                 selectedUserGroups.forEach((group) =>
                                     groupAccess.push(
                                         new GrantedPostGroupAccess(
                                             group.pk,
-                                            !selectedUserGroupsReadOnly.includes(
-                                                group.pk
-                                            )
+                                            !selectedUserGroupsReadOnly.includes(group.pk)
                                         )
                                     )
                                 );
 
-                                let postResponse =
-                                    await http.post<PostDetailed>(
-                                        "create-post",
-                                        new CreatePostRequest(
-                                            null,
-                                            null,
-                                            title,
-                                            enteredTags,
-                                            selectedTags,
-                                            s3_object?.object_key ?? null,
-                                            null,
-                                            publicPost,
-                                            publicEdit && publicPost,
-                                            groupAccess,
-                                            description
-                                        ),
-                                        config
-                                    );
+                                let postResponse = await http.post<PostDetailed>(
+                                    "create-post",
+                                    new CreatePostRequest(
+                                        null,
+                                        null,
+                                        title,
+                                        enteredTags,
+                                        selectedTags,
+                                        s3_object?.object_key ?? null,
+                                        null,
+                                        publicPost,
+                                        publicEdit && publicPost,
+                                        groupAccess,
+                                        description
+                                    ),
+                                    config
+                                );
 
                                 uploadProgressModal.close();
                                 modal.close();
@@ -860,32 +678,18 @@ function UploadDialogue({ app, modal }: UploadDialogueProps) {
                                 if (e?.response?.data?.error_code === 400019) {
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            You have run out of available
-                                            storage for this broker.
-                                        </p>
+                                        <p>You have run out of available storage for this broker.</p>
                                     );
-                                } else if (
-                                    e?.response?.data?.error_code === 400025
-                                ) {
+                                } else if (e?.response?.data?.error_code === 400025) {
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            This broker currently does not
-                                            accept further uploads.
-                                        </p>
+                                        <p>This broker currently does not accept further uploads.</p>
                                     );
                                 } else {
-                                    console.error(
-                                        "Error occurred creating post for file " +
-                                            e
-                                    );
+                                    console.error("Error occurred creating post for file " + e);
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            An error occurred creating your
-                                            post, please try again.
-                                        </p>
+                                        <p>An error occurred creating your post, please try again.</p>
                                     );
                                 }
                             }

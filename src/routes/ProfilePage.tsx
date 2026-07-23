@@ -3,14 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import App, { ModalContent, User } from "../App";
 import http, { getApiUrl } from "../http-common";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faCircleNotch,
-    faKey,
-    faPenToSquare,
-    faSave,
-    faSignOut,
-    faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleNotch, faKey, faPenToSquare, faSave, faSignOut, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, Button, IconButton, Paper, TextField } from "@mui/material";
 import { emailRegex } from "./Register";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
@@ -107,9 +100,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                                         "Avatar Cropper",
                                         (avatarCropperModal) => (
                                             <AvatarCropper
-                                                sourceObjectKey={
-                                                    post.s3_object.object_key
-                                                }
+                                                sourceObjectKey={post.s3_object.object_key}
                                                 modal={avatarCropperModal}
                                                 app={app}
                                             />
@@ -134,11 +125,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                         sx={{ width: 100, height: 100 }}
                         src={
                             user.avatar_object_key
-                                ? urlJoin(
-                                      getApiUrl(),
-                                      "get-object",
-                                      user.avatar_object_key
-                                  )
+                                ? urlJoin(getApiUrl(), "get-object", user.avatar_object_key)
                                 : undefined
                         }
                     >
@@ -149,12 +136,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                                 .map((s) => s[0].toUpperCase())}
                     </Avatar>
                 </IconButton>
-                <ReadOnlyTextField
-                    label="User Name"
-                    variant="outlined"
-                    value={userName}
-                    fullWidth
-                />
+                <ReadOnlyTextField label="User Name" variant="outlined" value={userName} fullWidth />
                 <StyledTextField
                     label="Display Name"
                     variant="outlined"
@@ -185,35 +167,19 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                             onClick={async () => {
                                 const loadingModal = app.openLoadingModal();
                                 try {
-                                    let config = await app.getAuthorization(
-                                        location,
-                                        navigate
-                                    );
-                                    await http.post(
-                                        "send-email-confirmation-link",
-                                        null,
-                                        config
-                                    );
+                                    let config = await app.getAuthorization(location, navigate);
+                                    await http.post("send-email-confirmation-link", null, config);
                                     loadingModal.close();
                                     app.openModal(
                                         "Success",
-                                        <p>
-                                            A confirmation link has been sent to
-                                            your email address.
-                                        </p>
+                                        <p>A confirmation link has been sent to your email address.</p>
                                     );
                                 } catch (e) {
-                                    console.error(
-                                        "Failed to send email confirmation link " +
-                                            e
-                                    );
+                                    console.error("Failed to send email confirmation link " + e);
                                     loadingModal.close();
                                     app.openModal(
                                         "Error",
-                                        <p>
-                                            An error occurred sending the
-                                            confirmation link, please try again.
-                                        </p>
+                                        <p>An error occurred sending the confirmation link, please try again.</p>
                                     );
                                 }
                             }}
@@ -228,11 +194,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
     } else {
         profileContent = (
             <div className="loading-container">
-                <FontAwesomeIcon
-                    icon={faCircleNotch}
-                    spin
-                    size="6x"
-                ></FontAwesomeIcon>
+                <FontAwesomeIcon icon={faCircleNotch} spin size="6x"></FontAwesomeIcon>
             </div>
         );
     }
@@ -248,12 +210,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                             {editMode ? (
                                 <Button
                                     variant="outlined"
-                                    startIcon={
-                                        <FontAwesomeSvgIcon
-                                            fontSize="inherit"
-                                            icon={faXmark}
-                                        />
-                                    }
+                                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faXmark} />}
                                     onClick={() => setEditMode(false)}
                                 >
                                     Cancel
@@ -261,12 +218,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                             ) : (
                                 <Button
                                     variant="outlined"
-                                    startIcon={
-                                        <FontAwesomeSvgIcon
-                                            fontSize="inherit"
-                                            icon={faPenToSquare}
-                                        />
-                                    }
+                                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faPenToSquare} />}
                                     onClick={() => setEditMode(true)}
                                 >
                                     Edit
@@ -275,12 +227,7 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                             <Button
                                 variant="outlined"
                                 hidden={editMode}
-                                startIcon={
-                                    <FontAwesomeSvgIcon
-                                        fontSize="inherit"
-                                        icon={faSignOut}
-                                    />
-                                }
+                                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faSignOut} />}
                                 onClick={handleLogout}
                             >
                                 Logout
@@ -289,25 +236,14 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                                 variant="outlined"
                                 hidden={!editMode}
                                 disabled={emailInvalid}
-                                startIcon={
-                                    <FontAwesomeSvgIcon
-                                        fontSize="inherit"
-                                        icon={faSave}
-                                    />
-                                }
+                                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faSave} />}
                                 onClick={async () => {
                                     const modal = app.openLoadingModal();
                                     try {
-                                        let config = await app.getAuthorization(
-                                            location,
-                                            navigate
-                                        );
+                                        let config = await app.getAuthorization(location, navigate);
                                         let response = await http.post<User>(
                                             "edit-user",
-                                            new UpdateUserRequest(
-                                                displayName,
-                                                email
-                                            ),
+                                            new UpdateUserRequest(displayName, email),
                                             config
                                         );
                                         setUser(response.data);
@@ -315,16 +251,10 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                                         modal.close();
                                     } catch (e) {
                                         modal.close();
-                                        console.error(
-                                            "An error occurred updating the user: " +
-                                                e
-                                        );
+                                        console.error("An error occurred updating the user: " + e);
                                         app.openModal(
                                             "Error",
-                                            <p>
-                                                An error occurred updating the
-                                                user, please try again.
-                                            </p>
+                                            <p>An error occurred updating the user, please try again.</p>
                                         );
                                     }
                                 }}
@@ -334,23 +264,11 @@ export function ProfilePage({ app, initialUser }: ProfilePageProps) {
                             {user && (
                                 <Button
                                     variant="outlined"
-                                    startIcon={
-                                        <FontAwesomeSvgIcon
-                                            fontSize="inherit"
-                                            icon={faKey}
-                                        />
-                                    }
+                                    startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faKey} />}
                                     onClick={() => {
-                                        app.openModal(
-                                            "Change Password",
-                                            (modal) => (
-                                                <ChangePasswordForm
-                                                    app={app}
-                                                    user={user}
-                                                    modal={modal}
-                                                />
-                                            )
-                                        );
+                                        app.openModal("Change Password", (modal) => (
+                                            <ChangePasswordForm app={app} user={user} modal={modal} />
+                                        ));
                                     }}
                                 >
                                     Change Password
@@ -369,26 +287,14 @@ class ChangePasswordRequest {
     new_password: string;
     captcha_token: string | null;
 
-    constructor(
-        password: string,
-        new_password: string,
-        captcha_token: string | null
-    ) {
+    constructor(password: string, new_password: string, captcha_token: string | null) {
         this.password = password;
         this.new_password = new_password;
         this.captcha_token = captcha_token;
     }
 }
 
-function ChangePasswordForm({
-    app,
-    user,
-    modal,
-}: {
-    app: App;
-    user: User;
-    modal: ModalContent;
-}) {
+function ChangePasswordForm({ app, user, modal }: { app: App; user: User; modal: ModalContent }) {
     const location = useLocation();
     const navigate = useNavigate();
     const [password, setPassword] = useState("");
@@ -401,13 +307,7 @@ function ChangePasswordForm({
 
     useEffect(() => {
         if (newPassword) {
-            setPasswordScore(
-                zxcvbn(newPassword, [
-                    user.user_name,
-                    user.email ?? "",
-                    user.display_name ?? "",
-                ]).score
-            );
+            setPasswordScore(zxcvbn(newPassword, [user.user_name, user.email ?? "", user.display_name ?? ""]).score);
         } else {
             setPasswordScore(0);
         }
@@ -448,18 +348,9 @@ function ChangePasswordForm({
                 variant="outlined"
                 value={newPassword}
                 // use !! to force this to be a boolean instead of boolean | string
-                error={
-                    !!(
-                        passwordConfirm &&
-                        newPassword &&
-                        newPassword !== passwordConfirm
-                    )
-                }
+                error={!!(passwordConfirm && newPassword && newPassword !== passwordConfirm)}
                 helperText={
-                    passwordConfirm &&
-                    newPassword &&
-                    newPassword !== passwordConfirm &&
-                    "Passwords do not match"
+                    passwordConfirm && newPassword && newPassword !== passwordConfirm && "Passwords do not match"
                 }
                 fullWidth
                 onChange={(e) => setNewPassword(e.currentTarget.value)}
@@ -471,9 +362,7 @@ function ChangePasswordForm({
                 required
                 autoComplete="new-password"
             />
-            {newPassword && (
-                <PasswordStrengthMeter passwordScore={passwordScore} />
-            )}
+            {newPassword && <PasswordStrengthMeter passwordScore={passwordScore} />}
             <TextField
                 label="Confirm Password"
                 name="passwordNoFill2"
@@ -481,18 +370,9 @@ function ChangePasswordForm({
                 variant="outlined"
                 value={passwordConfirm}
                 // use !! to force this to be a boolean instead of boolean | string
-                error={
-                    !!(
-                        passwordConfirm &&
-                        newPassword &&
-                        newPassword !== passwordConfirm
-                    )
-                }
+                error={!!(passwordConfirm && newPassword && newPassword !== passwordConfirm)}
                 helperText={
-                    passwordConfirm &&
-                    newPassword &&
-                    newPassword !== passwordConfirm &&
-                    "Passwords do not match"
+                    passwordConfirm && newPassword && newPassword !== passwordConfirm && "Passwords do not match"
                 }
                 fullWidth
                 onChange={(e) => setPasswordConfirm(e.currentTarget.value)}
@@ -526,40 +406,25 @@ function ChangePasswordForm({
                 }
                 size="large"
                 variant="contained"
-                startIcon={
-                    <FontAwesomeSvgIcon fontSize="inherit" icon={faSave} />
-                }
+                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faSave} />}
                 onClick={async () => {
                     let config = await app.getAuthorization(location, navigate);
                     const loadingModal = app.openLoadingModal();
                     try {
                         let loginResponse = await http.post<LoginResponse>(
                             "change-password",
-                            new ChangePasswordRequest(
-                                password,
-                                newPassword,
-                                showCaptcha ? captchaToken : null
-                            ),
+                            new ChangePasswordRequest(password, newPassword, showCaptcha ? captchaToken : null),
                             { ...config, withCredentials: true }
                         );
                         app.handleLogin(loginResponse.data);
                         loadingModal.close();
                         modal.close();
-                        app.openModal(
-                            "Success",
-                            <p>Password changed successfully.</p>
-                        );
+                        app.openModal("Success", <p>Password changed successfully.</p>);
                     } catch (e: any) {
                         loadingModal.close();
                         if (e?.response?.status >= 500) {
                             console.log("Changing password failed: " + e);
-                            app.openModal(
-                                "Error",
-                                <p>
-                                    An error occurred changing password, please
-                                    try again.
-                                </p>
-                            );
+                            app.openModal("Error", <p>An error occurred changing password, please try again.</p>);
                         } else if (e?.response?.data?.error_code === 400011) {
                             setShowCaptcha(true);
                         } else {

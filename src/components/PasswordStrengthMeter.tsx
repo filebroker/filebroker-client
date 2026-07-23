@@ -1,10 +1,6 @@
 import "./PasswordStrengthMeter.css";
 
-export function PasswordStrengthMeter({
-    passwordScore,
-}: {
-    passwordScore: number;
-}) {
+export function PasswordStrengthMeter({ passwordScore }: { passwordScore: number }) {
     const createPasswordLabel = (score: number) => {
         switch (score) {
             case 0:
@@ -30,9 +26,7 @@ export function PasswordStrengthMeter({
                 max="4"
             />
             <br />
-            <label className="password-strength-meter-label">
-                {createPasswordLabel(passwordScore)}
-            </label>
+            <label className="password-strength-meter-label">{createPasswordLabel(passwordScore)}</label>
         </div>
     );
 }

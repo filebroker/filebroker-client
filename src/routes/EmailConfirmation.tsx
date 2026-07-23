@@ -13,8 +13,7 @@ export function EmailConfirmation({ app }: { app: App }) {
     const navigate = useNavigate();
 
     const [emailConfirmed, setEmailConfirmed] = useState(false);
-    const [emailConfirmationFailed, setEmailConfirmationFailed] =
-        useState(false);
+    const [emailConfirmationFailed, setEmailConfirmationFailed] = useState(false);
 
     useEffect(() => {
         let fetch = async () => {
@@ -47,11 +46,7 @@ export function EmailConfirmation({ app }: { app: App }) {
     } else {
         loadingContainer = (
             <>
-                <FontAwesomeIcon
-                    icon={faCircleNotch}
-                    spin
-                    size="6x"
-                ></FontAwesomeIcon>
+                <FontAwesomeIcon icon={faCircleNotch} spin size="6x"></FontAwesomeIcon>
                 <p>Confirming Email</p>
             </>
         );
@@ -63,9 +58,7 @@ export function EmailConfirmation({ app }: { app: App }) {
                 <PageTitle title="Confirm Email" />
                 <div className="form-container-center">
                     <Paper elevation={2} className="form-paper">
-                        <div className="form-paper-content">
-                            {loadingContainer}
-                        </div>
+                        <div className="form-paper-content">{loadingContainer}</div>
                     </Paper>
                 </div>
             </div>

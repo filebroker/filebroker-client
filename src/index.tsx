@@ -22,9 +22,7 @@ import { ChipTypeMap } from "@mui/material/Chip";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
-const root = ReactDOM.createRoot(
-    document.getElementById("root") as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
 Modal.setAppElement("#root");
 
@@ -61,9 +59,7 @@ const StyledTextFieldStyle = styled(TextField)(({ theme, color }) => {
         },
         "& .MuiOutlinedInput-root.Mui-disabled": {
             "& fieldset": {
-                borderColor: color
-                    ? theme.palette[color].main
-                    : "rgba(0, 0, 0, 0.23)",
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                 color: color ? theme.palette[color].main : "white",
             },
         },
@@ -94,9 +90,7 @@ export const StyledTextField = (props: TextFieldProps) => {
 };
 
 const StyledReadOnlyTextField = styled(TextField)(({ theme, color }) => {
-    const themeColor = color
-        ? theme.palette[color].main
-        : "rgba(255, 255, 255, 0.42)";
+    const themeColor = color ? theme.palette[color].main : "rgba(255, 255, 255, 0.42)";
 
     return {
         "& .MuiInputBase-input": {
@@ -113,21 +107,15 @@ const StyledReadOnlyTextField = styled(TextField)(({ theme, color }) => {
         },
         "& .MuiOutlinedInput-root": {
             "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: color
-                    ? theme.palette[color].main
-                    : "rgba(0, 0, 0, 0.23)",
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                 borderWidth: "1px",
             },
             "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: color
-                    ? theme.palette[color].main
-                    : "rgba(0, 0, 0, 0.23)",
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                 borderWidth: "1px",
             },
             "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: color
-                    ? theme.palette[color].main
-                    : "rgba(0, 0, 0, 0.23)",
+                borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                 borderWidth: "1px",
             },
         },
@@ -171,10 +159,7 @@ export const StyledSelect = <V,>({
 }: SelectProps<V>) => {
     const theme = useTheme();
     return (
-        <FormControl
-            style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }}
-            fullWidth={fullWidth}
-        >
+        <FormControl style={{ width: fullWidth ? undefined : "150px", flexGrow: 0 }} fullWidth={fullWidth}>
             <InputLabel id={`${id}-label`} color={color}>
                 <span
                     style={{
@@ -198,9 +183,7 @@ export const StyledSelect = <V,>({
                     },
                     "&.MuiOutlinedInput-root.Mui-disabled": {
                         "& fieldset": {
-                            borderColor: color
-                                ? theme.palette[color].main
-                                : "rgba(0, 0, 0, 0.23)",
+                            borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                             color: color ? theme.palette[color].main : "white",
                         },
                     },
@@ -233,16 +216,7 @@ export const StyledAutocomplete = <
     error,
     helperText,
     ...props
-}: Omit<
-    AutocompleteProps<
-        Value,
-        Multiple,
-        DisableClearable,
-        FreeSolo,
-        ChipComponent
-    >,
-    "renderInput"
-> & {
+}: Omit<AutocompleteProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>, "renderInput"> & {
     label: string;
     color?: FormLabelProps["color"];
     variant?: TextFieldVariants;
@@ -283,24 +257,18 @@ export const StyledAutocomplete = <
                             },
                         }}
                         label={label}
-                        placeholder={
-                            value || readOnly ? undefined : placeholder
-                        }
+                        placeholder={value || readOnly ? undefined : placeholder}
                         variant={variant}
                         sx={{
                             "& .MuiOutlinedInput-input.Mui-disabled": {
                                 WebkitTextFillColor: "white",
                             },
                             "& .MuiInputLabel-root.Mui-disabled": {
-                                color: color
-                                    ? theme.palette[color].main
-                                    : "white",
+                                color: color ? theme.palette[color].main : "white",
                             },
                             "& .MuiInputBase-root.Mui-disabled": {
                                 "& > fieldset": {
-                                    borderColor: color
-                                        ? theme.palette[color].main
-                                        : "rgba(0, 0, 0, 0.23)",
+                                    borderColor: color ? theme.palette[color].main : "rgba(0, 0, 0, 0.23)",
                                     color: "white",
                                 },
                             },

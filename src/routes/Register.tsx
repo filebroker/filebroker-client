@@ -68,13 +68,7 @@ function Register({ app }: RegisterProps) {
         try {
             let response = await http.post<LoginResponse>(
                 "/register",
-                new UserRegistration(
-                    displayName,
-                    userName,
-                    password,
-                    email,
-                    captchaToken
-                ),
+                new UserRegistration(displayName, userName, password, email, captchaToken),
                 { withCredentials: true }
             );
             setLoginDisabled(false);
@@ -85,10 +79,7 @@ function Register({ app }: RegisterProps) {
             setLoginDisabled(false);
             console.error("Register failed: " + e);
             modal.close();
-            app.openModal(
-                "Error",
-                <p>An error occurred while registering, please try again.</p>
-            );
+            app.openModal("Error", <p>An error occurred while registering, please try again.</p>);
         }
     }
 
@@ -113,9 +104,7 @@ function Register({ app }: RegisterProps) {
 
     useEffect(() => {
         if (password) {
-            setPasswordScore(
-                zxcvbn(password, [userName, email, displayName]).score
-            );
+            setPasswordScore(zxcvbn(password, [userName, email, displayName]).score);
         } else {
             setPasswordScore(0);
         }
@@ -149,9 +138,7 @@ function Register({ app }: RegisterProps) {
                             variant="outlined"
                             value={displayName}
                             fullWidth
-                            onChange={(e) =>
-                                setDisplayName(e.currentTarget.value)
-                            }
+                            onChange={(e) => setDisplayName(e.currentTarget.value)}
                             slotProps={{
                                 htmlInput: {
                                     maxLength: 32,
@@ -165,9 +152,7 @@ function Register({ app }: RegisterProps) {
                             error={userNameInvalid || userNameTaken}
                             helperText={
                                 (userNameInvalid || userNameTaken) &&
-                                (userNameInvalid
-                                    ? "User name invalid: cannot contain whitespace"
-                                    : "User name taken")
+                                (userNameInvalid ? "User name invalid: cannot contain whitespace" : "User name taken")
                             }
                             fullWidth
                             onChange={(e) => {
@@ -199,18 +184,9 @@ function Register({ app }: RegisterProps) {
                             variant="outlined"
                             value={password}
                             // use !! to force this to be a boolean instead of boolean | string
-                            error={
-                                !!(
-                                    passwordConfirm &&
-                                    password &&
-                                    password !== passwordConfirm
-                                )
-                            }
+                            error={!!(passwordConfirm && password && password !== passwordConfirm)}
                             helperText={
-                                passwordConfirm &&
-                                password &&
-                                password !== passwordConfirm &&
-                                "Passwords do not match"
+                                passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"
                             }
                             fullWidth
                             onChange={(e) => setPassword(e.currentTarget.value)}
@@ -222,11 +198,7 @@ function Register({ app }: RegisterProps) {
                             required
                             autoComplete="new-password"
                         />
-                        {password && (
-                            <PasswordStrengthMeter
-                                passwordScore={passwordScore}
-                            />
-                        )}
+                        {password && <PasswordStrengthMeter passwordScore={passwordScore} />}
                         <TextField
                             label="Confirm Password"
                             name="passwordNoFill2"
@@ -234,23 +206,12 @@ function Register({ app }: RegisterProps) {
                             variant="outlined"
                             value={passwordConfirm}
                             // use !! to force this to be a boolean instead of boolean | string
-                            error={
-                                !!(
-                                    passwordConfirm &&
-                                    password &&
-                                    password !== passwordConfirm
-                                )
-                            }
+                            error={!!(passwordConfirm && password && password !== passwordConfirm)}
                             helperText={
-                                passwordConfirm &&
-                                password &&
-                                password !== passwordConfirm &&
-                                "Passwords do not match"
+                                passwordConfirm && password && password !== passwordConfirm && "Passwords do not match"
                             }
                             fullWidth
-                            onChange={(e) =>
-                                setPasswordConfirm(e.currentTarget.value)
-                            }
+                            onChange={(e) => setPasswordConfirm(e.currentTarget.value)}
                             slotProps={{
                                 htmlInput: {
                                     maxLength: 255,
@@ -271,12 +232,7 @@ function Register({ app }: RegisterProps) {
                             type="submit"
                             size="large"
                             variant="contained"
-                            startIcon={
-                                <FontAwesomeSvgIcon
-                                    fontSize="inherit"
-                                    icon={faUserPlus}
-                                />
-                            }
+                            startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faUserPlus} />}
                             disabled={
                                 loginDisabled ||
                                 userName.length === 0 ||

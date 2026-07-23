@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from "react";
 import http from "../http-common";
-import {
-    Button,
-    Checkbox,
-    CircularProgress,
-    FormControlLabel,
-    Pagination,
-    Paper,
-} from "@mui/material";
+import { Button, Checkbox, CircularProgress, FormControlLabel, Pagination, Paper } from "@mui/material";
 import App, { ModalContent } from "../App";
 import { useLocation, useNavigate } from "react-router";
 
@@ -28,11 +21,7 @@ import {
     UserPublic,
 } from "../Model";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faClock,
-    faClockRotateLeft,
-    faUser,
-} from "@fortawesome/free-solid-svg-icons";
+import { faClock, faClockRotateLeft, faUser } from "@fortawesome/free-solid-svg-icons";
 import { ReadOnlyTextField, StyledAutocomplete } from "..";
 import { TagSelector } from "./TagEditor";
 import VisibilitySelect from "./VisibilitySelect";
@@ -257,9 +246,7 @@ export function TagEditHistoryDialogue({
                         onChange={() => {}}
                         onInputChange={() => {}}
                         readOnly
-                        isOptionEqualToValue={(option, value) =>
-                            option?.id === value?.id
-                        }
+                        isOptionEqualToValue={(option, value) => option?.id === value?.id}
                     />
                 </Paper>
             )}
@@ -291,12 +278,8 @@ export function TagEditHistoryDialogue({
                         onChange={() => {}}
                         onInputChange={() => {}}
                         readOnly
-                        color={
-                            snapshot.tag_category_changed ? "info" : undefined
-                        }
-                        isOptionEqualToValue={(option, value) =>
-                            option?.id === value?.id
-                        }
+                        color={snapshot.tag_category_changed ? "info" : undefined}
+                        isOptionEqualToValue={(option, value) => option?.id === value?.id}
                     />
                 </Paper>
             )}
@@ -331,10 +314,7 @@ export function UserGroupEditHistoryDialogue({
     modal?: ModalContent | undefined;
 }) {
     return (
-        <InternalEditHistoryDialogue<
-            UserGroupDetailed,
-            UserGroupEditHistorySnapshot
-        >
+        <InternalEditHistoryDialogue<UserGroupDetailed, UserGroupEditHistorySnapshot>
             app={app}
             history_object={user_group}
             modal={modal}
@@ -343,11 +323,7 @@ export function UserGroupEditHistoryDialogue({
             rewind_history_endpoint="rewind-user-group-history-snapshot"
             render_object_values={(user_group) => (
                 <Paper elevation={2} className="snapshot-values-container">
-                    <ReadOnlyTextField
-                        label="Name"
-                        value={user_group.name}
-                        variant="standard"
-                    />
+                    <ReadOnlyTextField label="Name" value={user_group.name} variant="standard" />
                     <ReadOnlyTextField
                         label="Description"
                         value={user_group.description ?? ""}
@@ -356,9 +332,7 @@ export function UserGroupEditHistoryDialogue({
                         maxRows={5}
                     />
                     <TagSelector
-                        values={user_group.tags
-                            ?.sort(sortTagUsages)
-                            .map((tagUsage) => tagUsage.tag)}
+                        values={user_group.tags?.sort(sortTagUsages).map((tagUsage) => tagUsage.tag)}
                         readOnly
                         setSelectedTags={() => {}}
                         enableTagLink
@@ -415,16 +389,12 @@ export function UserGroupEditHistoryDialogue({
                         label="Description"
                         value={snapshot.description ?? ""}
                         variant="standard"
-                        color={
-                            snapshot.description_changed ? "info" : undefined
-                        }
+                        color={snapshot.description_changed ? "info" : undefined}
                         multiline
                         maxRows={5}
                     />
                     <TagSelector
-                        values={snapshot.tags
-                            .sort(sortTagUsages)
-                            .map((tagUsage) => tagUsage.tag)}
+                        values={snapshot.tags.sort(sortTagUsages).map((tagUsage) => tagUsage.tag)}
                         readOnly
                         setSelectedTags={() => {}}
                         color={snapshot.tags_changed ? "info" : undefined}
@@ -449,9 +419,7 @@ export function UserGroupEditHistoryDialogue({
                         sx={(theme) => ({
                             opacity: 1,
                             "& .MuiFormControlLabel-label.Mui-disabled": {
-                                color: snapshot.public_changed
-                                    ? theme.palette.info.main
-                                    : theme.palette.text.primary,
+                                color: snapshot.public_changed ? theme.palette.info.main : theme.palette.text.primary,
                             },
                         })}
                     />
@@ -530,11 +498,7 @@ function EditHistoryDialogue({
             rewind_history_endpoint={rewind_history_endpoint}
             render_object_values={(history_object) => (
                 <Paper elevation={2} className="snapshot-values-container">
-                    <ReadOnlyTextField
-                        label="Title"
-                        value={history_object.title ?? ""}
-                        variant="standard"
-                    />
+                    <ReadOnlyTextField label="Title" value={history_object.title ?? ""} variant="standard" />
                     <ReadOnlyTextField
                         label="Description"
                         value={history_object.description ?? ""}
@@ -543,9 +507,7 @@ function EditHistoryDialogue({
                         maxRows={5}
                     />
                     <TagSelector
-                        values={history_object.tags
-                            .sort(sortTagUsages)
-                            .map((tagUsage) => tagUsage.tag)}
+                        values={history_object.tags.sort(sortTagUsages).map((tagUsage) => tagUsage.tag)}
                         readOnly
                         setSelectedTags={() => {}}
                         enableTagLink
@@ -565,10 +527,7 @@ function EditHistoryDialogue({
                             )}
                             selectedUserGroupsReadOnly={history_object.group_access
                                 .filter((groupAccess) => !groupAccess.write)
-                                .map(
-                                    (groupAccess) =>
-                                        groupAccess.granted_group.pk
-                                )}
+                                .map((groupAccess) => groupAccess.granted_group.pk)}
                             readOnly
                             setSelectedUserGroups={() => {}}
                             setSelectedUserGroupsReadOnly={() => {}}
@@ -588,16 +547,12 @@ function EditHistoryDialogue({
                         label="Description"
                         value={snapshot.description ?? ""}
                         variant="standard"
-                        color={
-                            snapshot.description_changed ? "info" : undefined
-                        }
+                        color={snapshot.description_changed ? "info" : undefined}
                         multiline
                         maxRows={5}
                     />
                     <TagSelector
-                        values={snapshot.tags
-                            .sort(sortTagUsages)
-                            .map((tagUsage) => tagUsage.tag)}
+                        values={snapshot.tags.sort(sortTagUsages).map((tagUsage) => tagUsage.tag)}
                         readOnly
                         setSelectedTags={() => {}}
                         color={snapshot.tags_changed ? "info" : undefined}
@@ -610,32 +565,18 @@ function EditHistoryDialogue({
                             readOnly={true}
                             setPublic={() => {}}
                             setPublicEdit={() => {}}
-                            color={
-                                snapshot.public_changed ||
-                                snapshot.public_edit_changed
-                                    ? "info"
-                                    : undefined
-                            }
+                            color={snapshot.public_changed || snapshot.public_edit_changed ? "info" : undefined}
                         />
                         <GroupSelector
                             currentUserGroups={[]}
-                            selectedUserGroups={snapshot.group_access.map(
-                                (groupAccess) => groupAccess.granted_group
-                            )}
+                            selectedUserGroups={snapshot.group_access.map((groupAccess) => groupAccess.granted_group)}
                             selectedUserGroupsReadOnly={snapshot.group_access
                                 .filter((groupAccess) => !groupAccess.write)
-                                .map(
-                                    (groupAccess) =>
-                                        groupAccess.granted_group.pk
-                                )}
+                                .map((groupAccess) => groupAccess.granted_group.pk)}
                             readOnly
                             setSelectedUserGroups={() => {}}
                             setSelectedUserGroupsReadOnly={() => {}}
-                            color={
-                                snapshot.group_access_changed
-                                    ? "info"
-                                    : undefined
-                            }
+                            color={snapshot.group_access_changed ? "info" : undefined}
                         />
                     </div>
                 </Paper>
@@ -707,9 +648,7 @@ function InternalEditHistoryDialogue<
             )
             .then((response) => {
                 setSnapshots(response.data.snapshots);
-                setPageCount(
-                    Math.ceil(response.data.total_snapshot_count / 10)
-                );
+                setPageCount(Math.ceil(response.data.total_snapshot_count / 10));
             })
             .catch((e) => {
                 console.error("Failed to get edit history:", e);
@@ -726,14 +665,11 @@ function InternalEditHistoryDialogue<
                     <div className="snapshot-container-update-info">
                         <div>
                             <FontAwesomeIcon icon={faUser} />{" "}
-                            {history_object.edit_user.display_name ??
-                                history_object.edit_user.user_name}
+                            {history_object.edit_user.display_name ?? history_object.edit_user.user_name}
                         </div>
                         <div>
                             <FontAwesomeIcon icon={faClock} />{" "}
-                            {new Date(
-                                history_object.edit_timestamp
-                            ).toLocaleString()}
+                            {new Date(history_object.edit_timestamp).toLocaleString()}
                         </div>
                     </div>
                 </div>
@@ -741,91 +677,59 @@ function InternalEditHistoryDialogue<
             </Paper>
             {loading || snapshots.length === 0 ? (
                 <div className="full-loading-container">
-                    {loading ? (
-                        <CircularProgress size={40} color="primary" />
-                    ) : (
-                        <h3>No history</h3>
-                    )}
+                    {loading ? <CircularProgress size={40} color="primary" /> : <h3>No history</h3>}
                 </div>
             ) : (
                 <div className="edit-history-snapshots">
                     {snapshots.map((snapshot) => (
-                        <Paper
-                            key={snapshot.pk}
-                            elevation={1}
-                            className="snapshot-container"
-                        >
+                        <Paper key={snapshot.pk} elevation={1} className="snapshot-container">
                             <div className="snapshot-container-top-row">
                                 <div className="snapshot-container-update-info">
                                     <div>
                                         <FontAwesomeIcon icon={faUser} />{" "}
-                                        {snapshot.edit_user.display_name ??
-                                            snapshot.edit_user.user_name}
+                                        {snapshot.edit_user.display_name ?? snapshot.edit_user.user_name}
                                     </div>
                                     <div>
                                         <FontAwesomeIcon icon={faClock} />{" "}
-                                        {new Date(
-                                            snapshot.edit_timestamp
-                                        ).toLocaleString()}
+                                        {new Date(snapshot.edit_timestamp).toLocaleString()}
                                     </div>
                                 </div>
                                 <div className="snapshot-container-rewind-button-container">
                                     <Button
-                                        startIcon={
-                                            <FontAwesomeSvgIcon
-                                                fontSize="inherit"
-                                                icon={faClockRotateLeft}
-                                            />
-                                        }
+                                        startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faClockRotateLeft} />}
                                         onClick={() =>
                                             app.openModal(
                                                 `Rewind ${object_name}`,
                                                 (modalContent) => (
                                                     <ActionModal
-                                                        modalContent={
-                                                            modalContent
-                                                        }
+                                                        modalContent={modalContent}
                                                         text={`Rewind ${object_name} to this snapshot?`}
                                                         actions={[
                                                             {
                                                                 name: "Ok",
                                                                 fn: async () => {
-                                                                    const loadingModal =
-                                                                        app.openLoadingModal();
+                                                                    const loadingModal = app.openLoadingModal();
                                                                     try {
-                                                                        const config =
-                                                                            await app.getAuthorization(
-                                                                                location,
-                                                                                navigate
-                                                                            );
-                                                                        const response =
-                                                                            await http.post(
-                                                                                `${rewind_history_endpoint}/${snapshot.pk}`,
-                                                                                {},
-                                                                                config
-                                                                            );
-
-                                                                        enqueueSnackbar(
-                                                                            "History rewound",
-                                                                            {
-                                                                                variant:
-                                                                                    "success",
-                                                                            }
+                                                                        const config = await app.getAuthorization(
+                                                                            location,
+                                                                            navigate
                                                                         );
+                                                                        const response = await http.post(
+                                                                            `${rewind_history_endpoint}/${snapshot.pk}`,
+                                                                            {},
+                                                                            config
+                                                                        );
+
+                                                                        enqueueSnackbar("History rewound", {
+                                                                            variant: "success",
+                                                                        });
 
                                                                         return response.data;
                                                                     } catch (e) {
-                                                                        console.error(
-                                                                            "Failed to rewind history:",
-                                                                            e
-                                                                        );
-                                                                        enqueueSnackbar(
-                                                                            "Failed to rewind history",
-                                                                            {
-                                                                                variant:
-                                                                                    "error",
-                                                                            }
-                                                                        );
+                                                                        console.error("Failed to rewind history:", e);
+                                                                        enqueueSnackbar("Failed to rewind history", {
+                                                                            variant: "error",
+                                                                        });
                                                                     } finally {
                                                                         loadingModal.close();
                                                                     }

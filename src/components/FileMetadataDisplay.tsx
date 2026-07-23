@@ -30,23 +30,13 @@ export function FileMetadataDisplay({
     let thumbnail;
     if (s3_object.thumbnail_object_key) {
         thumbnail = (
-            <Link
-                href={urlJoin(
-                    getApiUrl(),
-                    "get-object",
-                    s3_object.thumbnail_object_key
-                )}
-                target="_blank"
-            >
+            <Link href={urlJoin(getApiUrl(), "get-object", s3_object.thumbnail_object_key)} target="_blank">
                 Link
             </Link>
         );
     } else if (s3_object.thumbnail_locked_at) {
         thumbnail = "IN PROGRESS";
-    } else if (
-        s3_object.thumbnail_fail_count &&
-        s3_object.thumbnail_fail_count >= 3
-    ) {
+    } else if (s3_object.thumbnail_fail_count && s3_object.thumbnail_fail_count >= 3) {
         thumbnail = "FAILED";
     } else if (s3_object.thumbnail_disabled) {
         thumbnail = "DISABLED";
@@ -83,93 +73,34 @@ export function FileMetadataDisplay({
 
     return (
         <div className="modal-form">
-            <TableContainer
-                component={Paper}
-                sx={{ caretColor: "transparent" }}
-            >
+            <TableContainer component={Paper} sx={{ caretColor: "transparent" }}>
                 <Table sx={{ minWidth: 300 }}>
                     <TableBody>
-                        <AutoHideTableRow
-                            title="Key"
-                            value={s3_object.object_key}
-                        />
-                        <AutoHideTableRow
-                            title="File Name"
-                            value={s3_object.filename}
-                        />
+                        <AutoHideTableRow title="Key" value={s3_object.object_key} />
+                        <AutoHideTableRow title="File Name" value={s3_object.filename} />
                         <AutoHideTableRow
                             title="Mime Type"
-                            value={
-                                s3_object_metadata.mime_type ||
-                                s3_object.mime_type
-                            }
+                            value={s3_object_metadata.mime_type || s3_object.mime_type}
                         />
-                        <AutoHideTableRow
-                            title="Size"
-                            value={filesize(s3_object.size_bytes, { base: 2 })}
-                        />
-                        <AutoHideTableRow
-                            title="SHA256 Hash"
-                            value={s3_object.sha256_hash}
-                        />
+                        <AutoHideTableRow title="Size" value={filesize(s3_object.size_bytes, { base: 2 })} />
+                        <AutoHideTableRow title="SHA256 Hash" value={s3_object.sha256_hash} />
                         <AutoHideTableRow title="Thumbnail" value={thumbnail} />
                         <AutoHideTableRow title="HLS" value={hls} />
-                        <AutoHideTableRow
-                            title="Duration"
-                            value={s3_object_metadata.duration}
-                        />
-                        <AutoHideTableRow
-                            title="Resolution"
-                            value={resolution}
-                        />
-                        <AutoHideTableRow
-                            title="Date"
-                            value={s3_object_metadata.date}
-                        />
-                        <AutoHideTableRow
-                            title="Title"
-                            value={s3_object_metadata.title}
-                        />
-                        <AutoHideTableRow
-                            title="Artist"
-                            value={s3_object_metadata.artist}
-                        />
-                        <AutoHideTableRow
-                            title="Album"
-                            value={s3_object_metadata.album}
-                        />
-                        <AutoHideTableRow
-                            title="Album Artist"
-                            value={s3_object_metadata.album_artist}
-                        />
-                        <AutoHideTableRow
-                            title="Composer"
-                            value={s3_object_metadata.composer}
-                        />
-                        <AutoHideTableRow
-                            title="Genre"
-                            value={s3_object_metadata.genre}
-                        />
-                        <AutoHideTableRow
-                            title="Track Number"
-                            value={trackNumber}
-                        />
-                        <AutoHideTableRow
-                            title="Disc Number"
-                            value={discNumber}
-                        />
-                        <AutoHideTableRow
-                            title="Bitrate"
-                            value={s3_object_metadata.bit_rate}
-                        />
+                        <AutoHideTableRow title="Duration" value={s3_object_metadata.duration} />
+                        <AutoHideTableRow title="Resolution" value={resolution} />
+                        <AutoHideTableRow title="Date" value={s3_object_metadata.date} />
+                        <AutoHideTableRow title="Title" value={s3_object_metadata.title} />
+                        <AutoHideTableRow title="Artist" value={s3_object_metadata.artist} />
+                        <AutoHideTableRow title="Album" value={s3_object_metadata.album} />
+                        <AutoHideTableRow title="Album Artist" value={s3_object_metadata.album_artist} />
+                        <AutoHideTableRow title="Composer" value={s3_object_metadata.composer} />
+                        <AutoHideTableRow title="Genre" value={s3_object_metadata.genre} />
+                        <AutoHideTableRow title="Track Number" value={trackNumber} />
+                        <AutoHideTableRow title="Disc Number" value={discNumber} />
+                        <AutoHideTableRow title="Bitrate" value={s3_object_metadata.bit_rate} />
                         <AutoHideTableRow
                             title="Format"
-                            value={
-                                s3_object_metadata.format_name +
-                                " (" +
-                                s3_object_metadata.format_long_name +
-                                ")"
-                            }
+                            value={s3_object_metadata.format_name + " (" + s3_object_metadata.format_long_name + ")"}
                         />
                         <AutoHideTableRow
                             title="Video Codec"
@@ -180,14 +111,8 @@ export function FileMetadataDisplay({
                                 ")"
                             }
                         />
-                        <AutoHideTableRow
-                            title="Video Framerate"
-                            value={s3_object_metadata.video_frame_rate}
-                        />
-                        <AutoHideTableRow
-                            title="Video Bitrate Max"
-                            value={s3_object_metadata.video_bit_rate_max}
-                        />
+                        <AutoHideTableRow title="Video Framerate" value={s3_object_metadata.video_frame_rate} />
+                        <AutoHideTableRow title="Video Bitrate Max" value={s3_object_metadata.video_bit_rate_max} />
                         <AutoHideTableRow
                             title="Audio Codec"
                             value={
@@ -197,14 +122,8 @@ export function FileMetadataDisplay({
                                 ")"
                             }
                         />
-                        <AutoHideTableRow
-                            title="Audio Bitrate Max"
-                            value={s3_object_metadata.audio_bit_rate_max}
-                        />
-                        <AutoHideTableRow
-                            title="Audio Sample Rate"
-                            value={s3_object_metadata.audio_sample_rate}
-                        />
+                        <AutoHideTableRow title="Audio Bitrate Max" value={s3_object_metadata.audio_bit_rate_max} />
+                        <AutoHideTableRow title="Audio Sample Rate" value={s3_object_metadata.audio_sample_rate} />
                         {s3_object_metadata && (
                             <>
                                 <TableRow>
@@ -214,27 +133,16 @@ export function FileMetadataDisplay({
                                             size="small"
                                             onClick={() => setShowRaw(!showRaw)}
                                         >
-                                            {showRaw ? (
-                                                <KeyboardArrowUpIcon />
-                                            ) : (
-                                                <KeyboardArrowDownIcon />
-                                            )}
+                                            {showRaw ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                                         </IconButton>
                                     </TableCell>
                                     <TableCell>Raw</TableCell>
                                 </TableRow>
                                 <TableRow sx={{ border: "none" }}>
                                     <TableCell sx={{ border: "none" }}>
-                                        <Collapse
-                                            in={showRaw}
-                                            timeout="auto"
-                                            unmountOnExit
-                                        >
+                                        <Collapse in={showRaw} timeout="auto" unmountOnExit>
                                             <Box sx={{ margin: 1 }}>
-                                                <ReactJson
-                                                    src={s3_object_metadata.raw}
-                                                    theme={"ocean"}
-                                                />
+                                                <ReactJson src={s3_object_metadata.raw} theme={"ocean"} />
                                             </Box>
                                         </Collapse>
                                     </TableCell>

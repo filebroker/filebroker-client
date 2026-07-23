@@ -16,13 +16,7 @@ import {
     TableSortLabel,
 } from "@mui/material";
 import TableRow from "@mui/material/TableRow";
-import React, {
-    useCallback,
-    useEffect,
-    useImperativeHandle,
-    useRef,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -75,21 +69,13 @@ export const PaginatedTable = React.forwardRef(PaginatedTableInner) as <T>(
 ) => React.ReactElement;
 
 function PaginatedTableInner<T>(
-    {
-        columns,
-        loadDataFn,
-        rowActions,
-        rowsPerPageOptions = [10, 25, 50],
-        dataRowPropsFn,
-    }: PaginatedTableProps<T>,
+    { columns, loadDataFn, rowActions, rowsPerPageOptions = [10, 25, 50], dataRowPropsFn }: PaginatedTableProps<T>,
     ref: React.Ref<PaginatedTableHandle>
 ) {
     const [data, setData] = useState<T[]>([]);
     const [page, setPage] = useState(0);
     const [totalCount, setTotalCount] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(
-        rowsPerPageOptions.length > 0 ? rowsPerPageOptions[0] : 10
-    );
+    const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions.length > 0 ? rowsPerPageOptions[0] : 10);
     const [isLoading, setIsLoading] = useState(false);
     const [direction, setDirection] = React.useState<Direction>("asc");
     const [orderBy, setOrderBy] = React.useState<string | undefined>(undefined);
@@ -122,12 +108,7 @@ function PaginatedTableInner<T>(
     const fetchPage = useCallback(async () => {
         setIsLoading(true);
         try {
-            const result = await loadDataRef.current(
-                page,
-                rowsPerPage,
-                orderBy,
-                direction
-            );
+            const result = await loadDataRef.current(page, rowsPerPage, orderBy, direction);
             setData(result.data);
             setTotalCount(result.totalCount);
         } catch (e) {
@@ -181,28 +162,17 @@ function PaginatedTableInner<T>(
                             {columns.map((column) => (
                                 <TableCell
                                     key={column.id.toString()}
-                                    sortDirection={
-                                        column.allowSorting &&
-                                        orderBy === column.id
-                                            ? direction
-                                            : false
-                                    }
+                                    sortDirection={column.allowSorting && orderBy === column.id ? direction : false}
                                 >
                                     {column.allowSorting ? (
                                         <TableSortLabel
                                             active={orderBy === column.id}
-                                            direction={
-                                                orderBy === column.id
-                                                    ? direction
-                                                    : "asc"
-                                            }
+                                            direction={orderBy === column.id ? direction : "asc"}
                                             onClick={() => {
-                                                const currentlyOrderedByColumn =
-                                                    orderBy === column.id;
+                                                const currentlyOrderedByColumn = orderBy === column.id;
                                                 // if already ordered by this column, toggle descending direction, if already descending clear ordering
                                                 if (currentlyOrderedByColumn) {
-                                                    const currentlyOrderedAsc =
-                                                        direction === "asc";
+                                                    const currentlyOrderedAsc = direction === "asc";
                                                     if (currentlyOrderedAsc) {
                                                         setDirection("desc");
                                                     } else {
@@ -219,9 +189,7 @@ function PaginatedTableInner<T>(
                                             {column.name}
                                             {orderBy === column.id ? (
                                                 <span className="visually-hidden">
-                                                    {direction === "desc"
-                                                        ? "sorted descending"
-                                                        : "sorted ascending"}
+                                                    {direction === "desc" ? "sorted descending" : "sorted ascending"}
                                                 </span>
                                             ) : null}
                                         </TableSortLabel>
@@ -230,41 +198,25 @@ function PaginatedTableInner<T>(
                                     )}
                                 </TableCell>
                             ))}
-                            {rowActions && rowActions.length > 0 && (
-                                <TableCell key={"_action_col_"}></TableCell>
-                            )}
+                            {rowActions && rowActions.length > 0 && <TableCell key={"_action_col_"}></TableCell>}
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    align="center"
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faCircleNotch}
-                                        spin
-                                        size="6x"
-                                    />
+                                <TableCell colSpan={columns.length} align="center">
+                                    <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
                                 </TableCell>
                             </TableRow>
                         ) : (
                             data.map((v, idx) => (
                                 <TableRow key={idx} {...dataRowPropsFn?.(v)}>
                                     {columns.map((col) => (
-                                        <TableCell key={col.id.toString()}>
-                                            {col.renderCellValue(v)}
-                                        </TableCell>
+                                        <TableCell key={col.id.toString()}>{col.renderCellValue(v)}</TableCell>
                                     ))}
                                     {rowActions && rowActions.length > 0 && (
-                                        <TableCell
-                                            key={`_action_col_row_${idx}_`}
-                                        >
-                                            <RowActionsMenu
-                                                rowData={v}
-                                                rowActions={rowActions}
-                                            />
+                                        <TableCell key={`_action_col_row_${idx}_`}>
+                                            <RowActionsMenu rowData={v} rowActions={rowActions} />
                                         </TableCell>
                                     )}
                                 </TableRow>
@@ -292,11 +244,10 @@ function PaginatedTableInner<T>(
                         gap: 1,
                     },
                     // Remove stray margins that push items off-center
-                    "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                        {
-                            margin: 0,
-                            lineHeight: 1.5, // keep consistent with your theme font size
-                        },
+                    "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                        margin: 0,
+                        lineHeight: 1.5, // keep consistent with your theme font size
+                    },
                     // Ensure the select/input aligns to center
                     "& .MuiInputBase-root": {
                         alignItems: "center",
@@ -323,13 +274,7 @@ function getColumnCount(row: React.ReactElement<TableRowProps>): number {
     return sum;
 }
 
-function RowActionsMenu<T>({
-    rowData,
-    rowActions,
-}: {
-    rowData: T;
-    rowActions: PaginatedTableRowAction<T>[];
-}) {
+function RowActionsMenu<T>({ rowData, rowActions }: { rowData: T; rowActions: PaginatedTableRowAction<T>[] }) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -348,11 +293,7 @@ function RowActionsMenu<T>({
 
     return (
         <>
-            <IconButton
-                size="small"
-                sx={{ width: "fit-content", height: "fit-content" }}
-                onClick={handleClick}
-            >
+            <IconButton size="small" sx={{ width: "fit-content", height: "fit-content" }} onClick={handleClick}>
                 <MoreVertIcon fontSize="small" />
             </IconButton>
             <Menu
@@ -377,21 +318,16 @@ function RowActionsMenu<T>({
                             sx={
                                 action.color
                                     ? {
-                                          color: (theme) =>
-                                              theme.palette[action.color!].main,
+                                          color: (theme) => theme.palette[action.color!].main,
                                           "& .MuiListItemIcon-root": {
-                                              color: (theme) =>
-                                                  theme.palette[action.color!]
-                                                      .main,
+                                              color: (theme) => theme.palette[action.color!].main,
                                           },
                                       }
                                     : undefined
                             }
                             onClick={() => handleActionClick(action)}
                         >
-                            {action.icon && (
-                                <ListItemIcon>{action.icon}</ListItemIcon>
-                            )}
+                            {action.icon && <ListItemIcon>{action.icon}</ListItemIcon>}
                             {action.label}
                         </MenuItem>
                     );

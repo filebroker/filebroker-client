@@ -39,42 +39,36 @@ export async function performSearchQuery(
             let i = 0;
 
             if (responseData.compilation_errors) {
-                responseData.compilation_errors.forEach(
-                    (compilationError: { location: any; msg: string }) => {
-                        let location = compilationError.location;
-                        let start: number = location.start;
-                        let end: number = location.end;
-                        let startIdx = Math.max(0, start - 25);
-                        let endIdx = Math.min(queryParam.length, end + 25);
-                        let queryPart = queryParam.substring(startIdx, endIdx);
-                        let key = i++;
-                        let marker;
-                        if (end > start) {
-                            marker =
-                                " ".repeat(start - startIdx) +
-                                "^" +
-                                "-".repeat(Math.max(0, end - start - 1)) +
-                                "^";
-                        } else {
-                            marker = " ".repeat(start - startIdx) + "^";
-                        }
-                        compilationErrors.push(
-                            <div key={key}>
-                                Error {key}:
-                                <pre>
-                                    <code>
-                                        {queryPart}
-                                        <br></br>
-                                        {marker}
-                                        <br></br>
-                                        <br></br>
-                                        {compilationError.msg}
-                                    </code>
-                                </pre>
-                            </div>
-                        );
+                responseData.compilation_errors.forEach((compilationError: { location: any; msg: string }) => {
+                    let location = compilationError.location;
+                    let start: number = location.start;
+                    let end: number = location.end;
+                    let startIdx = Math.max(0, start - 25);
+                    let endIdx = Math.min(queryParam.length, end + 25);
+                    let queryPart = queryParam.substring(startIdx, endIdx);
+                    let key = i++;
+                    let marker;
+                    if (end > start) {
+                        marker = " ".repeat(start - startIdx) + "^" + "-".repeat(Math.max(0, end - start - 1)) + "^";
+                    } else {
+                        marker = " ".repeat(start - startIdx) + "^";
                     }
-                );
+                    compilationErrors.push(
+                        <div key={key}>
+                            Error {key}:
+                            <pre>
+                                <code>
+                                    {queryPart}
+                                    <br></br>
+                                    {marker}
+                                    <br></br>
+                                    <br></br>
+                                    {compilationError.msg}
+                                </code>
+                            </pre>
+                        </div>
+                    );
+                });
             }
 
             loadingModal?.close();

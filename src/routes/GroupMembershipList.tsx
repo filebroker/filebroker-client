@@ -1,15 +1,6 @@
-import {
-    UserGroupInvite,
-    UserGroupInviteDetailed,
-    UserGroupMembershipDetailed,
-} from "../Model";
+import { UserGroupInvite, UserGroupInviteDetailed, UserGroupMembershipDetailed } from "../Model";
 import { Button, IconButton, Paper, Tooltip, Typography } from "@mui/material";
-import {
-    Direction,
-    PaginatedTable,
-    PaginatedTableData,
-    PaginatedTableHandle,
-} from "../components/PaginatedTable";
+import { Direction, PaginatedTable, PaginatedTableData, PaginatedTableHandle } from "../components/PaginatedTable";
 import http, { getSiteBaseURI } from "../http-common";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import App from "../App";
@@ -62,12 +53,7 @@ export function GroupSearch({ app }: { app: App }) {
 
         setQueryLoading(true);
         try {
-            const response = await performSearchQuery(
-                "/user_group?" + search,
-                app,
-                location,
-                navigate
-            );
+            const response = await performSearchQuery("/user_group?" + search, app, location, navigate);
             return {
                 totalCount: response.full_count || 10000,
                 data: response.user_groups || [],
@@ -104,17 +90,12 @@ export function GroupSearch({ app }: { app: App }) {
                         {
                             id: "owner",
                             name: "Owner",
-                            renderCellValue: (group) =>
-                                group.owner.display_name ??
-                                group.owner.user_name,
+                            renderCellValue: (group) => group.owner.display_name ?? group.owner.user_name,
                         },
                         {
                             id: "creation_timestamp",
                             name: "Created At",
-                            renderCellValue: (group) =>
-                                new Date(
-                                    group.creation_timestamp
-                                ).toLocaleString(),
+                            renderCellValue: (group) => new Date(group.creation_timestamp).toLocaleString(),
                         },
                     ]}
                     loadDataFn={executeSearch}
@@ -162,33 +143,27 @@ export function GroupMembershipList({ app }: { app: App }) {
                                 {
                                     id: "group.name",
                                     name: "Name",
-                                    renderCellValue: (groupMembership) =>
-                                        groupMembership.group.name,
+                                    renderCellValue: (groupMembership) => groupMembership.group.name,
                                     allowSorting: true,
                                 },
                                 {
                                     id: "group.owner",
                                     name: "Owner",
                                     renderCellValue: (groupMembership) =>
-                                        groupMembership.group.owner
-                                            .display_name ??
+                                        groupMembership.group.owner.display_name ??
                                         groupMembership.group.owner.user_name,
                                 },
                                 {
                                     id: "granted_by",
                                     name: "Added By",
                                     renderCellValue: (groupMembership) =>
-                                        groupMembership.granted_by
-                                            .display_name ??
-                                        groupMembership.granted_by.user_name,
+                                        groupMembership.granted_by.display_name ?? groupMembership.granted_by.user_name,
                                 },
                                 {
                                     id: "creation_timestamp",
                                     name: "Joined At",
                                     renderCellValue: (groupMembership) =>
-                                        new Date(
-                                            groupMembership.creation_timestamp
-                                        ).toLocaleString(),
+                                        new Date(groupMembership.creation_timestamp).toLocaleString(),
                                     allowSorting: true,
                                 },
                             ]}
@@ -198,15 +173,11 @@ export function GroupMembershipList({ app }: { app: App }) {
                                 orderBy: string | undefined,
                                 orderDirection: Direction | undefined
                             ) => {
-                                let config = await app.getAuthorization(
-                                    location,
-                                    navigate
+                                let config = await app.getAuthorization(location, navigate);
+                                let response = await http.get<GetCurrentUserGroupMembershipsResponse>(
+                                    `/get-current-user-group-memberships?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : ""}`,
+                                    config
                                 );
-                                let response =
-                                    await http.get<GetCurrentUserGroupMembershipsResponse>(
-                                        `/get-current-user-group-memberships?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : ""}`,
-                                        config
-                                    );
 
                                 return {
                                     totalCount: response.data.total_count,
@@ -232,21 +203,11 @@ export function GroupMembershipList({ app }: { app: App }) {
                         />
                         <div className="form-paper-button-row">
                             <Button
-                                startIcon={
-                                    <FontAwesomeSvgIcon
-                                        fontSize="inherit"
-                                        icon={faAdd}
-                                    />
-                                }
+                                startIcon={<FontAwesomeSvgIcon fontSize="inherit" icon={faAdd} />}
                                 onClick={() =>
                                     app.openModal(
                                         "Create Group",
-                                        (modal) => (
-                                            <GroupCreator
-                                                app={app}
-                                                modal={modal}
-                                            />
-                                        ),
+                                        (modal) => <GroupCreator app={app} modal={modal} />,
                                         (result) => {
                                             if (result) {
                                                 tableRef.current?.reload();
@@ -259,23 +220,14 @@ export function GroupMembershipList({ app }: { app: App }) {
                             </Button>
                             <Button
                                 startIcon={<SearchIcon />}
-                                onClick={() =>
-                                    app.openModal(
-                                        "Search Groups",
-                                        <GroupSearch app={app} />
-                                    )
-                                }
+                                onClick={() => app.openModal("Search Groups", <GroupSearch app={app} />)}
                             >
                                 Search Groups
                             </Button>
                         </div>
                     </div>
                 </Paper>
-                <Paper
-                    elevation={2}
-                    className="form-paper"
-                    sx={{ minHeight: "fit-content" }}
-                >
+                <Paper elevation={2} className="form-paper" sx={{ minHeight: "fit-content" }}>
                     <Typography variant="h6" component="h2">
                         Open Invites
                     </Typography>
@@ -285,8 +237,7 @@ export function GroupMembershipList({ app }: { app: App }) {
                             {
                                 id: "group.name",
                                 name: "Group",
-                                renderCellValue: (invite) =>
-                                    invite.user_group.name,
+                                renderCellValue: (invite) => invite.user_group.name,
                                 allowSorting: true,
                             },
                             {
@@ -298,16 +249,12 @@ export function GroupMembershipList({ app }: { app: App }) {
                                 id: "create_user",
                                 name: "Create User",
                                 renderCellValue: (invite) =>
-                                    invite.create_user.display_name ??
-                                    invite.create_user.user_name,
+                                    invite.create_user.display_name ?? invite.create_user.user_name,
                             },
                             {
                                 id: "creation_timestamp",
                                 name: "Created At",
-                                renderCellValue: (invite) =>
-                                    new Date(
-                                        invite.creation_timestamp
-                                    ).toLocaleString(),
+                                renderCellValue: (invite) => new Date(invite.creation_timestamp).toLocaleString(),
                                 allowSorting: true,
                             },
                             {
@@ -315,9 +262,7 @@ export function GroupMembershipList({ app }: { app: App }) {
                                 name: "Expires At",
                                 renderCellValue: (invite) =>
                                     invite.expiration_timestamp &&
-                                    new Date(
-                                        invite.expiration_timestamp
-                                    ).toLocaleString(),
+                                    new Date(invite.expiration_timestamp).toLocaleString(),
                                 allowSorting: true,
                             },
                             {
@@ -333,17 +278,10 @@ export function GroupMembershipList({ app }: { app: App }) {
                                             }}
                                             onClick={() => {
                                                 navigator.clipboard
-                                                    .writeText(
-                                                        urlJoin(
-                                                            getSiteBaseURI(),
-                                                            "invite",
-                                                            invite.code
-                                                        )
-                                                    )
+                                                    .writeText(urlJoin(getSiteBaseURI(), "invite", invite.code))
                                                     .then(() => {
                                                         enqueueSnackbar({
-                                                            message:
-                                                                "Invite code copied to clipboard",
+                                                            message: "Invite code copied to clipboard",
                                                             variant: "success",
                                                         });
                                                     });
@@ -395,42 +333,29 @@ export function GroupMembershipList({ app }: { app: App }) {
                                                                 {
                                                                     name: "Ok",
                                                                     fn: async () => {
-                                                                        const loadingModal =
-                                                                            app.openLoadingModal();
+                                                                        const loadingModal = app.openLoadingModal();
                                                                         try {
-                                                                            let config =
-                                                                                await app.getAuthorization(
-                                                                                    location,
-                                                                                    navigate
-                                                                                );
+                                                                            let config = await app.getAuthorization(
+                                                                                location,
+                                                                                navigate
+                                                                            );
                                                                             let response =
                                                                                 await http.post<RevokeUserGroupInviteResponse>(
                                                                                     `/revoke-user-group-invite/${invite.code}`,
                                                                                     undefined,
                                                                                     config
                                                                                 );
-                                                                            enqueueSnackbar(
-                                                                                {
-                                                                                    message:
-                                                                                        "Invite deleted",
-                                                                                    variant:
-                                                                                        "success",
-                                                                                }
-                                                                            );
+                                                                            enqueueSnackbar({
+                                                                                message: "Invite deleted",
+                                                                                variant: "success",
+                                                                            });
                                                                             return response.data;
                                                                         } catch (e) {
-                                                                            console.error(
-                                                                                "Failed to delete invite",
-                                                                                e
-                                                                            );
-                                                                            enqueueSnackbar(
-                                                                                {
-                                                                                    message:
-                                                                                        "Failed to delete invite",
-                                                                                    variant:
-                                                                                        "error",
-                                                                                }
-                                                                            );
+                                                                            console.error("Failed to delete invite", e);
+                                                                            enqueueSnackbar({
+                                                                                message: "Failed to delete invite",
+                                                                                variant: "error",
+                                                                            });
                                                                             throw e;
                                                                         } finally {
                                                                             loadingModal.close();
@@ -460,15 +385,11 @@ export function GroupMembershipList({ app }: { app: App }) {
                             orderBy: string | undefined,
                             orderDirection: Direction | undefined
                         ) => {
-                            let config = await app.getAuthorization(
-                                location,
-                                navigate
+                            let config = await app.getAuthorization(location, navigate);
+                            let response = await http.get<GetCurrentUserGroupInvitesResponse>(
+                                `get-current-user-group-invites?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
+                                config
                             );
-                            let response =
-                                await http.get<GetCurrentUserGroupInvitesResponse>(
-                                    `get-current-user-group-invites?page=${page}&limit=${rowsPerPage}&ordering=${orderDirection === "desc" ? "-" : ""}${orderBy ? orderBy : "-creation_timestamp"}`,
-                                    config
-                                );
 
                             return {
                                 totalCount: response.data.total_count,
