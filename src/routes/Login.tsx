@@ -60,7 +60,7 @@ function Login({ app }: LoginProps) {
         <div id="Login">
             <div className="form-container-center">
                 <Paper elevation={2} className="form-paper">
-                    <LoginForm app={app} />
+                    <LoginForm app={app} redirectOnLogin />
                 </Paper>
             </div>
         </div>
