@@ -1,8 +1,18 @@
 import React from "react";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
+import "videojs-contrib-quality-menu";
+import "videojs-contrib-quality-menu/dist/videojs-contrib-quality-menu.css";
 
 import type Player from "video.js/dist/types/player";
+type PlayerWithQualityMenu = Player & {
+    qualityMenu(options?: {
+        defaultResolution?: string;
+        sdBitrateLimit?: number;
+        useResolutionLabels?: boolean;
+        resolutionLabelBitrates?: boolean;
+    }): void;
+};
 
 export const VideoJS = (props: any) => {
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
@@ -20,6 +30,11 @@ export const VideoJS = (props: any) => {
                 videojs.log("player is ready");
                 onReady && onReady(player);
             }));
+
+            (player as PlayerWithQualityMenu).qualityMenu({
+                useResolutionLabels: true,
+                resolutionLabelBitrates: false,
+            });
 
             player.on("ended", () => {
                 onEnded?.(player);

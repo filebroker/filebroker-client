@@ -445,6 +445,9 @@ function Post({ app }: PostProps) {
                     html5: {
                         vhs: {
                             overrideNative: !videojs.browser.IS_SAFARI,
+                            useDevicePixelRatio: true,
+                            limitRenditionByPlayerDimensions: true,
+                            useNetworkInformationApi: false,
                         },
                         nativeAudioTracks: false,
                         nativeVideoTracks: false,

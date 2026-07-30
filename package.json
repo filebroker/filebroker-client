@@ -50,6 +50,7 @@
         "url-join": "^5.0.0",
         "use-sound": "^5.0.0",
         "video.js": "^8.23.8",
+        "videojs-contrib-quality-menu": "^1.0.4",
         "web-vitals": "^5.2.0",
         "zxcvbn": "^4.4.2"
     },
