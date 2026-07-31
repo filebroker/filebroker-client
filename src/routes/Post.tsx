@@ -227,6 +227,7 @@ function Post({ app }: PostProps) {
                             fetchAuthorized(config)
                                 .then(() => modal.close())
                                 .catch((e) => {
+                                    modal.close();
                                     console.error(e);
                                     if (e.response?.status === 403) {
                                         app.openModal("Error", <p>This post is unavailable.</p>);
@@ -239,6 +240,7 @@ function Post({ app }: PostProps) {
                                 });
                         } else {
                             modal.close();
+                            console.error(e);
                             if (e.response?.status === 403) {
                                 app.openModal("Error", <p>This post is unavailable.</p>);
                             } else if (e.response?.status === 401) {
