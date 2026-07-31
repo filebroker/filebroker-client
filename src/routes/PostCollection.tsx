@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import App from "../App";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     DeletePostCollectionsResponse,
     GroupAccessDefinition,
@@ -81,24 +81,18 @@ export function PostCollection({ app }: { app: App }) {
 
     useEffect(() => {
         setPostCollection(null);
-        let fetch = async () => {
-            try {
-                let config = await app.getAuthorization(location, navigate, false);
+        const fetch = async () => {
+            let config = await app.getAuthorization(location, navigate, false);
+            await fetchAuthorized(config);
+        };
 
-                let postCollection = await http.get<PostCollectionDetailed>(`/get-collection/${id}`, config);
-                updatePostCollection(postCollection.data);
+        const fetchAuthorized = async (config: { headers: { authorization: string } } | undefined) => {
+            let postCollection = await http.get<PostCollectionDetailed>(`/get-collection/${id}`, config);
+            updatePostCollection(postCollection.data);
 
-                if (config) {
-                    let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
-                    setCurrentUserGroups(currentUserGroups.data);
-                }
-            } catch (e: any) {
-                if (e.response?.status === 403) {
-                    app.openModal("Error", <p>This collection is unavailable.</p>);
-                } else if (e.response?.status === 401) {
-                    app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
-                }
-                console.error(e);
+            if (config) {
+                let currentUserGroups = await http.get<UserGroup[]>("/get-current-user-groups", config);
+                setCurrentUserGroups(currentUserGroups.data);
             }
         };
 
@@ -110,7 +104,39 @@ export function PostCollection({ app }: { app: App }) {
         const modal = app.openLoadingModal();
         fetch()
             .then(() => modal.close())
-            .catch(() => modal.close());
+            .catch((e) => {
+                if (e.response?.status === 403 || e.response?.status === 401) {
+                    app.withAuthorization((config) => {
+                        if (config) {
+                            fetchAuthorized(config)
+                                .then(() => modal.close())
+                                .catch((e) => {
+                                    modal.close();
+                                    console.error(e);
+                                    if (e.response?.status === 403) {
+                                        app.openModal("Error", <p>This collection is unavailable.</p>);
+                                    } else if (e.response?.status === 401) {
+                                        app.openModal(
+                                            "Error",
+                                            <p>Your credentials have expired, try refreshing the page.</p>
+                                        );
+                                    }
+                                });
+                        } else {
+                            modal.close();
+                            console.error(e);
+                            if (e.response?.status === 403) {
+                                app.openModal("Error", <p>This collection is unavailable.</p>);
+                            } else if (e.response?.status === 401) {
+                                app.openModal("Error", <p>Your credentials have expired, try refreshing the page.</p>);
+                            }
+                        }
+                    }, true);
+                } else {
+                    modal.close();
+                    console.error(e);
+                }
+            });
     }, [isEditMode, location, navigate, app]);
 
     const loadPosts = () => {
