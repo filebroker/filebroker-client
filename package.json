@@ -32,6 +32,7 @@
         "cytoscape": "^3.30.0",
         "cytoscape-dagre": "^2.5.0",
         "filesize": "^11.0.17",
+        "hls.js": "^1.6.17",
         "howler": "^2.2.4",
         "notistack": "^3.0.1",
         "react": "^19.2.6",
