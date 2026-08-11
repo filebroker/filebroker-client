@@ -49,7 +49,7 @@ export const VideoJS = (props: any) => {
         if (hlsSource && Hls.isSupported()) {
             destroyHls(player);
 
-            const video = (player.tech() as any).el() as HTMLVideoElement;
+            const video = (player.tech("trust me bro") as any).el() as HTMLVideoElement;
 
             const hls = new Hls({
                 renderTextTracksNatively: false,
