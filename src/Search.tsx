@@ -1,13 +1,11 @@
 import { Location, NavigateFunction } from "react-router-dom";
 import App, { ModalContent } from "./App";
-import http, { getApiUrl } from "./http-common";
+import http from "./http-common";
 import { S3Object, S3ObjectMetadata, UserPublic } from "./Model";
-import urlJoin from "url-join";
 import { JSX } from "react";
 
 export function extractQueryFromSearch(search: string): string {
-    let searchUrl = new URL(urlJoin(getApiUrl(), `/search${search}`));
-    let searchParams = new URLSearchParams(searchUrl.search);
+    const searchParams = new URLSearchParams(search);
     return searchParams.get("query") ?? "";
 }
 
