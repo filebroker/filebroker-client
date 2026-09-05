@@ -15,7 +15,7 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import urlJoin from "url-join";
-import { getApiUrl, getPublicUrl } from "../http-common";
+import { getApiUrl, getPublicBasePath } from "../http-common";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
@@ -169,7 +169,7 @@ export function PaginatedGridView({
                         } else if (item.thumbnail_object_key) {
                             thumbnailUrl = urlJoin(getApiUrl(), "get-object", item.thumbnail_object_key);
                         } else {
-                            thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
+                            thumbnailUrl = urlJoin(getPublicBasePath(), "logo512.png");
                         }
 
                         const mediaTypeIcon = getMediaTypeIcon?.(item);
@@ -206,7 +206,7 @@ export function PaginatedGridView({
                                                     alt={`Thumnail for item ${item.pk}`}
                                                     src={thumbnailUrl}
                                                     effect="blur"
-                                                    placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
+                                                    placeholderSrc={urlJoin(getPublicBasePath(), "logo192.png")}
                                                     className="thumb-img"
                                                 />
 
@@ -472,7 +472,7 @@ export function PreviewGrid({
                     } else if (item.thumbnail_object_key) {
                         thumbnailUrl = urlJoin(getApiUrl(), "get-object", item.thumbnail_object_key);
                     } else {
-                        thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
+                        thumbnailUrl = urlJoin(getPublicBasePath(), "logo512.png");
                     }
 
                     const mediaTypeIcon = getMediaTypeIcon?.(item);
@@ -499,7 +499,7 @@ export function PreviewGrid({
                                                 alt={`Thumnail for item ${item.pk}`}
                                                 src={thumbnailUrl}
                                                 effect="blur"
-                                                placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
+                                                placeholderSrc={urlJoin(getPublicBasePath(), "logo192.png")}
                                                 className="thumb-img"
                                             />
                                             {mediaTypeIcon && (

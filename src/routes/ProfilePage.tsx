@@ -15,6 +15,7 @@ import { PageTitle, ReadOnlyTextField, StyledTextField } from "../index";
 import { PostPicker } from "../components/PostPicker";
 import { AvatarCropper } from "../components/AvatarCropper";
 import urlJoin from "url-join";
+import { getConfiguredCaptchaSiteKey } from "../config";
 
 class ProfilePageProps {
     app: App;
@@ -386,7 +387,7 @@ function ChangePasswordForm({ app, user, modal }: { app: App; user: User; modal:
             />
             {showCaptcha && (
                 <HCaptcha
-                    sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                    sitekey={getConfiguredCaptchaSiteKey()!}
                     onVerify={setCaptchaToken}
                     theme="dark"
                     onExpire={() => setCaptchaToken(null)}

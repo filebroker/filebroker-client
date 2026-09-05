@@ -23,7 +23,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { GlobalQueryInput } from "./QueryInput";
 import { Link, useNavigate } from "react-router-dom";
 import urlJoin from "url-join";
-import http, { getApiUrl, getPublicUrl } from "../http-common";
+import http, { getApiUrl, getPublicBasePath } from "../http-common";
 import App, { ModalContent } from "../App";
 import UploadDialogue from "./UploadDialogue";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
@@ -124,7 +124,7 @@ export default function NavBar({ app }: { app: App }) {
                                             >
                                                 <NavLinkButton component={Link} to={"/"} onClick={() => modal.close()}>
                                                     <img
-                                                        src={urlJoin(getPublicUrl(), "logo192.png")}
+                                                        src={urlJoin(getPublicBasePath(), "logo192.png")}
                                                         alt="Logo"
                                                         height="48"
                                                     />
@@ -291,7 +291,7 @@ export default function NavBar({ app }: { app: App }) {
                         }}
                     >
                         <NavLinkButton component={Link} to={"/"}>
-                            <img src={urlJoin(getPublicUrl(), "logo192.png")} alt="Logo" height="48" />
+                            <img src={urlJoin(getPublicBasePath(), "logo192.png")} alt="Logo" height="48" />
                         </NavLinkButton>
                         <NavLinkButton component={Link} to={"/posts"}>
                             Posts
