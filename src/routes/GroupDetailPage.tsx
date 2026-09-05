@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import App, { ModalContent } from "../App";
-import http, { getApiUrl, getSiteBaseURI } from "../http-common";
+import http, { getApiUrl, getSiteBaseUrl } from "../http-common";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import {
     BrokerAccessInnerJoined,
@@ -1224,7 +1224,7 @@ export function GroupDetailPage({ app }: { app: App }) {
                                                                 }}
                                                                 onClick={() => {
                                                                     navigator.clipboard.writeText(
-                                                                        urlJoin(getSiteBaseURI(), "invite", invite.code)
+                                                                        urlJoin(getSiteBaseUrl(), "invite", invite.code)
                                                                     );
                                                                     enqueueSnackbar({
                                                                         message: "Invite code copied to clipboard",
@@ -1696,7 +1696,7 @@ function CreateInviteLinkDialogue({ group, modal, app }: { group: UserGroupDetai
                                             <Typography variant="body1">Invite code has been created.</Typography>
                                             <TextField
                                                 label="Invite Code"
-                                                value={urlJoin(getSiteBaseURI(), "invite", groupInvite.code)}
+                                                value={urlJoin(getSiteBaseUrl(), "invite", groupInvite.code)}
                                                 fullWidth
                                                 slotProps={{
                                                     input: {
@@ -1707,7 +1707,7 @@ function CreateInviteLinkDialogue({ group, modal, app }: { group: UserGroupDetai
                                                                     onClick={() => {
                                                                         navigator.clipboard.writeText(
                                                                             urlJoin(
-                                                                                getSiteBaseURI(),
+                                                                                getSiteBaseUrl(),
                                                                                 "invite",
                                                                                 groupInvite.code
                                                                             )
@@ -1822,7 +1822,7 @@ function UserInviteDialogue({ group, modal, app }: { group: UserGroupDetailed; m
                                             </Typography>
                                             <TextField
                                                 label="Invite Code"
-                                                value={urlJoin(getSiteBaseURI(), "invite", groupInvite.code)}
+                                                value={urlJoin(getSiteBaseUrl(), "invite", groupInvite.code)}
                                                 fullWidth
                                                 slotProps={{
                                                     input: {
@@ -1833,7 +1833,7 @@ function UserInviteDialogue({ group, modal, app }: { group: UserGroupDetailed; m
                                                                     onClick={() => {
                                                                         navigator.clipboard.writeText(
                                                                             urlJoin(
-                                                                                getSiteBaseURI(),
+                                                                                getSiteBaseUrl(),
                                                                                 "invite",
                                                                                 groupInvite.code
                                                                             )

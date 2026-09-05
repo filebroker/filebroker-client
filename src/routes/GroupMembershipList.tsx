@@ -1,7 +1,7 @@
 import { UserGroupInvite, UserGroupInviteDetailed, UserGroupMembershipDetailed } from "../Model";
 import { Button, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import { Direction, PaginatedTable, PaginatedTableData, PaginatedTableHandle } from "../components/PaginatedTable";
-import http, { getSiteBaseURI } from "../http-common";
+import http, { getSiteBaseUrl } from "../http-common";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import App from "../App";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
@@ -278,7 +278,7 @@ export function GroupMembershipList({ app }: { app: App }) {
                                             }}
                                             onClick={() => {
                                                 navigator.clipboard
-                                                    .writeText(urlJoin(getSiteBaseURI(), "invite", invite.code))
+                                                    .writeText(urlJoin(getSiteBaseUrl(), "invite", invite.code))
                                                     .then(() => {
                                                         enqueueSnackbar({
                                                             message: "Invite code copied to clipboard",

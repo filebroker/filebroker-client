@@ -2,7 +2,7 @@ import React, { ReactElement, useEffect, useRef, useState } from "react";
 import { Link, Location, useLocation, useNavigate, useParams } from "react-router-dom";
 import videojs from "video.js";
 import App from "../App";
-import http, { getApiUrl, getPublicUrl } from "../http-common";
+import http, { getApiUrl, getPublicBasePath } from "../http-common";
 import VideoJS from "../components/VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -391,7 +391,7 @@ function Post({ app }: PostProps) {
                 } else if (post.s3_object?.thumbnail_object_key) {
                     thumbnailUrl = urlJoin(getApiUrl(), "get-object", post.s3_object.thumbnail_object_key);
                 } else {
-                    thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
+                    thumbnailUrl = urlJoin(getPublicBasePath(), "logo512.png");
                 }
                 return (
                     <MusicPlayer

@@ -11,6 +11,7 @@ import { emailRegex } from "./Register";
 import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
+import { getConfiguredCaptchaSiteKey } from "../config";
 
 class LoginRequest {
     user_name: string;
@@ -177,7 +178,7 @@ export function LoginForm({
             />
             {showCaptcha && (
                 <HCaptcha
-                    sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                    sitekey={getConfiguredCaptchaSiteKey()!}
                     onVerify={setCaptchaToken}
                     theme="dark"
                     onExpire={() => setCaptchaToken(null)}
@@ -435,7 +436,7 @@ function ResetPasswordForm({
             ) : (
                 <>
                     <HCaptcha
-                        sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                        sitekey={getConfiguredCaptchaSiteKey()!}
                         onVerify={setCaptchaToken}
                         theme="dark"
                         onExpire={() => setCaptchaToken(null)}

@@ -12,7 +12,7 @@ import useSound from "use-sound";
 
 import "./MusicPlayer.css";
 import urlJoin from "url-join";
-import { getPublicUrl } from "../http-common";
+import { getPublicBasePath } from "../http-common";
 import AutoMarquee from "./AutoMarquee";
 import { useMediaQuery } from "@mui/material";
 
@@ -257,7 +257,7 @@ export const MusicPlayer = forwardRef<
 
     let scheduledScrub: NodeJS.Timeout | null = null;
 
-    const cover = pictureBlobUrl ? pictureBlobUrl : coverUrl ? coverUrl : urlJoin(getPublicUrl(), "logo512.png");
+    const cover = pictureBlobUrl ? pictureBlobUrl : coverUrl ? coverUrl : urlJoin(getPublicBasePath(), "logo512.png");
 
     const isSongMetadataColumn = !useMediaQuery("(min-width: 600px)");
 

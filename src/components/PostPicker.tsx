@@ -6,7 +6,7 @@ import "./PostPicker.css";
 import { QueryAutocompleteSearchBox } from "./QueryInput";
 import { Box, Button, ImageList, ImageListItem, ImageListItemBar, Pagination } from "@mui/material";
 import urlJoin from "url-join";
-import { getApiUrl, getPublicUrl } from "../http-common";
+import { getApiUrl, getPublicBasePath } from "../http-common";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
 export function PostPicker({
@@ -77,7 +77,7 @@ export function PostPicker({
                         } else if (post.thumbnail_object_key) {
                             thumbnailUrl = urlJoin(getApiUrl(), "get-object", post.thumbnail_object_key);
                         } else {
-                            thumbnailUrl = urlJoin(getPublicUrl(), "logo512.png");
+                            thumbnailUrl = urlJoin(getPublicBasePath(), "logo512.png");
                         }
                         return (
                             <ImageListItem key={post.pk}>
@@ -89,7 +89,7 @@ export function PostPicker({
                                                     alt={`Thumnail for item ${post.pk}`}
                                                     src={thumbnailUrl}
                                                     effect="blur"
-                                                    placeholderSrc={urlJoin(getPublicUrl(), "logo192.png")}
+                                                    placeholderSrc={urlJoin(getPublicBasePath(), "logo192.png")}
                                                     className="thumb-img"
                                                 />
                                             </div>

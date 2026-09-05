@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
 
     return {
         plugins: [react()],
-        envPrefix: ["VITE_", "REACT_APP_"],
+        envPrefix: ["VITE_", "REACT_APP_", "PUBLIC_URL"],
         base: basePath,
         server: {
             port: 3000,

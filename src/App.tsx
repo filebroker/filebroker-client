@@ -25,6 +25,7 @@ import { closeSnackbar, SnackbarProvider } from "notistack";
 import { RedeemUserGroupInvite } from "./routes/RedeemUserGroupInvite";
 import BrokerListPage from "./routes/BrokerListPage";
 import { BrokerDetailPage } from "./routes/BrokerDetailPage";
+import { getConfiguredAppPath } from "./config";
 
 declare module "react" {
     interface CSSProperties {
@@ -210,7 +211,7 @@ export class App extends React.Component<
         );
 
         return (
-            <BrowserRouter basename={import.meta.env.REACT_APP_PATH ? import.meta.env.REACT_APP_PATH : "/"}>
+            <BrowserRouter basename={getConfiguredAppPath()}>
                 <SnackbarProvider
                     autoHideDuration={6000}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}

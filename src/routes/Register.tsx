@@ -10,6 +10,7 @@ import zxcvbn from "zxcvbn";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { PageTitle } from "../index";
+import { getConfiguredCaptchaSiteKey } from "../config";
 
 export class UserRegistration {
     display_name: string;
@@ -221,7 +222,7 @@ function Register({ app }: RegisterProps) {
                             autoComplete="new-password"
                         />
                         <HCaptcha
-                            sitekey={import.meta.env.REACT_APP_CAPTCHA_SITEKEY!}
+                            sitekey={getConfiguredCaptchaSiteKey()!}
                             onVerify={setCaptchaToken}
                             theme="dark"
                             onExpire={() => setCaptchaToken(null)}

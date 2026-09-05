@@ -1,43 +1,27 @@
 import axios from "axios";
+import { getConfiguredApiUrl, getConfiguredAppPath, getConfiguredPublicUrl } from "./config";
 
 export default axios.create({
-    baseURL: import.meta.env.REACT_APP_API_URL,
+    baseURL: getApiUrl(),
     headers: {
         "Content-type": "application/json",
     },
 });
 
 export function getApiUrl(): string {
-    let url = import.meta.env.REACT_APP_API_URL;
-    if (url === undefined) {
-        return "/";
-    } else if (!url.endsWith("/")) {
-        return url + "/";
-    } else {
-        return url;
-    }
+    const url = new URL(getConfiguredApiUrl(), window.location.origin).href;
+
+    return url.endsWith("/") ? url : url + "/";
 }
 
-export function getPublicUrl(): string {
-    let url = import.meta.env.PUBLIC_URL;
-    if (url === undefined) {
-        return "/";
-    } else if (!url.endsWith("/")) {
-        return url + "/";
-    } else {
-        return url;
-    }
+export function getPublicBasePath(): string {
+    const path = getConfiguredPublicUrl();
+
+    return path.endsWith("/") ? path : path + "/";
 }
 
-export function getSiteBaseURI(): string {
-    const origin = window.location.origin;
-    let path = import.meta.env.REACT_APP_PATH;
+export function getSiteBaseUrl(): string {
+    const url = new URL(getConfiguredAppPath(), window.location.origin).href;
 
-    if (path === undefined || path === "/") {
-        return origin + "/";
-    } else if (!path.endsWith("/")) {
-        return origin + path + "/";
-    } else {
-        return origin + path;
-    }
+    return url.endsWith("/") ? url : url + "/";
 }
