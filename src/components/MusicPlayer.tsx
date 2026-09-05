@@ -201,42 +201,46 @@ export const MusicPlayer = forwardRef<
         setArtist(metaArtist ?? "");
         setPictureBlobUrl("");
 
-        jsmediatags.read(metaSrc, {
-            onSuccess: function (tag: ID3Tag) {
-                if (!title) {
-                    setTitle(tag.tags.title);
-                }
-                if (!album) {
-                    setAlbum(tag.tags.album);
-                }
-                if (!artist) {
-                    setArtist(tag.tags.artist);
-                }
-                if (tag.tags.picture) {
-                    const pictureFormat = tag.tags.picture.format;
-
-                    const pictureData = tag.tags.picture.data;
-                    let pictureByteString = "";
-                    for (let i = 0; i < pictureData.length; i++) {
-                        pictureByteString += String.fromCharCode(pictureData[i]);
+        try {
+            jsmediatags.read(metaSrc, {
+                onSuccess: function (tag: ID3Tag) {
+                    if (!title) {
+                        setTitle(tag.tags.title);
                     }
-
-                    const ab = new ArrayBuffer(pictureByteString.length);
-                    const ia = new Uint8Array(ab);
-                    for (var i = 0; i < pictureByteString.length; i++) {
-                        ia[i] = pictureByteString.charCodeAt(i);
+                    if (!album) {
+                        setAlbum(tag.tags.album);
                     }
+                    if (!artist) {
+                        setArtist(tag.tags.artist);
+                    }
+                    if (tag.tags.picture) {
+                        const pictureFormat = tag.tags.picture.format;
 
-                    const blob = new Blob([ab], { type: pictureFormat });
-                    const blobUrl = URL.createObjectURL(blob);
-                    pictureBlobUrlRef.current = blobUrl;
-                    setPictureBlobUrl(blobUrl);
-                }
-            },
-            onError: function (error: any) {
-                console.error("Error reading tag: " + error);
-            },
-        });
+                        const pictureData = tag.tags.picture.data;
+                        let pictureByteString = "";
+                        for (let i = 0; i < pictureData.length; i++) {
+                            pictureByteString += String.fromCharCode(pictureData[i]);
+                        }
+
+                        const ab = new ArrayBuffer(pictureByteString.length);
+                        const ia = new Uint8Array(ab);
+                        for (var i = 0; i < pictureByteString.length; i++) {
+                            ia[i] = pictureByteString.charCodeAt(i);
+                        }
+
+                        const blob = new Blob([ab], { type: pictureFormat });
+                        const blobUrl = URL.createObjectURL(blob);
+                        pictureBlobUrlRef.current = blobUrl;
+                        setPictureBlobUrl(blobUrl);
+                    }
+                },
+                onError: function (error: any) {
+                    console.error("Error reading tag: " + error);
+                },
+            });
+        } catch (e: any) {
+            console.error("Error reading tag: " + e);
+        }
 
         return () => {
             if (pictureBlobUrlRef.current) {
