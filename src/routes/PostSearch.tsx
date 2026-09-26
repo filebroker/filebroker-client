@@ -98,7 +98,7 @@ function PostSearch({ app }: PostSearchProps) {
                         allowExecuteForAll:
                             new URLSearchParams(search).get("query") !== null &&
                             fullCount != null &&
-                            fullCount <= 10000,
+                            fullCount < 10000,
                         disabled: !app.isLoggedIn(),
                         fn: (items, cb) => {
                             if (items && items.length > 0) {
