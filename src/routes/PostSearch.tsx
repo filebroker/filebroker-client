@@ -96,9 +96,7 @@ function PostSearch({ app }: PostSearchProps) {
                         name: "Add to collection",
                         icon: faSquarePlus,
                         allowExecuteForAll:
-                            new URLSearchParams(search).get("query") !== null &&
-                            fullCount != null &&
-                            fullCount < 10000,
+                            new URLSearchParams(search).get("query") !== null && fullCount != null && fullCount < 10000,
                         disabled: !app.isLoggedIn(),
                         fn: (items, cb) => {
                             if (items && items.length > 0) {
