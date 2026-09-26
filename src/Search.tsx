@@ -9,6 +9,11 @@ export function extractQueryFromSearch(search: string): string {
     return searchParams.get("query") ?? "";
 }
 
+export function extractConstrictionFromSearch(search: string): string {
+    const searchParams = new URLSearchParams(search);
+    return searchParams.get("constriction") ?? "";
+}
+
 export async function performSearchQuery(
     search: string,
     app: App,
@@ -16,7 +21,9 @@ export async function performSearchQuery(
     navigate: NavigateFunction,
     loadingModal: ModalContent | undefined = undefined
 ): Promise<SearchResult> {
-    let queryParam: string = extractQueryFromSearch(search);
+    const url = new URL(search, window.location.origin);
+    let queryParam: string = extractQueryFromSearch(url.searchParams.toString());
+    let constriction = extractConstrictionFromSearch(url.searchParams.toString());
 
     let config;
     try {
@@ -33,6 +40,13 @@ export async function performSearchQuery(
     } catch (e: any) {
         let responseData = e.response?.data;
         if (responseData) {
+            let sourceQuery;
+            if (responseData.message?.includes("constriction:")) {
+                sourceQuery = constriction;
+            } else {
+                sourceQuery = queryParam;
+            }
+
             let compilationErrors: JSX.Element[] = [];
             let i = 0;
 
@@ -42,8 +56,8 @@ export async function performSearchQuery(
                     let start: number = location.start;
                     let end: number = location.end;
                     let startIdx = Math.max(0, start - 25);
-                    let endIdx = Math.min(queryParam.length, end + 25);
-                    let queryPart = queryParam.substring(startIdx, endIdx);
+                    let endIdx = Math.min(sourceQuery.length, end + 25);
+                    let queryPart = sourceQuery.substring(startIdx, endIdx);
                     let key = i++;
                     let marker;
                     if (end > start) {

@@ -33,7 +33,8 @@ export function PostPicker({
         }
 
         const search = new URLSearchParams();
-        search.set("query", (constriction.length > 0 ? constriction + " " : constriction) + searchQuery);
+        search.set("query", searchQuery);
+        search.set("constriction", constriction);
         search.set("page", listPage.toString());
         search.set("limit", "15");
 
