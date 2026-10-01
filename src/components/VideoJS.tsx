@@ -18,6 +18,24 @@ type PlayerWithQualityMenu = Player & {
     qualityLevels(): any;
 };
 
+const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
+const HLS_MIME_TYPE_LEGACY = "application/x-mpegurl";
+
+const isHlsSource = (source: any) => source.type === HLS_MIME_TYPE || source.type === HLS_MIME_TYPE_LEGACY;
+
+export const shouldUseNativeHls = () => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+        return false;
+    }
+
+    const video = document.createElement("video");
+    const nativeHlsSupported = !!video.canPlayType(HLS_MIME_TYPE);
+
+    return nativeHlsSupported && ("ManagedMediaSource" in window || !Hls.isSupported());
+};
+
+const shouldUseHlsJs = (sources: any[]) => Hls.isSupported() && !shouldUseNativeHls() && sources.some(isHlsSource);
+
 export const VideoJS = (props: any) => {
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
     const playerRef = React.useRef<Player | null>(null);
@@ -42,11 +60,9 @@ export const VideoJS = (props: any) => {
     };
 
     const loadSources = (player: Player, sources: any[]) => {
-        const hlsSource = sources.find(
-            (source) => source.type === "application/vnd.apple.mpegurl" || source.type === "application/x-mpegurl"
-        );
+        const hlsSource = sources.find(isHlsSource);
 
-        if (hlsSource && Hls.isSupported()) {
+        if (hlsSource && shouldUseHlsJs(sources)) {
             destroyHls(player);
 
             const video = (player.tech("trust me bro") as any).el() as HTMLVideoElement;
@@ -82,11 +98,7 @@ export const VideoJS = (props: any) => {
         player.src(sources);
     };
 
-    const useHlsJs =
-        Hls.isSupported() &&
-        options.sources.some(
-            (source: any) => source.type === "application/vnd.apple.mpegurl" || source.type === "application/x-mpegurl"
-        );
+    const useHlsJs = shouldUseHlsJs(options.sources);
 
     const playerOptions = {
         ...options,
