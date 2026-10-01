@@ -443,6 +443,7 @@ function Post({ app }: PostProps) {
                     controls: true,
                     responsive: true,
                     fill: true,
+                    playsInline: true,
                     preload: "auto",
                     sources: sources,
                     html5: {
