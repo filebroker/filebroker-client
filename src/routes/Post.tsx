@@ -3,7 +3,7 @@ import { Link, Location, useLocation, useNavigate, useParams } from "react-route
 import videojs from "video.js";
 import App from "../App";
 import http, { getApiUrl, getPublicBasePath } from "../http-common";
-import VideoJS from "../components/VideoJS";
+import VideoJS, { shouldUseNativeHls } from "../components/VideoJS";
 import "./Post.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -437,6 +437,7 @@ function Post({ app }: PostProps) {
                     }
                 }
 
+                const useNativeHls = shouldUseNativeHls();
                 const videoJsOptions = {
                     autoplay: true,
                     controls: true,
@@ -446,13 +447,13 @@ function Post({ app }: PostProps) {
                     sources: sources,
                     html5: {
                         vhs: {
-                            overrideNative: !videojs.browser.IS_SAFARI,
+                            overrideNative: !useNativeHls,
                             useDevicePixelRatio: true,
                             limitRenditionByPlayerDimensions: true,
                             useNetworkInformationApi: false,
                         },
-                        nativeAudioTracks: false,
-                        nativeVideoTracks: false,
+                        nativeAudioTracks: useNativeHls,
+                        nativeVideoTracks: useNativeHls,
                     },
                 };
 
