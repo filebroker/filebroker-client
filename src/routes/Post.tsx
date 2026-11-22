@@ -38,6 +38,7 @@ import { PostEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
 import { PageTitle } from "../index";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
+import { toBackendQueryParams } from "../QueryState";
 
 class PostProps {
     app: App;
@@ -189,8 +190,10 @@ function Post({ app }: PostProps) {
         };
 
         const fetchAuthorized = async (config: { headers: { authorization: string } } | undefined) => {
-            let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
-            let post = await http.get<PostDetailed>(`${basePath}/${id}${search}`, config);
+            const basePath = collection_id ? `/get-post/${collection_id}` : "/get-post";
+            const backendParams = toBackendQueryParams(new URLSearchParams(search));
+            const post = await http.get<PostDetailed>(`${basePath}/${id}?${backendParams.toString()}`, config);
+
             updatePost(post.data);
 
             if (isAudio(post.data)) {
@@ -253,7 +256,7 @@ function Post({ app }: PostProps) {
                     console.error(e);
                 }
             });
-    }, [id]);
+    }, [id, collection_id, search]);
 
     useEffect(() => {
         if (isInitialMount.current) {
@@ -267,10 +270,11 @@ function Post({ app }: PostProps) {
         const fetch = async () => {
             try {
                 let config = await app.getAuthorization(location, navigate, false);
-                let searchParams = new URLSearchParams(search);
-                searchParams.set("exclude_window", "true");
-                let basePath = collection_id ? "/get-post/" + collection_id : "/get-post";
-                let result = await http.get<PostDetailed>(`${basePath}/${id}?${searchParams}`, config);
+                const backendParams = toBackendQueryParams(new URLSearchParams(search));
+                backendParams.set("exclude_window", "true");
+                const basePath = collection_id ? `/get-post/${collection_id}` : "/get-post";
+                const result = await http.get<PostDetailed>(`${basePath}/${id}?${backendParams.toString()}`, config);
+
                 if (post) {
                     result.data.prev_post = post.prev_post;
                     result.data.next_post = post.next_post;

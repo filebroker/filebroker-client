@@ -10,6 +10,7 @@ import http from "../http-common";
 import "./CreateCollectionDialogue.css";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilitySelect from "./VisibilitySelect";
+import { AccessFilter, PostQuerySelection } from "../QueryState";
 
 export function CreateCollectionDialogue({
     postPks,
@@ -20,7 +21,7 @@ export function CreateCollectionDialogue({
     postPks: number[];
     modal: ModalContent;
     app: App;
-    postQuery?: string;
+    postQuery?: PostQuerySelection;
 }) {
     const location = useLocation();
     const navigate = useNavigate();
@@ -168,7 +169,9 @@ export function CreateCollectionDialogue({
                                     groupAccess,
                                     description,
                                     postPks,
-                                    postQuery ?? null
+                                    postQuery?.query ?? null,
+                                    postQuery?.constriction ?? null,
+                                    postQuery?.access_filter ?? null
                                 ),
                                 config
                             );
@@ -217,6 +220,8 @@ export class CreatePostCollectionRequest {
     description: string | null;
     post_pks: number[] | null;
     post_query: string | null;
+    post_query_constriction: string | null;
+    post_query_access_filter: AccessFilter | null;
 
     constructor(
         title: string,
@@ -228,7 +233,9 @@ export class CreatePostCollectionRequest {
         group_access: GroupAccessDefinition[] | null,
         description: string | null,
         post_pks: number[] | null,
-        post_query: string | null
+        post_query: string | null,
+        post_query_constriction: string | null,
+        post_query_access_filter: AccessFilter | null
     ) {
         this.title = title;
         this.entered_tags = entered_tags;
@@ -240,5 +247,7 @@ export class CreatePostCollectionRequest {
         this.description = description;
         this.post_pks = post_pks;
         this.post_query = post_query;
+        this.post_query_constriction = post_query_constriction;
+        this.post_query_access_filter = post_query_access_filter;
     }
 }

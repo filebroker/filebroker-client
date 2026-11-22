@@ -1,11 +1,12 @@
 #PostPicker {
     display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 50vw;
-    height: 100%;
-    flex-direction: column;
-    justify-content: space-between;
+    height: min(72dvh, calc(80dvh - 100px));
+    min-height: 0;
     gap: 10px;
+    overflow: hidden;
 }
 
 .post_button:hover img {

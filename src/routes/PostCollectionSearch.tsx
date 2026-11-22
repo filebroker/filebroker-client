@@ -11,6 +11,7 @@ import { ActionModal } from "../components/ActionModal";
 import { useSnackbar } from "notistack";
 import { PageTitle } from "../index";
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { ConstrictionPillRow } from "../components/ConstrictionPillRow";
 
 class PostCollectionSearchProps {
     app: App;
@@ -32,21 +33,37 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
+        let active = true;
         const modal = app.openLoadingModal();
 
         performSearchQuery("/collection" + search, app, location, navigate, modal)
             .then((searchResult) => {
+                if (!active) {
+                    return;
+                }
+
                 setFullCount(searchResult.full_count);
                 setPageCount(searchResult.pages);
                 setCollections(searchResult.collections ?? []);
-                modal.close();
             })
             .catch((e) => {
-                modal.close();
-                console.error(e);
+                if (active) {
+                    console.error(e);
+                }
+            })
+            .finally(() => {
+                if (!modal.closed) {
+                    modal.close();
+                }
             });
 
         return () => {
+            active = false;
+
+            if (!modal.closed) {
+                modal.close();
+            }
+
             setFullCount(0);
             setPageCount(0);
             setCollections([]);
@@ -76,6 +93,7 @@ function PostCollectionSearch({ app }: PostCollectionSearchProps) {
                 pageCount={pageCount}
                 getMediaTypeIcon={(_item) => faFolderOpen}
                 isDesktop={app.isDesktop()}
+                headerControls={<ConstrictionPillRow app={app} scope="collection" />}
                 gridItemActions={[
                     {
                         name: "Delete collection",

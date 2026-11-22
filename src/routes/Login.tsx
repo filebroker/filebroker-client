@@ -12,6 +12,7 @@ import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import zxcvbn from "zxcvbn";
 import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { getConfiguredCaptchaSiteKey } from "../config";
+import { AccessFilter } from "../QueryState";
 
 class LoginRequest {
     user_name: string;
@@ -46,6 +47,7 @@ export interface UserPreferences {
     auto_play_video: boolean;
     auto_play_audio_in_collection: boolean;
     auto_play_video_in_collection: boolean;
+    default_access_filter: AccessFilter;
 }
 
 class LoginProps {

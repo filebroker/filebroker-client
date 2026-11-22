@@ -22,7 +22,7 @@ import { faArrowUpRightFromSquare, faEllipsisVertical } from "@fortawesome/free-
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { User } from "../App";
 import "./PaginatedGridView.css";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
 import { faMusic, faImage, faVideo } from "@fortawesome/free-solid-svg-icons";
@@ -95,6 +95,7 @@ export function PaginatedGridView({
     pagePath,
     fullCount,
     pageCount,
+    headerControls,
     gridItemActions = undefined,
     getMediaTypeIcon = undefined,
     getMediaDurationDisplay = undefined,
@@ -110,6 +111,7 @@ export function PaginatedGridView({
     getMediaTypeIcon?: ((item: TransformedPaginatedGridViewItem) => IconDefinition | undefined) | undefined;
     getMediaDurationDisplay?: ((item: TransformedPaginatedGridViewItem) => string | undefined) | undefined;
     isDesktop?: boolean;
+    headerControls?: ReactNode;
 }) {
     const location = useLocation();
     const search = location.search;
@@ -137,7 +139,6 @@ export function PaginatedGridView({
     }
 
     let searchParams = new URLSearchParams(search);
-    let queryParam: string = searchParams.get("query") ?? "";
     let pageParam: number = +(searchParams.get("page") ?? 0);
 
     const [gridItemActionMenuAnchor, setGridItemActionMenuAnchor] = useState<HTMLElement | null>(null);
@@ -152,12 +153,13 @@ export function PaginatedGridView({
     return (
         <div id="image-wall">
             <div id="image-wall-container">
+                {headerControls && <div className="image-wall-header-controls">{headerControls}</div>}
                 <ImageList
                     gap={25}
                     sx={{
                         width: "100%",
                         height: "100%",
-                        paddingTop: "25px",
+                        paddingTop: headerControls ? "12px" : "25px",
                         paddingBottom: "25px",
                         gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))!important",
                     }}
@@ -374,15 +376,17 @@ export function PaginatedGridView({
                         color="primary"
                         size={useLargeControls ? (isDesktop ? "large" : "medium") : "small"}
                         renderItem={(item) => {
-                            let page = item.page ?? 1;
-                            let searchParams = new URLSearchParams();
-                            searchParams.set("query", queryParam);
+                            const page = item.page ?? 1;
+                            const searchParams = new URLSearchParams(search);
+
                             searchParams.set("page", (page - 1).toString());
-                            let location = {
+
+                            const targetLocation = {
                                 pathname: pagePath,
                                 search: searchParams.toString(),
                             };
-                            return <PaginationItem component={NavLink} to={location} {...item} />;
+
+                            return <PaginationItem component={NavLink} to={targetLocation} {...item} />;
                         }}
                     />
                 </div>

@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { performSearchQuery, PostQueryObject } from "../Search";
 import App from "../App";
 import "./PostPicker.css";
-import { QueryAutocompleteSearchBox } from "./QueryInput";
 import { Box, Button, ImageList, ImageListItem, ImageListItemBar, Pagination } from "@mui/material";
 import urlJoin from "url-join";
 import { getApiUrl, getPublicBasePath } from "../http-common";
 import { LazyLoadImage } from "react-lazy-load-image-component";
+import { EmbeddedQueryInput } from "./EmbeddedQueryInput";
+import { AccessFilter } from "../QueryState";
 
 export function PostPicker({
     app,
@@ -20,54 +21,91 @@ export function PostPicker({
 }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
+    const [submittedSearch, setSubmittedSearch] = useState(() => ({
+        query: "",
+        accessFilter: (app.isLoggedIn()
+            ? (app.getUserPreferences()?.default_access_filter ?? "all")
+            : "all") as AccessFilter,
+        version: 0,
+    }));
     const [queryLoading, setQueryLoading] = useState(false);
     const [selectablePosts, setSelectablePosts] = useState<PostQueryObject[]>([]);
     const [listPage, setListPage] = useState(0);
     const [pageCount, setPageCount] = useState<number | null>(null);
 
-    const executeSearch = (resetPagination: boolean) => {
-        if (resetPagination) {
-            setListPage(0);
-            setPageCount(null);
+    useEffect(() => {
+        let active = true;
+
+        const search = new URLSearchParams({
+            query: submittedSearch.query,
+            constriction,
+            page: listPage.toString(),
+            limit: "15",
+        });
+
+        if (app.isLoggedIn()) {
+            search.set("access_filter", submittedSearch.accessFilter);
         }
 
-        const search = new URLSearchParams();
-        search.set("query", searchQuery);
-        search.set("constriction", constriction);
-        search.set("page", listPage.toString());
-        search.set("limit", "15");
-
         setQueryLoading(true);
-        performSearchQuery("/post?" + search, app, location, navigate)
-            .then((searchResult) => {
-                setPageCount(searchResult.pages);
-                setSelectablePosts(searchResult.posts ?? []);
-            })
-            .catch((e) => console.error(e))
-            .finally(() => setQueryLoading(false));
-    };
 
-    useEffect(() => {
-        executeSearch(false);
-    }, [listPage]);
+        performSearchQuery(`/post?${search.toString()}`, app, location, navigate)
+            .then((result) => {
+                if (active) {
+                    setPageCount(result.pages);
+                    setSelectablePosts(result.posts ?? []);
+                }
+            })
+            .catch((e) => {
+                if (active) {
+                    console.error(e);
+                }
+            })
+            .finally(() => {
+                if (active) {
+                    setQueryLoading(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [submittedSearch, listPage, constriction]);
 
     return (
         <div id="PostPicker">
             <Box sx={{ display: "flex", flex: "0 0 auto" }}>
-                <QueryAutocompleteSearchBox
-                    queryString={searchQuery}
-                    setQueryString={setSearchQuery}
+                <EmbeddedQueryInput
+                    app={app}
                     scope="post"
-                    onSubmit={() => executeSearch(true)}
+                    placeholder="Search posts"
                     isLoading={queryLoading}
+                    onSubmit={(query, accessFilter) => {
+                        setSubmittedSearch((current) => ({
+                            query,
+                            accessFilter,
+                            version: current.version + 1,
+                        }));
+                        setListPage(0);
+                        setPageCount(null);
+                    }}
                 />
             </Box>
-            <Box sx={{ display: "flex", flex: "1 1 auto", overflow: "auto" }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    flex: "1 1 auto",
+                    minHeight: 0,
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                }}
+            >
                 <ImageList
                     gap={10}
                     sx={{
                         width: "100%",
+                        m: 0,
+                        overflow: "visible",
                         gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))!important",
                     }}
                 >

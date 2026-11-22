@@ -15,13 +15,14 @@ import urlJoin from "url-join";
 import http, { getApiUrl } from "../http-common";
 import { ActionModal } from "./ActionModal";
 import "./AddToCollectionDialogue.css";
-import { QueryAutocompleteSearchBox } from "./QueryInput";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeSvgIcon } from "./FontAwesomeSvgIcon";
 import { faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import { CreateCollectionDialogue } from "./CreateCollectionDialogue";
 import { PostCollectionDetailed } from "../Model";
 import { useSnackbar } from "notistack";
+import { AccessFilter, PostQuerySelection } from "../QueryState";
+import { EmbeddedQueryInput } from "./EmbeddedQueryInput";
 
 export function AddToCollectionDialogue({
     app,
@@ -32,42 +33,61 @@ export function AddToCollectionDialogue({
     app: App;
     postPks: number[];
     modal?: ModalContent;
-    postQuery?: string;
+    postQuery?: PostQuerySelection;
 }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
+    const [submittedSearch, setSubmittedSearch] = useState(() => ({
+        query: "",
+        accessFilter: (app.isLoggedIn()
+            ? (app.getUserPreferences()?.default_access_filter ?? "all")
+            : "all") as AccessFilter,
+        version: 0,
+    }));
     const [queryLoading, setQueryLoading] = useState(false);
     const [selectableCollections, setSelectableCollections] = useState<PostCollectionQueryObject[]>([]);
     const [listPage, setListPage] = useState(0);
     const [pageCount, setPageCount] = useState<number | null>(null);
     const { enqueueSnackbar } = useSnackbar();
 
-    const executeSearch = (resetPagination: boolean) => {
-        if (resetPagination) {
-            setListPage(0);
-            setPageCount(null);
+    useEffect(() => {
+        let active = true;
+
+        const search = new URLSearchParams({
+            query: submittedSearch.query,
+            page: listPage.toString(),
+            writable_only: "true",
+            limit: "15",
+        });
+
+        if (app.isLoggedIn()) {
+            search.set("access_filter", submittedSearch.accessFilter);
         }
 
-        const search = new URLSearchParams();
-        search.set("query", searchQuery);
-        search.set("page", listPage.toString());
-        search.set("writable_only", "true");
-        search.set("limit", "15");
-
         setQueryLoading(true);
-        performSearchQuery("/collection?" + search, app, location, navigate)
-            .then((searchResult) => {
-                setPageCount(searchResult.pages);
-                setSelectableCollections(searchResult.collections ?? []);
-            })
-            .catch((e) => console.error(e))
-            .finally(() => setQueryLoading(false));
-    };
 
-    useEffect(() => {
-        executeSearch(false);
-    }, [listPage]);
+        performSearchQuery(`/collection?${search.toString()}`, app, location, navigate)
+            .then((result) => {
+                if (active) {
+                    setPageCount(result.pages);
+                    setSelectableCollections(result.collections ?? []);
+                }
+            })
+            .catch((e) => {
+                if (active) {
+                    console.error(e);
+                }
+            })
+            .finally(() => {
+                if (active) {
+                    setQueryLoading(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [submittedSearch, listPage]);
 
     const errorHandler = (e: any) => {
         console.error(e);
@@ -89,21 +109,26 @@ export function AddToCollectionDialogue({
                 <p>Add {postQuery ? "all found" : postPks.length} posts to collection:</p>
             </div>
             <div id="add-to-collection-search-box">
-                <QueryAutocompleteSearchBox
-                    queryString={searchQuery}
-                    setQueryString={setSearchQuery}
+                <EmbeddedQueryInput
+                    app={app}
                     scope="collection"
-                    onSubmit={() => executeSearch(true)}
+                    placeholder="Search collections"
                     isLoading={queryLoading}
+                    onSubmit={(query, accessFilter) => {
+                        setSubmittedSearch((current) => ({
+                            query,
+                            accessFilter,
+                            version: current.version + 1,
+                        }));
+                        setListPage(0);
+                        setPageCount(null);
+                    }}
                 />
             </div>
             <div id="add-to-collection-list">
                 <List
                     sx={{
                         width: "100%",
-                        minHeight: "300px",
-                        overflow: "auto",
-                        flex: "1 1 auto",
                     }}
                 >
                     <ListItemButton
@@ -168,7 +193,11 @@ export function AddToCollectionDialogue({
                                                                             `/edit-collection/${collection.pk}`,
                                                                             {
                                                                                 added_post_pks: postPks,
-                                                                                added_post_query: postQuery,
+                                                                                added_post_query: postQuery?.query,
+                                                                                post_query_constriction:
+                                                                                    postQuery?.constriction,
+                                                                                post_query_access_filter:
+                                                                                    postQuery?.access_filter,
                                                                                 duplicate_mode: "reject",
                                                                             },
                                                                             config
@@ -207,7 +236,11 @@ export function AddToCollectionDialogue({
                                                                                                                 added_post_pks:
                                                                                                                     postPks,
                                                                                                                 added_post_query:
-                                                                                                                    postQuery,
+                                                                                                                    postQuery?.query,
+                                                                                                                post_query_constriction:
+                                                                                                                    postQuery?.constriction,
+                                                                                                                post_query_access_filter:
+                                                                                                                    postQuery?.access_filter,
                                                                                                                 duplicate_mode:
                                                                                                                     "ignore",
                                                                                                             },
@@ -247,7 +280,11 @@ export function AddToCollectionDialogue({
                                                                                                                 added_post_pks:
                                                                                                                     postPks,
                                                                                                                 added_post_query:
-                                                                                                                    postQuery,
+                                                                                                                    postQuery?.query,
+                                                                                                                post_query_constriction:
+                                                                                                                    postQuery?.constriction,
+                                                                                                                post_query_access_filter:
+                                                                                                                    postQuery?.access_filter,
                                                                                                                 duplicate_mode:
                                                                                                                     "skip",
                                                                                                             },

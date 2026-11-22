@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import App from "../App";
-import React, { useEffect, useState } from "react";
+import App, { ModalContent } from "../App";
+import React, { useEffect, useRef, useState } from "react";
 import {
     DeletePostCollectionsResponse,
     GroupAccessDefinition,
@@ -38,6 +38,7 @@ import VisibilitySelect from "../components/VisibilitySelect";
 import AddIcon from "@mui/icons-material/Add";
 import { PostCollectionEditHistoryDialogue } from "../components/PostEditHistoryDialogue";
 import { PageTitle } from "../index";
+import { ConstrictionPillRow } from "../components/ConstrictionPillRow";
 
 export function PostCollection({ app }: { app: App }) {
     let { id } = useParams();
@@ -50,6 +51,8 @@ export function PostCollection({ app }: { app: App }) {
     const [fullCount, setFullCount] = useState<number | null>(0);
     const [pageCount, setPageCount] = useState<number | null>(0);
     const [collectionPosts, setCollectionPosts] = useState<PostCollectionItemQueryObject[]>([]);
+
+    const postsRequestId = useRef(0);
 
     const [isEditMode, setEditMode] = useState(false);
     const [tags, setTags] = useState<(string | Tag)[]>([]);
@@ -139,27 +142,48 @@ export function PostCollection({ app }: { app: App }) {
             });
     }, [isEditMode, location, navigate, app]);
 
-    const loadPosts = () => {
-        if (postCollection) {
-            const modal = app.openLoadingModal();
-            performSearchQuery("/collection/" + postCollection.pk + search, app, location, navigate, modal)
-                .then((searchResult) => {
-                    setFullCount(searchResult.full_count);
-                    setPageCount(searchResult.pages);
-                    setCollectionPosts(searchResult.collection_items ?? []);
-                    modal.close();
-                })
-                .catch((e) => {
-                    modal.close();
-                    console.error(e);
-                });
+    const loadPosts = (): ModalContent | undefined => {
+        if (!postCollection) {
+            return;
         }
+
+        const requestId = ++postsRequestId.current;
+        const modal = app.openLoadingModal();
+
+        performSearchQuery("/collection/" + postCollection.pk + search, app, location, navigate, modal)
+            .then((searchResult) => {
+                if (requestId !== postsRequestId.current) {
+                    return;
+                }
+
+                setFullCount(searchResult.full_count);
+                setPageCount(searchResult.pages);
+                setCollectionPosts(searchResult.collection_items ?? []);
+            })
+            .catch((e) => {
+                if (requestId === postsRequestId.current) {
+                    console.error(e);
+                }
+            })
+            .finally(() => {
+                if (!modal.closed) {
+                    modal.close();
+                }
+            });
+
+        return modal;
     };
 
     useEffect(() => {
-        loadPosts();
+        const modal = loadPosts();
 
         return () => {
+            ++postsRequestId.current;
+
+            if (modal && !modal.closed) {
+                modal.close();
+            }
+
             setFullCount(0);
             setPageCount(0);
             setCollectionPosts([]);
@@ -435,6 +459,7 @@ export function PostCollection({ app }: { app: App }) {
                 getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
                 getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                 isDesktop={app.isDesktop()}
+                headerControls={<ConstrictionPillRow app={app} scope="collection_item" />}
                 gridItemActions={[
                     {
                         name: "Show metadata",
@@ -515,7 +540,6 @@ export function PostCollection({ app }: { app: App }) {
                                                                     : "Removed selected posts from collection",
                                                             variant: "success",
                                                         });
-                                                        loadPosts();
                                                         return result.data;
                                                     } catch (e) {
                                                         console.error(e);

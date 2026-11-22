@@ -269,7 +269,7 @@ export default function NavBar({ app }: { app: App }) {
                             justifyContent: "center",
                         }}
                     >
-                        <GlobalQueryInput hideOnHome />
+                        <GlobalQueryInput app={app} hideOnHome />
                     </Box>
                 </Box>
                 <Box
@@ -304,10 +304,10 @@ export default function NavBar({ app }: { app: App }) {
                         sx={{
                             display: "flex",
                             justifyContent: "center",
-                            width: "calc(25vw - 50px)",
+                            width: "min(45vw, 720px)",
                         }}
                     >
-                        <GlobalQueryInput hideOnHome />
+                        <GlobalQueryInput app={app} hideOnHome />
                     </Box>
                     <Box
                         sx={{
@@ -446,6 +446,7 @@ export default function NavBar({ app }: { app: App }) {
                                                 jwt: null,
                                                 user: null,
                                                 loginExpiry: null,
+                                                userPreferences: null,
                                             });
                                             navigate("/");
                                         }}

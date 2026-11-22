@@ -1,15 +1,16 @@
 import "./Home.css";
 import { GlobalQueryInput } from "../components/QueryInput";
 import React from "react";
+import App from "../App";
 
-function Home() {
+function Home({ app }: { app: App }) {
     return (
         <div id="Home">
             <div>
                 <h1>filebroker</h1>
             </div>
             <div id="home-search">
-                <GlobalQueryInput autoFocus />
+                <GlobalQueryInput app={app} />
             </div>
         </div>
     );

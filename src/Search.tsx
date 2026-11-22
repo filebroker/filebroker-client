@@ -3,6 +3,7 @@ import App, { ModalContent } from "./App";
 import http from "./http-common";
 import { S3Object, S3ObjectMetadata, UserPublic } from "./Model";
 import { JSX } from "react";
+import { toBackendQueryParams } from "./QueryState";
 
 export function extractQueryFromSearch(search: string): string {
     const searchParams = new URLSearchParams(search);
@@ -22,10 +23,28 @@ export async function performSearchQuery(
     loadingModal: ModalContent | undefined = undefined
 ): Promise<SearchResult> {
     const url = new URL(search, window.location.origin);
-    let queryParam: string = extractQueryFromSearch(url.searchParams.toString());
-    let constriction = extractConstrictionFromSearch(url.searchParams.toString());
+
+    // Existing callers pass either ?query=... or a scoped path
+    // such as /collection?query=... or /collection/11?query=...
+    const scopePath = search.startsWith("/") ? url.pathname : "";
+
+    let backendParams: URLSearchParams;
+
+    try {
+        backendParams = toBackendQueryParams(url.searchParams);
+    } catch (e: any) {
+        loadingModal?.close();
+        app.openModal("Invalid query", <div>{e instanceof Error ? e.message : String(e)}</div>);
+        throw e;
+    }
+
+    // Use the actual FQL being sent to the backend when
+    // displaying compilation errors.
+    const queryParam = backendParams.get("query") ?? "";
+    const constriction = backendParams.get("constriction") ?? "";
 
     let config;
+
     try {
         config = await app.getAuthorization(location, navigate, false);
     } catch (e: any) {
@@ -34,67 +53,71 @@ export async function performSearchQuery(
     }
 
     try {
-        let result = await http.get<SearchResult>(`/search${search}`, config);
-        let searchResult = result.data;
-        return searchResult;
+        const response = await http.get<SearchResult>(`/search${scopePath}?${backendParams.toString()}`, config);
+
+        return response.data;
     } catch (e: any) {
-        let responseData = e.response?.data;
+        const responseData = e.response?.data;
+
         if (responseData) {
-            let sourceQuery;
-            if (responseData.message?.includes("constriction:")) {
-                sourceQuery = constriction;
-            } else {
-                sourceQuery = queryParam;
-            }
+            const sourceQuery: string =
+                typeof responseData.message === "string" && responseData.message.includes("constriction:")
+                    ? constriction
+                    : queryParam;
 
-            let compilationErrors: JSX.Element[] = [];
-            let i = 0;
+            const sourceChars = Array.from(sourceQuery);
+            const compilationErrors: JSX.Element[] = [];
 
-            if (responseData.compilation_errors) {
-                responseData.compilation_errors.forEach((compilationError: { location: any; msg: string }) => {
-                    let location = compilationError.location;
-                    let start: number = location.start;
-                    let end: number = location.end;
-                    let startIdx = Math.max(0, start - 25);
-                    let endIdx = Math.min(sourceQuery.length, end + 25);
-                    let queryPart = sourceQuery.substring(startIdx, endIdx);
-                    let key = i++;
-                    let marker;
-                    if (end > start) {
-                        marker = " ".repeat(start - startIdx) + "^" + "-".repeat(Math.max(0, end - start - 1)) + "^";
-                    } else {
-                        marker = " ".repeat(start - startIdx) + "^";
+            if (Array.isArray(responseData.compilation_errors)) {
+                responseData.compilation_errors.forEach(
+                    (
+                        compilationError: {
+                            location: { start: number; end: number };
+                            msg: string;
+                        },
+                        index: number
+                    ) => {
+                        const { start, end } = compilationError.location;
+
+                        const startIdx = Math.max(0, start - 25);
+                        const endIdx = Math.min(sourceChars.length, end + 26);
+
+                        const queryPart = sourceChars.slice(startIdx, endIdx).join("");
+
+                        const marker =
+                            " ".repeat(Math.max(0, start - startIdx)) +
+                            (end > start ? "^" + "-".repeat(Math.max(0, end - start - 1)) + "^" : "^");
+
+                        compilationErrors.push(
+                            <div key={index}>
+                                Error {index + 1}:
+                                <pre>
+                                    <code>
+                                        {queryPart}
+                                        {"\n"}
+                                        {marker}
+                                        {"\n\n"}
+                                        {compilationError.msg}
+                                    </code>
+                                </pre>
+                            </div>
+                        );
                     }
-                    compilationErrors.push(
-                        <div key={key}>
-                            Error {key}:
-                            <pre>
-                                <code>
-                                    {queryPart}
-                                    <br></br>
-                                    {marker}
-                                    <br></br>
-                                    <br></br>
-                                    {compilationError.msg}
-                                </code>
-                            </pre>
-                        </div>
-                    );
-                });
+                );
             }
 
             loadingModal?.close();
+
             app.openModal(
                 "Error",
                 <div>
                     {responseData.message}
-                    <br></br>
                     {compilationErrors}
                 </div>
             );
         } else {
             loadingModal?.close();
-            app.openModal("Error", <div>An unexpected Error occurred</div>);
+            app.openModal("Error", <div>An unexpected error occurred.</div>);
         }
 
         throw e;

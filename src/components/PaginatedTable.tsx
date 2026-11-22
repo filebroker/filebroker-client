@@ -1,4 +1,5 @@
 import {
+    Box,
     FormLabelProps,
     IconButton,
     ListItemIcon,
@@ -22,7 +23,6 @@ import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-type RowElement = React.ReactElement<TableRowProps, typeof TableRow>;
 export type Direction = "asc" | "desc";
 
 export interface PaginatedTableData<T> {
@@ -56,12 +56,14 @@ export type PaginatedTableProps<T> = {
     rowActions?: PaginatedTableRowAction<T>[];
     rowsPerPageOptions?: number[];
     dataRowPropsFn?: (data: T) => Partial<TableRowProps>;
+    fillHeight?: boolean;
 };
 
 export type PaginatedTableHandle = {
     reload: () => void;
     setPage: (page: number) => void;
     getRowsPerPage: () => number;
+    getPage: () => number;
 };
 
 export const PaginatedTable = React.forwardRef(PaginatedTableInner) as <T>(
@@ -69,7 +71,14 @@ export const PaginatedTable = React.forwardRef(PaginatedTableInner) as <T>(
 ) => React.ReactElement;
 
 function PaginatedTableInner<T>(
-    { columns, loadDataFn, rowActions, rowsPerPageOptions = [10, 25, 50], dataRowPropsFn }: PaginatedTableProps<T>,
+    {
+        columns,
+        loadDataFn,
+        rowActions,
+        rowsPerPageOptions = [10, 25, 50],
+        dataRowPropsFn,
+        fillHeight = false,
+    }: PaginatedTableProps<T>,
     ref: React.Ref<PaginatedTableHandle>
 ) {
     const [data, setData] = useState<T[]>([]);
@@ -79,6 +88,8 @@ function PaginatedTableInner<T>(
     const [isLoading, setIsLoading] = useState(false);
     const [direction, setDirection] = React.useState<Direction>("asc");
     const [orderBy, setOrderBy] = React.useState<string | undefined>(undefined);
+
+    const requestId = useRef(0);
 
     const loadDataRef = useRef(loadDataFn);
     useEffect(() => {
@@ -106,19 +117,29 @@ function PaginatedTableInner<T>(
     }, []);
 
     const fetchPage = useCallback(async () => {
+        const id = ++requestId.current;
+
         setIsLoading(true);
+
         try {
             const result = await loadDataRef.current(page, rowsPerPage, orderBy, direction);
-            setData(result.data);
-            setTotalCount(result.totalCount);
+
+            if (id === requestId.current) {
+                setData(result.data);
+                setTotalCount(result.totalCount);
+            }
         } catch (e) {
-            console.error("Failed to load data", e);
-            enqueueSnackbar({
-                message: "Failed to load data",
-                variant: "error",
-            });
+            if (id === requestId.current) {
+                console.error("Failed to load data", e);
+                enqueueSnackbar({
+                    message: "Failed to load data",
+                    variant: "error",
+                });
+            }
         } finally {
-            setIsLoading(false);
+            if (id === requestId.current) {
+                setIsLoading(false);
+            }
         }
     }, [page, rowsPerPage, orderBy, direction]);
 
@@ -134,6 +155,7 @@ function PaginatedTableInner<T>(
             getRowsPerPage: (): number => {
                 return rowsPerPage;
             },
+            getPage: () => page,
         }),
         [fetchPage]
     );
@@ -142,89 +164,133 @@ function PaginatedTableInner<T>(
         void fetchPage();
     }, [fetchPage]);
 
+    const tableHead = (
+        <TableHead>
+            <TableRow>
+                {columns.map((column) => (
+                    <TableCell
+                        key={column.id.toString()}
+                        sortDirection={column.allowSorting && orderBy === column.id ? direction : false}
+                    >
+                        {column.allowSorting ? (
+                            <TableSortLabel
+                                active={orderBy === column.id}
+                                direction={orderBy === column.id ? direction : "asc"}
+                                onClick={() => {
+                                    const currentlyOrderedByColumn = orderBy === column.id;
+                                    // if already ordered by this column, toggle descending direction, if already descending clear ordering
+                                    if (currentlyOrderedByColumn) {
+                                        const currentlyOrderedAsc = direction === "asc";
+                                        if (currentlyOrderedAsc) {
+                                            setDirection("desc");
+                                        } else {
+                                            setDirection("asc");
+                                            setOrderBy(undefined);
+                                        }
+                                    } else {
+                                        setDirection("asc");
+                                        setOrderBy(column.id);
+                                    }
+                                    setPage(0);
+                                }}
+                            >
+                                {column.name}
+                                {orderBy === column.id ? (
+                                    <span className="visually-hidden">
+                                        {direction === "desc" ? "sorted descending" : "sorted ascending"}
+                                    </span>
+                                ) : null}
+                            </TableSortLabel>
+                        ) : (
+                            column.name
+                        )}
+                    </TableCell>
+                ))}
+                {rowActions && rowActions.length > 0 && <TableCell key={"_action_col_"}></TableCell>}
+            </TableRow>
+        </TableHead>
+    );
+
+    const tableBody = (
+        <TableBody>
+            {isLoading ? (
+                <TableRow>
+                    <TableCell colSpan={columns.length} align="center">
+                        <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
+                    </TableCell>
+                </TableRow>
+            ) : (
+                data.map((v, idx) => (
+                    <TableRow key={idx} {...dataRowPropsFn?.(v)}>
+                        {columns.map((col) => (
+                            <TableCell key={col.id.toString()}>{col.renderCellValue(v)}</TableCell>
+                        ))}
+                        {rowActions && rowActions.length > 0 && (
+                            <TableCell key={`_action_col_row_${idx}_`}>
+                                <RowActionsMenu rowData={v} rowActions={rowActions} />
+                            </TableCell>
+                        )}
+                    </TableRow>
+                ))
+            )}
+        </TableBody>
+    );
+
     return (
         <Paper
             sx={{
                 maxWidth: "calc(100% - 20px)",
                 overflow: "hidden",
                 alignSelf: "center",
+                ...(fillHeight && {
+                    display: "flex",
+                    flexDirection: "column",
+                    flex: "1 1 auto",
+                    minHeight: 0,
+                    width: "calc(100% - 20px)",
+                }),
             }}
         >
-            <TableContainer
-                ref={tableContainerRef}
-                sx={{
-                    overflowX: "auto",
-                }}
-            >
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            {columns.map((column) => (
-                                <TableCell
-                                    key={column.id.toString()}
-                                    sortDirection={column.allowSorting && orderBy === column.id ? direction : false}
-                                >
-                                    {column.allowSorting ? (
-                                        <TableSortLabel
-                                            active={orderBy === column.id}
-                                            direction={orderBy === column.id ? direction : "asc"}
-                                            onClick={() => {
-                                                const currentlyOrderedByColumn = orderBy === column.id;
-                                                // if already ordered by this column, toggle descending direction, if already descending clear ordering
-                                                if (currentlyOrderedByColumn) {
-                                                    const currentlyOrderedAsc = direction === "asc";
-                                                    if (currentlyOrderedAsc) {
-                                                        setDirection("desc");
-                                                    } else {
-                                                        setDirection("asc");
-                                                        setOrderBy(undefined);
-                                                    }
-                                                } else {
-                                                    setDirection("asc");
-                                                    setOrderBy(column.id);
-                                                }
-                                                setPage(0);
-                                            }}
-                                        >
-                                            {column.name}
-                                            {orderBy === column.id ? (
-                                                <span className="visually-hidden">
-                                                    {direction === "desc" ? "sorted descending" : "sorted ascending"}
-                                                </span>
-                                            ) : null}
-                                        </TableSortLabel>
-                                    ) : (
-                                        column.name
-                                    )}
-                                </TableCell>
-                            ))}
-                            {rowActions && rowActions.length > 0 && <TableCell key={"_action_col_"}></TableCell>}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} align="center">
-                                    <FontAwesomeIcon icon={faCircleNotch} spin size="6x" />
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data.map((v, idx) => (
-                                <TableRow key={idx} {...dataRowPropsFn?.(v)}>
-                                    {columns.map((col) => (
-                                        <TableCell key={col.id.toString()}>{col.renderCellValue(v)}</TableCell>
-                                    ))}
-                                    {rowActions && rowActions.length > 0 && (
-                                        <TableCell key={`_action_col_row_${idx}_`}>
-                                            <RowActionsMenu rowData={v} rowActions={rowActions} />
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            {fillHeight ? (
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        flex: "1 1 auto",
+                        minHeight: 0,
+                        width: "100%",
+                    }}
+                >
+                    <TableContainer
+                        sx={{
+                            flex: "0 0 auto",
+                            overflow: "hidden",
+                            scrollbarGutter: "stable",
+                        }}
+                    >
+                        <Table sx={{ tableLayout: "fixed" }}>{tableHead}</Table>
+                    </TableContainer>
+
+                    <TableContainer
+                        ref={tableContainerRef}
+                        sx={{
+                            flex: "1 1 auto",
+                            minHeight: 0,
+                            overflow: "auto",
+                            scrollbarGutter: "stable",
+                        }}
+                    >
+                        <Table sx={{ tableLayout: "fixed" }}>{tableBody}</Table>
+                    </TableContainer>
+                </Box>
+            ) : (
+                <TableContainer ref={tableContainerRef}>
+                    <Table>
+                        {tableHead}
+                        {tableBody}
+                    </Table>
+                </TableContainer>
+            )}
             <TablePagination
                 page={page}
                 rowsPerPage={rowsPerPage}

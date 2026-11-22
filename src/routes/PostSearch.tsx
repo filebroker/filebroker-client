@@ -16,6 +16,8 @@ import http from "../http-common";
 import { useSnackbar } from "notistack";
 import { FileMetadataDisplay } from "../components/FileMetadataDisplay";
 import { PageTitle } from "../index";
+import { getPostQuerySelection, PostQuerySelection, toBackendQueryParams } from "../QueryState";
+import { ConstrictionPillRow } from "../components/ConstrictionPillRow";
 
 class PostSearchProps {
     app: App;
@@ -37,26 +39,47 @@ function PostSearch({ app }: PostSearchProps) {
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
+        let active = true;
         const modal = app.openLoadingModal();
 
         performSearchQuery(search, app, location, navigate, modal)
             .then((searchResult) => {
+                if (!active) {
+                    return;
+                }
+
                 setFullCount(searchResult.full_count);
                 setPageCount(searchResult.pages);
-                setPosts(searchResult.posts || []);
-                modal.close();
+                setPosts(searchResult.posts ?? []);
             })
             .catch((e) => {
-                modal.close();
-                console.error(e);
+                if (active) {
+                    console.error(e);
+                }
+            })
+            .finally(() => {
+                if (!modal.closed) {
+                    modal.close();
+                }
             });
 
         return () => {
-            setFullCount(0);
-            setPageCount(0);
-            setPosts([]);
+            active = false;
+
+            if (!modal.closed) {
+                modal.close();
+            }
         };
     }, [search, modCount]);
+
+    let bulkPostQuery: PostQuerySelection | null = null;
+
+    try {
+        bulkPostQuery = getPostQuerySelection(new URLSearchParams(search));
+    } catch (e) {
+        // Invalid search criteria should not enable bulk actions.
+        console.error("Invalid bulk post query:", e);
+    }
 
     return (
         <div id="PostSearch">
@@ -70,6 +93,7 @@ function PostSearch({ app }: PostSearchProps) {
                 getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
                 getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
                 isDesktop={app.isDesktop()}
+                headerControls={<ConstrictionPillRow app={app} scope="post" />}
                 gridItemActions={[
                     {
                         name: "Show metadata",
@@ -96,7 +120,7 @@ function PostSearch({ app }: PostSearchProps) {
                         name: "Add to collection",
                         icon: faSquarePlus,
                         allowExecuteForAll:
-                            new URLSearchParams(search).get("query") !== null && fullCount != null && fullCount < 10000,
+                            bulkPostQuery !== null && fullCount !== null && fullCount > 0 && fullCount < 10000,
                         disabled: !app.isLoggedIn(),
                         fn: (items, cb) => {
                             if (items && items.length > 0) {
@@ -127,10 +151,7 @@ function PostSearch({ app }: PostSearchProps) {
                                                                 app={app}
                                                                 postPks={[]}
                                                                 modal={modal}
-                                                                postQuery={
-                                                                    new URLSearchParams(search).get("query") ??
-                                                                    undefined
-                                                                }
+                                                                postQuery={bulkPostQuery ?? undefined}
                                                             />
                                                         )),
                                                 },
@@ -151,10 +172,16 @@ function PostSearch({ app }: PostSearchProps) {
                             if (!app.isLoggedIn()) {
                                 return false;
                             }
+
                             const config = await app.getAuthorization(location, navigate, false);
-                            let searchParams = new URLSearchParams(search);
-                            searchParams.set("exclude_window", "true");
-                            let result = await http.get<PostDetailed>(`/get-post/${post.pk}?${searchParams}`, config);
+                            const backendParams = toBackendQueryParams(new URLSearchParams(search));
+                            backendParams.set("exclude_window", "true");
+
+                            const result = await http.get<PostDetailed>(
+                                `/get-post/${post.pk}?${backendParams.toString()}`,
+                                config
+                            );
+
                             return result.data.is_deletable;
                         },
                         fn: (items, cb) =>

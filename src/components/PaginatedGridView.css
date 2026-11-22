@@ -297,3 +297,9 @@
     font-size: 14px;
     line-height: 1;
 }
+
+.image-wall-header-controls {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 0 0;
+}

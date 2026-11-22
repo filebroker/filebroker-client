@@ -1,5 +1,5 @@
 import React, { JSX } from "react";
-import { BrowserRouter, Location, NavigateFunction, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Location, Navigate, NavigateFunction, Route, Routes, useLocation } from "react-router-dom";
 import "@filebroker/react-widgets/lib/styles.css";
 import "./App.css";
 import http from "./http-common";
@@ -26,6 +26,7 @@ import { RedeemUserGroupInvite } from "./routes/RedeemUserGroupInvite";
 import BrokerListPage from "./routes/BrokerListPage";
 import { BrokerDetailPage } from "./routes/BrokerDetailPage";
 import { getConfiguredAppPath } from "./config";
+import { AccessFilter } from "./QueryState";
 
 declare module "react" {
     interface CSSProperties {
@@ -119,6 +120,83 @@ export interface PatchUserPreferencesRequest {
     auto_play_video?: boolean | undefined;
     auto_play_audio_in_collection?: boolean | undefined;
     auto_play_video_in_collection?: boolean | undefined;
+    default_access_filter?: AccessFilter | undefined;
+}
+
+function NormalizeAnonymousAccessFilter({ app, children }: { app: App; children: React.ReactElement }) {
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const hasAccessFilter = params.has("access_filter");
+
+    const url = location.pathname + location.search;
+
+    const [authCheck, setAuthCheck] = React.useState<{
+        url: string;
+        authenticated: boolean;
+    } | null>(null);
+
+    React.useEffect(() => {
+        if (!hasAccessFilter || app.isLoggedIn()) {
+            return;
+        }
+
+        let active = true;
+
+        app.getAuthorizationWithLoginModal(false).then((config) => {
+            if (active) {
+                setAuthCheck({
+                    url,
+                    authenticated: !!config,
+                });
+            }
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [app, url, hasAccessFilter]);
+
+    if (!hasAccessFilter || app.isLoggedIn() || (authCheck?.url === url && authCheck.authenticated)) {
+        return children;
+    }
+
+    if (authCheck?.url !== url) {
+        // Wait for silent authentication before deciding whether
+        // to remove the parameter.
+        return null;
+    }
+
+    params.delete("access_filter");
+
+    return (
+        <Navigate
+            replace
+            to={{
+                pathname: location.pathname,
+                search: params.toString(),
+                hash: location.hash,
+            }}
+        />
+    );
+}
+
+function DefaultAccessFilterRoute({ app, children }: { app: App; children: React.ReactElement }) {
+    const location = useLocation();
+    const defaultAccessFilter = app.isLoggedIn() ? (app.getUserPreferences()?.default_access_filter ?? "all") : "all";
+
+    if (defaultAccessFilter !== "all" && !location.search) {
+        return (
+            <Navigate
+                replace
+                to={{
+                    pathname: location.pathname,
+                    search: `?access_filter=${defaultAccessFilter}`,
+                }}
+            />
+        );
+    }
+
+    return children;
 }
 
 export class App extends React.Component<
@@ -162,20 +240,29 @@ export class App extends React.Component<
 
     render(): React.ReactNode {
         const paperStyle = (preventStretch: boolean) => ({
-            p: "32px",
+            px: "32px",
+            pt: "12px",
+            pb: "24px",
             height: preventStretch || this.isDesktop() ? "fit-content" : "100dvh",
             width: preventStretch || this.isDesktop() ? "fit-content" : "100dvw",
             maxHeight: "100vh",
             maxWidth: "100vw",
             minWidth: preventStretch ? "fit-content" : "250px",
             display: "flex",
+            flexDirection: "column",
             outline: "none",
             overflowX: "auto" as "auto",
             overflowY: "auto" as "auto",
             boxShadow: "0px 4px 20px 4px rgba(0, 0, 0, 0.8)",
         });
         const modalPaper = (modal: ModalContent) => (
-            <Paper elevation={0} sx={paperStyle(modal.preventStretch)}>
+            <Paper
+                elevation={0}
+                sx={{
+                    ...paperStyle(modal.preventStretch),
+                    ...(!modal.title && !modal.allowClose ? { pt: "32px", pb: "32px" } : {}),
+                }}
+            >
                 {(modal.allowClose || modal.title) && (
                     <div className="modal-title-row">
                         {modal.allowClose && (
@@ -201,6 +288,8 @@ export class App extends React.Component<
                         width: "100%",
                         flex: "1 1 auto",
                         display: "flex",
+                        minHeight: 0,
+                        boxSizing: "border-box",
                     }}
                 >
                     {React.isValidElement(modal.content)
@@ -257,32 +346,55 @@ export class App extends React.Component<
 
                     <RouteChangeHandler onChange={this.onRouteChange} />
 
-                    <Routes>
-                        <Route path="/" element={<Home></Home>}></Route>
-                        <Route path="/posts" element={<PostSearch app={this}></PostSearch>}></Route>
-                        <Route path="/login" element={<Login app={this}></Login>}></Route>
-                        <Route
-                            path="/profile"
-                            element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}
-                        ></Route>
-                        <Route path="/register" element={<Register app={this}></Register>}></Route>
-                        <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
-                        <Route
-                            path="/confirm-email/:token"
-                            element={<EmailConfirmation app={this}></EmailConfirmation>}
-                        ></Route>
-                        <Route path="/collections" element={<PostCollectionSearch app={this} />} />
-                        <Route path="/collection/:id" element={<PostCollection app={this} />} />
-                        <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
-                        <Route path="/tags" element={<TagGlossary app={this} />} />
-                        <Route path="/tag/:id" element={<TagDetailPage app={this} />} />
-                        <Route path="/groups" element={<GroupMembershipList app={this} />} />
-                        <Route path="/group/:id" element={<GroupDetailPage app={this} />} />
-                        <Route path="/invite/:invite_code" element={<RedeemUserGroupInvite app={this} />} />
-                        <Route path="/brokers" element={<BrokerListPage app={this} />} />
-                        <Route path="/broker/:id" element={<BrokerDetailPage app={this} />} />
-                        <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
-                    </Routes>
+                    <NormalizeAnonymousAccessFilter app={this}>
+                        <Routes>
+                            <Route path="/" element={<Home app={this}></Home>}></Route>
+                            <Route
+                                path="/posts"
+                                element={
+                                    <DefaultAccessFilterRoute app={this}>
+                                        <PostSearch app={this} />
+                                    </DefaultAccessFilterRoute>
+                                }
+                            ></Route>
+                            <Route path="/login" element={<Login app={this}></Login>}></Route>
+                            <Route
+                                path="/profile"
+                                element={<ProfilePage app={this} initialUser={this.state.user}></ProfilePage>}
+                            ></Route>
+                            <Route path="/register" element={<Register app={this}></Register>}></Route>
+                            <Route path="/post/:id" element={<Post app={this}></Post>}></Route>
+                            <Route
+                                path="/confirm-email/:token"
+                                element={<EmailConfirmation app={this}></EmailConfirmation>}
+                            ></Route>
+                            <Route
+                                path="/collections"
+                                element={
+                                    <DefaultAccessFilterRoute app={this}>
+                                        <PostCollectionSearch app={this} />
+                                    </DefaultAccessFilterRoute>
+                                }
+                            />
+                            <Route
+                                path="/collection/:id"
+                                element={
+                                    <DefaultAccessFilterRoute app={this}>
+                                        <PostCollection app={this} />
+                                    </DefaultAccessFilterRoute>
+                                }
+                            />
+                            <Route path="/collection/:collection_id/post/:id" element={<Post app={this} />} />
+                            <Route path="/tags" element={<TagGlossary app={this} />} />
+                            <Route path="/tag/:id" element={<TagDetailPage app={this} />} />
+                            <Route path="/groups" element={<GroupMembershipList app={this} />} />
+                            <Route path="/group/:id" element={<GroupDetailPage app={this} />} />
+                            <Route path="/invite/:invite_code" element={<RedeemUserGroupInvite app={this} />} />
+                            <Route path="/brokers" element={<BrokerListPage app={this} />} />
+                            <Route path="/broker/:id" element={<BrokerDetailPage app={this} />} />
+                            <Route path="*" element={<NotFoundPage></NotFoundPage>}></Route>
+                        </Routes>
+                    </NormalizeAnonymousAccessFilter>
                 </SnackbarProvider>
             </BrowserRouter>
         );
@@ -327,7 +439,10 @@ export class App extends React.Component<
                 jwt: loginResponse?.token ?? null,
                 user: loginResponse?.user ?? null,
                 loginExpiry: loginExpiry,
-                userPreferences: loginResponse?.preferences ?? state.userPreferences,
+                userPreferences: loginResponse
+                    ? (loginResponse.preferences ??
+                      (state.user?.pk === loginResponse.user.pk ? state.userPreferences : null))
+                    : null,
             }),
             () => {
                 this.pendingLogin = null;
@@ -375,6 +490,14 @@ export class App extends React.Component<
         };
     }
 
+    getAuthorizationWithLoginModal(
+        showLoginFormIfLoggedOut: boolean = true
+    ): Promise<{ headers: { authorization: string } } | undefined> {
+        return new Promise((resolve) => {
+            this.withAuthorization(resolve, showLoginFormIfLoggedOut);
+        });
+    }
+
     withAuthorization(
         cb: (config: { headers: { authorization: string } } | undefined) => void,
         showLoginFormIfLoggedOut: boolean = true
@@ -415,20 +538,13 @@ export class App extends React.Component<
                 })
                 .catch((e) => {
                     console.log("Failed to refresh login: " + e);
-                    if (!showLoginFormIfLoggedOut) {
-                        cb(undefined);
-                    }
-                    if (e.response?.status === 401) {
+                    if (e.response?.status === 401 && showLoginFormIfLoggedOut) {
                         this.openModal(
                             "",
                             (modal) => <LoginForm app={this} modal={modal} />,
                             (loginResponse: LoginResponse) => {
                                 this.handleLogin(loginResponse);
-                                if (loginResponse) {
-                                    cb(this.getAuthConfigForJwt(loginResponse.token));
-                                } else {
-                                    cb(undefined);
-                                }
+                                cb(loginResponse ? this.getAuthConfigForJwt(loginResponse.token) : undefined);
                             }
                         );
                     } else {

@@ -8,7 +8,6 @@ import { FontAwesomeSvgIcon } from "../components/FontAwesomeSvgIcon";
 import { faAdd } from "@fortawesome/free-solid-svg-icons";
 import React, { useRef, useState } from "react";
 import { GroupCreator } from "./GroupDetailPage";
-import { QueryAutocompleteSearchBox } from "../components/QueryInput";
 import { performSearchQuery, UserGroupQueryObject } from "../Search";
 import SearchIcon from "@mui/icons-material/Search";
 import urlJoin from "url-join";
@@ -19,6 +18,8 @@ import DoneIcon from "@mui/icons-material/Done";
 import { ActionModal } from "../components/ActionModal";
 import GroupIcon from "@mui/icons-material/Group";
 import { PageTitle } from "../index";
+import { EmbeddedQueryInput } from "../components/EmbeddedQueryInput";
+import { AccessFilter } from "../QueryState";
 
 export interface GetCurrentUserGroupMembershipsResponse {
     total_count: number;
@@ -38,7 +39,15 @@ export interface RevokeUserGroupInviteResponse {
 export function GroupSearch({ app }: { app: App }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
+
+    const submittedSearch = useRef<{
+        query: string;
+        accessFilter: AccessFilter;
+    }>({
+        query: "",
+        accessFilter: "all",
+    });
+
     const tableRef = useRef<PaginatedTableHandle>(null);
     const [queryLoading, setQueryLoading] = useState(false);
 
@@ -47,15 +56,18 @@ export function GroupSearch({ app }: { app: App }) {
         rowsPerPage: number
     ): Promise<PaginatedTableData<UserGroupQueryObject>> => {
         const search = new URLSearchParams();
-        search.set("query", searchQuery);
+        search.set("query", submittedSearch.current.query);
         search.set("page", page.toString());
         search.set("limit", rowsPerPage.toString());
+        if (app.isLoggedIn()) {
+            search.set("access_filter", submittedSearch.current.accessFilter);
+        }
 
         setQueryLoading(true);
         try {
             const response = await performSearchQuery("/user_group?" + search, app, location, navigate);
             return {
-                totalCount: response.full_count || 10000,
+                totalCount: response.full_count ?? 10000,
                 data: response.user_groups || [],
             };
         } catch (e) {
@@ -67,20 +79,49 @@ export function GroupSearch({ app }: { app: App }) {
     };
 
     return (
-        <div id="GroupSearch">
-            <div className="form-paper-content">
-                <QueryAutocompleteSearchBox
-                    queryString={searchQuery}
-                    setQueryString={setSearchQuery}
-                    scope="user_group"
-                    onSubmit={() => {
-                        tableRef.current?.setPage(0);
-                        tableRef.current?.reload();
-                    }}
-                    isLoading={queryLoading}
-                />
+        <div
+            id="GroupSearch"
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "min(650px, 75vw)",
+                height: "min(65dvh, 650px)",
+                minHeight: 0,
+                overflow: "hidden",
+            }}
+        >
+            <div
+                className="form-paper-content"
+                style={{
+                    flex: "1 1 auto",
+                    minHeight: 0,
+                    minWidth: 0,
+                    overflow: "hidden",
+                }}
+            >
+                <div style={{ flex: "0 0 auto" }}>
+                    <EmbeddedQueryInput
+                        app={app}
+                        scope="user_group"
+                        placeholder="Search groups"
+                        isLoading={queryLoading}
+                        showSort={false}
+                        initialAccessFilter="all"
+                        onSubmit={(query, accessFilter) => {
+                            submittedSearch.current = { query, accessFilter };
+
+                            if (tableRef.current?.getPage() === 0) {
+                                tableRef.current.reload();
+                            } else {
+                                tableRef.current?.setPage(0);
+                            }
+                        }}
+                    />
+                </div>
+
                 <PaginatedTable<UserGroupQueryObject>
                     ref={tableRef}
+                    fillHeight
                     columns={[
                         {
                             id: "name",

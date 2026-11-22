@@ -1,58 +1,386 @@
 import { Combobox } from "@filebroker/react-widgets/lib/cjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnalyzeQueryRequest, AnalyzeQueryResponse, QueryAutocompleteSuggestion } from "../Model";
 import http from "../http-common";
 import { replaceStringRange } from "../Util";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import "./QueryInput.css";
-import { Autocomplete, IconButton, InputAdornment } from "@mui/material";
+import { Autocomplete, Box, ClickAwayListener, IconButton, InputAdornment } from "@mui/material";
 import { StyledTextField } from "../index";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AutocompleteRenderInputParams } from "@mui/material/Autocomplete";
 import SearchIcon from "@mui/icons-material/Search";
+import {
+    AccessFilter,
+    compileQueryDefinition,
+    parseQueryDefinition,
+    QueryDefinition,
+    QueryMode,
+    serializeQueryDefinition,
+    StoredQueryScope,
+} from "../QueryState";
+import App from "../App";
+import { QueryComposer } from "./QueryComposer";
+import { QueryPopover, QuerySuggestion, useQuerySuggestions } from "./QueryPopover";
+import { AccessFilterSelect } from "./AccessFilterSelect";
 
 let scheduledAnalyzeQueryRequest: NodeJS.Timeout | null = null;
 
-export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boolean; autoFocus?: boolean }) {
+export function GlobalQueryInput({
+    app,
+    hideOnHome,
+    autoFocus,
+}: {
+    app: App;
+    hideOnHome?: boolean;
+    autoFocus?: boolean;
+}) {
     const location = useLocation();
-    const search = location.search;
     const navigate = useNavigate();
     const pathName = location.pathname;
 
-    let searchParams = new URLSearchParams(search);
-    let queryParam: string = searchParams.get("query") ?? "";
-    const [queryString, setQueryString] = useState(queryParam);
+    // -------------------------------------------------------------
+    // Query state and user preferences
+    // -------------------------------------------------------------
+
+    const advancedQueryPreference = app.getUserPreferences()?.advanced_query_mode;
+
+    const preferredMode: QueryMode = advancedQueryPreference ? "advanced" : "simple";
+
+    const [definition, setDefinition] = useState<QueryDefinition>(() =>
+        parseQueryDefinition(location.search, preferredMode)
+    );
+
+    type SimpleQuery = Extract<QueryDefinition, { mode: "simple" }>;
+    type AdvancedQuery = Extract<QueryDefinition, { mode: "advanced" }>;
+
+    const simpleDraft = useRef<SimpleQuery | null>(definition.mode === "simple" ? definition : null);
+    const advancedDraft = useRef<AdvancedQuery | null>(definition.mode === "advanced" ? definition : null);
+
+    const preferenceInitialized = useRef(advancedQueryPreference !== undefined);
+
+    const hasEdited = useRef(false);
+
+    // URL changes are authoritative. This includes browser Back/Forward navigation and opening shared search links.
+    useEffect(() => {
+        const parsed = parseQueryDefinition(location.search, preferredMode);
+
+        setDefinition(parsed);
+
+        simpleDraft.current = parsed.mode === "simple" ? parsed : null;
+
+        advancedDraft.current = parsed.mode === "advanced" ? parsed : null;
+
+        hasEdited.current = false;
+    }, [location.pathname, location.search]);
+
+    // Apply the user's stored preference once it becomes available.
+    // Explicit query representations in the URL take precedence.
+    useEffect(() => {
+        if (preferenceInitialized.current || advancedQueryPreference === undefined) {
+            return;
+        }
+
+        preferenceInitialized.current = true;
+
+        if (hasEdited.current) {
+            return;
+        }
+
+        const params = new URLSearchParams(location.search);
+
+        if (
+            params.has("mode") ||
+            params.has("query") ||
+            params.has("tag") ||
+            params.has("text") ||
+            params.has("sort")
+        ) {
+            return;
+        }
+
+        const parsed = parseQueryDefinition(location.search, advancedQueryPreference ? "advanced" : "simple");
+
+        setDefinition(parsed);
+
+        simpleDraft.current = parsed.mode === "simple" ? parsed : null;
+
+        advancedDraft.current = parsed.mode === "advanced" ? parsed : null;
+    }, [advancedQueryPreference, location.search]);
+
+    const updateDefinition = (next: QueryDefinition) => {
+        hasEdited.current = true;
+        setDefinition(next);
+
+        if (next.mode === "simple") {
+            simpleDraft.current = next;
+        } else {
+            advancedDraft.current = next;
+        }
+    };
+
+    // -------------------------------------------------------------
+    // Search scope and destination
+    // -------------------------------------------------------------
+
+    let searchSite = "/posts";
+    let scope = "post";
+    let storedScope: StoredQueryScope = "post";
+    let placeholder = "Search Posts";
+
+    const collectionMatch = pathName.match(/^\/collection\/(\d+)(?:\/|$)/);
+
+    if (collectionMatch) {
+        const collectionPk = collectionMatch[1];
+
+        searchSite = `/collection/${collectionPk}`;
+        scope = `collection_item_${collectionPk}`;
+        storedScope = "collection_item";
+        placeholder = "Search Within Collection";
+    } else if (pathName === "/collections") {
+        searchSite = "/collections";
+        scope = "collection";
+        storedScope = "collection";
+        placeholder = "Search Collections";
+    }
+
+    const params = new URLSearchParams(location.search);
+    const accessParam = params.get("access_filter");
+
+    const hasSearchContext = ["query", "mode", "tag", "text", "sort", "constriction", "page"].some((key) =>
+        params.has(key)
+    );
+
+    const preferredAccessFilter: AccessFilter = app.isLoggedIn()
+        ? (app.getUserPreferences()?.default_access_filter ?? "all")
+        : "all";
+
+    const accessFilter: AccessFilter =
+        accessParam === "all" || accessParam === "shared" || accessParam === "own"
+            ? accessParam
+            : hasSearchContext
+              ? "all"
+              : preferredAccessFilter;
+
+    // -------------------------------------------------------------
+    // Popover and suggestion state
+    // -------------------------------------------------------------
+
+    const inputRef = useRef<HTMLInputElement>(null);
+    const popoverAnchorRef = useRef<HTMLDivElement>(null);
+
+    const [popoverOpen, setPopoverOpen] = useState(false);
+    const [cursorPosition, setCursorPosition] = useState(0);
+    const [highlightedSuggestion, setHighlightedSuggestion] = useState(-1);
+
+    const suggestions = useQuerySuggestions(popoverOpen, definition, scope, cursorPosition);
 
     useEffect(() => {
-        setQueryString(queryParam);
-    }, [location]);
+        setHighlightedSuggestion(-1);
+    }, [suggestions]);
+
+    // -------------------------------------------------------------
+    // Mode switching
+    // -------------------------------------------------------------
+
+    const changeMode = (mode: QueryMode) => {
+        if (mode === definition.mode) {
+            return;
+        }
+
+        let next: QueryDefinition;
+
+        if (mode === "advanced") {
+            let compiledQuery: string;
+
+            try {
+                compiledQuery = compileQueryDefinition(definition);
+            } catch (e) {
+                app.openModal("Invalid query", <div>{e instanceof Error ? e.message : String(e)}</div>);
+                return;
+            }
+
+            // Restore the previous advanced draft when available.
+            // Otherwise initialize it from the graphical query.
+            next = advancedDraft.current ?? {
+                mode: "advanced",
+                query: compiledQuery,
+            };
+        } else {
+            // Arbitrary FQL cannot be reliably converted back
+            // into graphical selections.
+            next = simpleDraft.current ?? {
+                mode: "simple",
+                text: "",
+                tags: [],
+                sort: null,
+            };
+        }
+
+        updateDefinition(next);
+
+        if (app.isLoggedIn()) {
+            app.updateUserPreferences({
+                advanced_query_mode: mode === "advanced",
+            });
+        }
+
+        // Keep the popover open and focus the new editor.
+        requestAnimationFrame(() => {
+            inputRef.current?.focus();
+            setPopoverOpen(true);
+        });
+    };
+
+    // -------------------------------------------------------------
+    // Selecting autocomplete suggestions
+    // -------------------------------------------------------------
+
+    const selectSuggestion = (item: QuerySuggestion) => {
+        if (item.type === "tag" && definition.mode === "simple") {
+            if (
+                definition.tags.length >= 10 ||
+                definition.tags.some((tag) => tag.toLowerCase() === item.tag.tag_name.toLowerCase())
+            ) {
+                return;
+            }
+
+            updateDefinition({
+                ...definition,
+                tags: [...definition.tags, item.tag.tag_name],
+                text: "",
+            });
+
+            setCursorPosition(0);
+        } else if (item.type === "advanced" && definition.mode === "advanced") {
+            const { suggestion } = item;
+            const { start, end } = suggestion.target_location;
+
+            // The FQL lexer uses character offsets.
+            const chars = Array.from(definition.query);
+
+            const before = chars.slice(0, start).join("");
+            const after = chars.slice(end + 1).join("");
+            const query = before + suggestion.text + after;
+
+            updateDefinition({
+                mode: "advanced",
+                query,
+            });
+
+            const caretPosition = before.length + suggestion.text.length;
+
+            setCursorPosition(Array.from(before + suggestion.text).length);
+
+            requestAnimationFrame(() => {
+                inputRef.current?.focus();
+                inputRef.current?.setSelectionRange(caretPosition, caretPosition);
+            });
+        }
+
+        setHighlightedSuggestion(-1);
+        inputRef.current?.focus();
+    };
+
+    // -------------------------------------------------------------
+    // Keyboard navigation
+    // -------------------------------------------------------------
+
+    const handleInputKeyDown: React.KeyboardEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
+        if (e.key === "Escape") {
+            setPopoverOpen(false);
+            e.stopPropagation();
+            return;
+        }
+
+        if (!popoverOpen || suggestions.length === 0) {
+            return;
+        }
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+
+            setHighlightedSuggestion((current) => (current + 1) % suggestions.length);
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+
+            setHighlightedSuggestion((current) => (current <= 0 ? suggestions.length : current) - 1);
+        } else if (e.key === "Enter" && highlightedSuggestion >= 0) {
+            e.preventDefault();
+
+            selectSuggestion(suggestions[highlightedSuggestion]);
+        }
+    };
+
+    // -------------------------------------------------------------
+    // Submitting searches
+    // -------------------------------------------------------------
+
+    const submitQuery = (newAccessFilter?: AccessFilter, queryToSubmit: QueryDefinition = definition) => {
+        try {
+            compileQueryDefinition(queryToSubmit);
+        } catch (e) {
+            app.openModal("Invalid query", <div>{e instanceof Error ? e.message : String(e)}</div>);
+            return;
+        }
+
+        const searchParams = serializeQueryDefinition(queryToSubmit, new URLSearchParams(location.search));
+
+        const selectedAccessFilter = newAccessFilter ?? accessFilter;
+
+        if (app.isLoggedIn()) {
+            searchParams.set("access_filter", selectedAccessFilter);
+        } else {
+            searchParams.delete("access_filter");
+        }
+
+        setPopoverOpen(false);
+
+        navigate({
+            pathname: searchSite,
+            search: searchParams.toString(),
+        });
+
+        inputRef.current?.blur();
+        document.getElementById("App")?.focus();
+
+        // Record deliberate searches, rather than recording every
+        // backend request or pagination event.
+        if (app.isLoggedIn()) {
+            void (async () => {
+                try {
+                    const config = await app.getAuthorization(location, navigate, false);
+
+                    if (config) {
+                        await http.post(
+                            "/record-recent-query",
+                            {
+                                scope: storedScope,
+                                query_definition: queryToSubmit,
+                            },
+                            config
+                        );
+                    }
+                } catch (e) {
+                    console.error("Failed to record recent query:", e);
+                }
+            })();
+
+            if (newAccessFilter !== undefined) {
+                app.updateUserPreferences({
+                    default_access_filter: newAccessFilter,
+                });
+            }
+        }
+    };
+
+    // -------------------------------------------------------------
+    // Rendering
+    // -------------------------------------------------------------
 
     if (hideOnHome && pathName === "/") {
         return null;
-    }
-
-    let searchSite = "/posts";
-    if (pathName === "/collections") {
-        searchSite = pathName;
-    } else if (pathName.startsWith("/collection/")) {
-        searchSite = pathName
-            .split("/")
-            .filter((part) => part.length > 0)
-            .slice(0, 2)
-            .join("/");
-    }
-
-    let scope = "post";
-    let placeholder = "Search Post";
-    if (pathName.startsWith("/collection/")) {
-        scope = "collection_item";
-        const collectionId = pathName.split("/")[2];
-        scope += `_${collectionId}`;
-        placeholder = "Search Within Collection";
-    } else if (pathName.startsWith("/collections")) {
-        scope = "collection";
-        placeholder = "Search Collection";
     }
 
     return (
@@ -60,71 +388,71 @@ export function GlobalQueryInput({ hideOnHome, autoFocus }: { hideOnHome?: boole
             style={{ width: "100%" }}
             onSubmit={(e) => {
                 e.preventDefault();
-                let searchParams = new URLSearchParams();
-                searchParams.set("query", queryString);
-                navigate({
-                    pathname: searchSite,
-                    search: searchParams.toString(),
-                });
-                document.getElementById("App")?.focus();
-
-                // hack: input field on PostSearch page remains focused after submitting query, since the input field cannot be accessed directly (ref prop gets overridden)
-                // retrieve it via id and blur
-                if (hideOnHome) {
-                    document.querySelectorAll("[id^=rw_][id$=_input]").forEach((el) => {
-                        if (el instanceof HTMLElement) {
-                            el.blur();
-                        }
-                    });
-                }
+                submitQuery();
             }}
         >
-            <QueryAutocomplete
-                queryString={queryString}
-                setQueryString={setQueryString}
-                scope={scope}
-                autoFocus={autoFocus}
-                renderInput={(params) => {
-                    const startAdornment = params.slotProps?.input?.startAdornment;
+            <ClickAwayListener onClickAway={() => setPopoverOpen(false)}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        minWidth: 0,
+                        gap: 0.5,
+                    }}
+                >
+                    {app.isLoggedIn() && (
+                        <AccessFilterSelect value={accessFilter} onChange={(value) => submitQuery(value)} />
+                    )}
 
-                    return (
-                        <StyledTextField
-                            {...params}
-                            fullWidth
-                            size="small"
+                    <Box
+                        sx={{
+                            flex: 1,
+                            minWidth: 0,
+                        }}
+                    >
+                        <QueryComposer
+                            definition={definition}
+                            onChange={updateDefinition}
+                            onSortChange={(sort) => {
+                                if (definition.mode === "simple") {
+                                    submitQuery(undefined, {
+                                        ...definition,
+                                        sort,
+                                    });
+                                }
+                            }}
+                            onFocus={() => setPopoverOpen(true)}
+                            onCursorChange={setCursorPosition}
+                            onKeyDown={handleInputKeyDown}
+                            inputRef={inputRef}
                             placeholder={placeholder}
                             autoFocus={autoFocus}
-                            slotProps={{
-                                ...params.slotProps,
-                                htmlInput: {
-                                    ...params.slotProps?.htmlInput,
-                                    maxLength: 1000,
-                                },
-                                input: {
-                                    ...params.slotProps?.input,
-                                    startAdornment: startAdornment ? (
-                                        <div
-                                            style={{
-                                                maxHeight: "100px",
-                                                overflowY: "auto",
-                                            }}
-                                        >
-                                            {startAdornment}
-                                        </div>
-                                    ) : undefined,
-                                    endAdornment: (
-                                        <InputAdornment position="end" sx={{ marginRight: "-30px" }}>
-                                            <IconButton type="submit" size="small">
-                                                <SearchIcon />
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                },
-                            }}
+                            popoverAnchorRef={popoverAnchorRef}
                         />
-                    );
-                }}
-            />
+                    </Box>
+
+                    <QueryPopover
+                        open={popoverOpen}
+                        anchorEl={popoverAnchorRef.current}
+                        app={app}
+                        definition={definition}
+                        scope={storedScope}
+                        suggestions={suggestions}
+                        highlightedSuggestion={highlightedSuggestion}
+                        onSelectSuggestion={selectSuggestion}
+                        onSelectStoredQuery={(storedDefinition) => {
+                            updateDefinition(storedDefinition);
+                            submitQuery(undefined, storedDefinition);
+                        }}
+                        onModeChange={changeMode}
+                        onDismiss={() => {
+                            setPopoverOpen(false);
+                            inputRef.current?.blur();
+                        }}
+                    />
+                </Box>
+            </ClickAwayListener>
         </form>
     );
 }
