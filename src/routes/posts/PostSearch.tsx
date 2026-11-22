@@ -1,0 +1,253 @@
+import { faInfoCircle, faSquarePlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import App from "../../App";
+import "react-lazy-load-image-component/src/effects/blur.css";
+import {
+    getMediaDurationDisplayForItem,
+    getMediaTypeIconForItem,
+    PaginatedGridView,
+} from "../../components/data/PaginatedGridView";
+import { PostQueryObject, performSearchQuery, extractQueryFromSearch } from "../../Search";
+import { AddToCollectionDialogue } from "../../components/dialogs/AddToCollectionDialogue";
+import { ActionModal } from "../../components/dialogs/ActionModal";
+import { DeletePostsResponse, PostDetailed } from "../../Model";
+import http from "../../http-common";
+import { useSnackbar } from "notistack";
+import { FileMetadataDisplay } from "../../components/media/FileMetadataDisplay";
+import { PageTitle } from "../../index";
+import { getPostQuerySelection, PostQuerySelection, toBackendQueryParams } from "../../QueryState";
+import { ConstrictionPillRow } from "../../components/query/ConstrictionPillRow";
+
+class PostSearchProps {
+    app: App;
+
+    constructor(app: App) {
+        this.app = app;
+    }
+}
+
+function PostSearch({ app }: PostSearchProps) {
+    const [fullCount, setFullCount] = useState<number | null>(0);
+    const [pageCount, setPageCount] = useState<number | null>(0);
+    const [posts, setPosts] = useState<PostQueryObject[]>([]);
+    const [modCount, setModCount] = useState(0);
+    const location = useLocation();
+    const search = location.search;
+    const query = extractQueryFromSearch(search);
+    const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
+
+    useEffect(() => {
+        let active = true;
+        const modal = app.openLoadingModal();
+
+        performSearchQuery(search, app, location, navigate, modal)
+            .then((searchResult) => {
+                if (!active) {
+                    return;
+                }
+
+                setFullCount(searchResult.full_count);
+                setPageCount(searchResult.pages);
+                setPosts(searchResult.posts ?? []);
+            })
+            .catch((e) => {
+                if (active) {
+                    console.error(e);
+                }
+            })
+            .finally(() => {
+                if (!modal.closed) {
+                    modal.close();
+                }
+            });
+
+        return () => {
+            active = false;
+
+            if (!modal.closed) {
+                modal.close();
+            }
+        };
+    }, [search, modCount]);
+
+    let bulkPostQuery: PostQuerySelection | null = null;
+
+    try {
+        bulkPostQuery = getPostQuerySelection(new URLSearchParams(search));
+    } catch (e) {
+        // Invalid search criteria should not enable bulk actions.
+        console.error("Invalid bulk post query:", e);
+    }
+
+    return (
+        <div id="PostSearch">
+            <PageTitle title={query ? `Posts: ${query}` : "Posts"} />
+            <PaginatedGridView
+                itemsProperty={posts}
+                onItemClickPath={(post) => "/post/" + post.pk}
+                pagePath="/posts"
+                fullCount={fullCount}
+                pageCount={pageCount}
+                getMediaTypeIcon={(item) => getMediaTypeIconForItem(item)}
+                getMediaDurationDisplay={(item) => getMediaDurationDisplayForItem(item)}
+                isDesktop={app.isDesktop()}
+                headerControls={<ConstrictionPillRow app={app} scope="post" />}
+                gridItemActions={[
+                    {
+                        name: "Show metadata",
+                        icon: faInfoCircle,
+                        allowExecuteForAll: false,
+                        disallowMultiSelect: true,
+                        enableForItem: (post) => post.source.s3_object,
+                        fn: (items) => {
+                            if (items && items.length > 0) {
+                                const post = items[0].source as unknown as PostQueryObject;
+                                if (post.s3_object) {
+                                    app.openModal(
+                                        "File metadata",
+                                        <FileMetadataDisplay
+                                            s3_object={post.s3_object}
+                                            s3_object_metadata={post.s3_object_metadata}
+                                        />
+                                    );
+                                }
+                            }
+                        },
+                    },
+                    {
+                        name: "Add to collection",
+                        icon: faSquarePlus,
+                        allowExecuteForAll:
+                            bulkPostQuery !== null && fullCount !== null && fullCount > 0 && fullCount < 10000,
+                        disabled: !app.isLoggedIn(),
+                        fn: (items, cb) => {
+                            if (items && items.length > 0) {
+                                app.openModal(
+                                    "Add to collection",
+                                    (modal) => (
+                                        <AddToCollectionDialogue
+                                            app={app}
+                                            postPks={items.map((item) => item.pk)}
+                                            modal={modal}
+                                        />
+                                    ),
+                                    (result) => cb?.(result)
+                                );
+                            } else {
+                                app.openModal(
+                                    "Confirm adding all results",
+                                    (modalContent) => (
+                                        <ActionModal
+                                            modalContent={modalContent}
+                                            text={`No posts have been selected, meaning all ${fullCount ? fullCount.toString() + " " : ""}posts will be added.`}
+                                            actions={[
+                                                {
+                                                    name: "Ok",
+                                                    fn: () =>
+                                                        app.openModal("Add to collection", (modal) => (
+                                                            <AddToCollectionDialogue
+                                                                app={app}
+                                                                postPks={[]}
+                                                                modal={modal}
+                                                                postQuery={bulkPostQuery ?? undefined}
+                                                            />
+                                                        )),
+                                                },
+                                            ]}
+                                        />
+                                    ),
+                                    (result) => cb?.(result)
+                                );
+                            }
+                        },
+                    },
+                    {
+                        name: "Delete post",
+                        icon: faTrash,
+                        color: "red",
+                        disabled: !app.isLoggedIn(),
+                        enableForItemAsync: async (post) => {
+                            if (!app.isLoggedIn()) {
+                                return false;
+                            }
+
+                            const config = await app.getAuthorization(location, navigate, false);
+                            const backendParams = toBackendQueryParams(new URLSearchParams(search));
+                            backendParams.set("exclude_window", "true");
+
+                            const result = await http.get<PostDetailed>(
+                                `/get-post/${post.pk}?${backendParams.toString()}`,
+                                config
+                            );
+
+                            return result.data.is_deletable;
+                        },
+                        fn: (items, cb) =>
+                            app.openModal(
+                                items.length > 1000 ? "Error" : "Delete post",
+                                (modal) => {
+                                    if (items.length > 1000) {
+                                        return <p>Cannot delete more than 1000 posts at once.</p>;
+                                    }
+
+                                    return (
+                                        <ActionModal
+                                            modalContent={modal}
+                                            text={
+                                                items.length === 1 && items[0].title
+                                                    ? `Delete post '${items[0].title}'`
+                                                    : `Delete ${items.length} post${items.length === 1 ? "" : "s"}. Posts you are not allowed to delete will be ignored.`
+                                            }
+                                            actions={[
+                                                {
+                                                    name: "Ok",
+                                                    fn: async () => {
+                                                        const loadingModal = app.openLoadingModal();
+                                                        try {
+                                                            const config = await app.getAuthorization(
+                                                                location,
+                                                                navigate
+                                                            );
+                                                            const result = await http.post<DeletePostsResponse>(
+                                                                "/delete-posts",
+                                                                {
+                                                                    post_pks: items.map((item) => item.pk),
+                                                                    inaccessible_post_mode: "skip",
+                                                                    delete_unreferenced_objects: true,
+                                                                },
+                                                                config
+                                                            );
+
+                                                            loadingModal.close();
+                                                            setModCount(modCount + 1);
+                                                            enqueueSnackbar({
+                                                                message: `Deleted ${result.data.deleted_posts.length} post${result.data.deleted_posts.length !== 1 ? "s" : ""}`,
+                                                                variant: "success",
+                                                            });
+                                                            return result.data;
+                                                        } catch (e) {
+                                                            console.error(e);
+                                                            loadingModal.close();
+                                                            enqueueSnackbar({
+                                                                message: "Failed to delete post",
+                                                                variant: "error",
+                                                            });
+                                                        }
+                                                    },
+                                                },
+                                            ]}
+                                        />
+                                    );
+                                },
+                                (result) => cb?.(result)
+                            ),
+                    },
+                ]}
+            />
+        </div>
+    );
+}
+
+export default PostSearch;

@@ -1,5 +1,5 @@
 import "./Home.css";
-import { GlobalQueryInput } from "../components/QueryInput";
+import { GlobalQueryInput } from "../components/query/QueryInput";
 import React from "react";
 import App from "../App";
 
