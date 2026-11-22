@@ -32,21 +32,21 @@ export function EmailConfirmation({ app }: { app: App }) {
     if (emailConfirmed) {
         loadingContainer = (
             <>
-                <FontAwesomeIcon icon={faCheck} size="6x"></FontAwesomeIcon>
+                <FontAwesomeIcon icon={faCheck} className="status-icon" size="6x" />
                 <p>Email confirmation succeeded, you may now close this tab.</p>
             </>
         );
     } else if (emailConfirmationFailed) {
         loadingContainer = (
             <>
-                <FontAwesomeIcon icon={faX} size="6x"></FontAwesomeIcon>
+                <FontAwesomeIcon icon={faX} className="status-icon" size="6x" />
                 <p>Email confirmation failed. Please try again.</p>
             </>
         );
     } else {
         loadingContainer = (
             <>
-                <FontAwesomeIcon icon={faCircleNotch} spin size="6x"></FontAwesomeIcon>
+                <FontAwesomeIcon icon={faCircleNotch} className="status-icon" spin size="6x" />
                 <p>Confirming Email</p>
             </>
         );

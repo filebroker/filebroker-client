@@ -46,35 +46,35 @@ export function RedeemUserGroupInvite({ app }: { app: App }) {
     if (userGroupJoined) {
         content = (
             <>
-                <FontAwesomeIcon icon={faCheck} size="6x" />
+                <FontAwesomeIcon icon={faCheck} className="status-icon" size="6x" />
                 <p>You have successfully joined the group {userGroupJoined.group.name}.</p>
             </>
         );
     } else if (alreadyMember) {
         content = (
             <>
-                <FontAwesomeIcon icon={faX} size="6x" />
+                <FontAwesomeIcon icon={faX} className="status-icon" size="6x" />
                 <p>You are already a member of this group.</p>
             </>
         );
     } else if (userBanned) {
         content = (
             <>
-                <FontAwesomeIcon icon={faX} size="6x" />
+                <FontAwesomeIcon icon={faX} className="status-icon" size="6x" />
                 <p>You are banned from this group.</p>
             </>
         );
     } else if (invalidInviteCode) {
         content = (
             <>
-                <FontAwesomeIcon icon={faX} size="6x" />
+                <FontAwesomeIcon icon={faX} className="status-icon" size="6x" />
                 <p>Code has expired or is invalid.</p>
             </>
         );
     } else if (unexpectedError) {
         content = (
             <>
-                <FontAwesomeIcon icon={faX} size="6x" />
+                <FontAwesomeIcon icon={faX} className="status-icon" size="6x" />
                 <p>An unexpected error occurred. Please try again later.</p>
             </>
         );

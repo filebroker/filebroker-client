@@ -743,6 +743,10 @@ input:-webkit-autofill:focus {
     max-width: 100%;
 }
 
+.form-paper-content > .status-icon {
+    align-self: center;
+}
+
 .button-row {
     display: flex;
     flex-direction: row;
