@@ -329,7 +329,7 @@ export function GlobalQueryInput({
 
         const selectedAccessFilter = newAccessFilter ?? accessFilter;
 
-        if (app.isLoggedIn()) {
+        if (app.isLoggedIn() && selectedAccessFilter !== "all") {
             searchParams.set("access_filter", selectedAccessFilter);
         } else {
             searchParams.delete("access_filter");
