@@ -261,6 +261,7 @@ export function EmbeddedQueryInput({
 
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                             <QueryComposer
+                                scope={scope}
                                 definition={definition}
                                 onChange={updateDefinition}
                                 onSortChange={(sort) => {

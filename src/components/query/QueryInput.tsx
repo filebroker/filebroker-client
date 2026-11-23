@@ -412,6 +412,7 @@ export function GlobalQueryInput({
                         }}
                     >
                         <QueryComposer
+                            scope={storedScope}
                             definition={definition}
                             onChange={updateDefinition}
                             onSortChange={(sort) => {
